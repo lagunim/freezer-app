@@ -63,6 +63,39 @@ export default function ProductForm({
     setLocalError(null);
   }, [initialProduct]);
 
+  const parseQuantity = (value: string): number => {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 0) {
+      return 0;
+    }
+    return parsed;
+  };
+
+  const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+
+    // Permitimos cadena vacía mientras el usuario escribe
+    if (value === '') {
+      setQuantity('');
+      return;
+    }
+
+    setQuantity(value);
+  };
+
+  const changeQuantityBy = (delta: number) => {
+    setQuantity((previous) => {
+      const current = parseQuantity(previous);
+      const next = current + delta;
+
+      if (next < 0) {
+        return '0';
+      }
+
+      return String(next);
+    });
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLocalError(null);
@@ -117,16 +150,36 @@ export default function ProductForm({
           <label htmlFor="product-quantity" className="text-sm font-medium text-slate-200">
             Cantidad
           </label>
-          <input
-            id="product-quantity"
-            type="number"
-            min={0}
-            required
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-            placeholder="Ej. 3"
-          />
+          <div className="flex items-center rounded-md border border-slate-700 bg-slate-900 text-sm text-slate-100 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500">
+            <button
+              type="button"
+              aria-label="Restar cantidad"
+              onClick={() => changeQuantityBy(-1)}
+              disabled={loading || parseQuantity(quantity) <= 0}
+              className="inline-flex h-9 w-9 items-center justify-center border-r border-slate-700 text-lg font-medium text-slate-200 transition hover:bg-slate-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              -
+            </button>
+            <input
+              id="product-quantity"
+              type="number"
+              min={0}
+              required
+              value={quantity}
+              onChange={handleQuantityChange}
+              className="w-full bg-transparent px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              placeholder="Ej. 3"
+            />
+            <button
+              type="button"
+              aria-label="Sumar cantidad"
+              onClick={() => changeQuantityBy(1)}
+              disabled={loading}
+              className="inline-flex h-9 w-9 items-center justify-center border-l border-slate-700 text-lg font-medium text-slate-200 transition hover:bg-slate-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         <div className="space-y-1">
