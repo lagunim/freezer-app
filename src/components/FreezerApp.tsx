@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
+import FriezaIcon from '@/public/Frieza-icon.png';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import ProductForm from '@/components/ProductForm';
@@ -236,8 +237,13 @@ export default function FreezerApp() {
     return (
       <section className="space-y-4">
         <header className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-50">
-            Mi congelador
+          <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight text-slate-50">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-10 w-10 rounded-2xl bg-slate-900/80 shadow-sm"
+            />
+            <span>Freezer App</span>
           </h1>
           <p className="text-sm text-slate-400">
             Cargando sesión de Supabase…
@@ -255,8 +261,13 @@ export default function FreezerApp() {
     return (
       <section className="space-y-4">
         <header className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-50">
-            Mi congelador
+          <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight text-slate-50">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-10 w-10 rounded-2xl bg-slate-900/80 shadow-sm"
+            />
+            <span>Freezer App</span>
           </h1>
           <p className="text-sm text-slate-400">
             Identifícate para gestionar tu congelador.
@@ -332,8 +343,13 @@ export default function FreezerApp() {
     <section className="space-y-3 sm:space-y-4">
       <header className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-            Mi congelador
+          <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-10 w-10 rounded-2xl bg-slate-900/80 shadow-sm"
+            />
+            <span>Freezer App</span>
           </h1>
           <p className="text-xs text-slate-400 sm:text-sm">
             Autenticado como{' '}
