@@ -129,9 +129,12 @@ export default function ProductForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
       <div className="space-y-1">
-        <label htmlFor="product-name" className="text-sm font-medium text-slate-200">
+        <label
+          htmlFor="product-name"
+          className="text-xs font-medium text-slate-200 sm:text-sm"
+        >
           Nombre del producto
         </label>
         <input
@@ -140,23 +143,26 @@ export default function ProductForm({
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2 sm:text-sm"
           placeholder="Ej. Pechugas de pollo"
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         <div className="space-y-1">
-          <label htmlFor="product-quantity" className="text-sm font-medium text-slate-200">
+          <label
+            htmlFor="product-quantity"
+            className="text-xs font-medium text-slate-200 sm:text-sm"
+          >
             Cantidad
           </label>
-          <div className="flex items-center rounded-md border border-slate-700 bg-slate-900 text-sm text-slate-100 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500">
+          <div className="flex items-center rounded-md border border-slate-700 bg-slate-900 text-xs text-slate-100 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500 sm:text-sm">
             <button
               type="button"
               aria-label="Restar cantidad"
               onClick={() => changeQuantityBy(-1)}
               disabled={loading || parseQuantity(quantity) <= 0}
-              className="inline-flex h-9 w-9 items-center justify-center border-r border-slate-700 text-lg font-medium text-slate-200 transition hover:bg-slate-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 w-8 items-center justify-center border-r border-slate-700 text-base font-medium text-slate-200 transition hover:bg-slate-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:w-9 sm:text-lg"
             >
               -
             </button>
@@ -167,7 +173,7 @@ export default function ProductForm({
               required
               value={quantity}
               onChange={handleQuantityChange}
-              className="w-full bg-transparent px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              className="w-full bg-transparent px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none sm:py-2 sm:text-sm"
               placeholder="Ej. 3"
             />
             <button
@@ -175,7 +181,7 @@ export default function ProductForm({
               aria-label="Sumar cantidad"
               onClick={() => changeQuantityBy(1)}
               disabled={loading}
-              className="inline-flex h-9 w-9 items-center justify-center border-l border-slate-700 text-lg font-medium text-slate-200 transition hover:bg-slate-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 w-8 items-center justify-center border-l border-slate-700 text-base font-medium text-slate-200 transition hover:bg-slate-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:w-9 sm:text-lg"
             >
               +
             </button>
@@ -185,7 +191,7 @@ export default function ProductForm({
         <div className="space-y-1">
           <label
             htmlFor="product-quantity-unit"
-            className="text-sm font-medium text-slate-200"
+            className="text-xs font-medium text-slate-200 sm:text-sm"
           >
             Unidad
           </label>
@@ -193,7 +199,7 @@ export default function ProductForm({
             id="product-quantity-unit"
             value={quantityUnit}
             onChange={(e) => setQuantityUnit(e.target.value)}
-            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2 sm:text-sm"
           >
             <option value="uds">uds</option>
             <option value="g">g</option>
@@ -204,7 +210,10 @@ export default function ProductForm({
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="product-added-at" className="text-sm font-medium text-slate-200">
+          <label
+            htmlFor="product-added-at"
+            className="text-xs font-medium text-slate-200 sm:text-sm"
+          >
             Fecha de alta
           </label>
           <input
@@ -213,13 +222,13 @@ export default function ProductForm({
             required
             value={addedAt}
             onChange={(e) => setAddedAt(e.target.value)}
-            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2 sm:text-sm"
           />
         </div>
       </div>
 
       {localError && (
-        <div className="rounded-lg border border-amber-800/80 bg-amber-950/60 px-4 py-3 text-sm text-amber-100">
+        <div className="rounded-lg border border-amber-800/80 bg-amber-950/60 px-3 py-2 text-xs text-amber-100 sm:px-4 sm:py-3 sm:text-sm">
           {localError}
         </div>
       )}
@@ -230,7 +239,7 @@ export default function ProductForm({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:py-2 sm:text-sm"
           >
             Cancelar
           </button>
@@ -238,7 +247,7 @@ export default function ProductForm({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:py-2 sm:text-sm"
         >
           {loading
             ? isEdit

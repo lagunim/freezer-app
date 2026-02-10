@@ -33,6 +33,8 @@ export default function FreezerApp() {
   const [sortBy, setSortBy] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
+  const isFormVisible = isFormOpen || !!editingProduct;
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
@@ -331,13 +333,13 @@ export default function FreezerApp() {
   }
 
   return (
-    <section className="space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+    <section className="space-y-3 sm:space-y-4">
+      <header className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
             Mi congelador
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs text-slate-400 sm:text-sm">
             Autenticado como{' '}
             <span className="font-medium text-slate-100">
               {user.email ?? 'usuario sin email'}
@@ -346,24 +348,11 @@ export default function FreezerApp() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setIsFormOpen(true);
-              setEditingProduct(null);
-              setMessage(null);
-              setProductsError(null);
-            }}
-            className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
-          >
-            Añadir producto
-          </button>
-
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <button
             type="button"
             onClick={handleLogout}
-            className="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+            className="inline-flex w-full items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:w-auto sm:px-4 sm:py-2 sm:text-sm"
           >
             Cerrar sesión
           </button>
@@ -388,34 +377,75 @@ export default function FreezerApp() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
-        <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-slate-200">
-            {editingProduct ? 'Editar producto' : 'Nuevo producto'}
-          </h2>
-          <ProductForm
-            mode={editingProduct ? 'edit' : 'create'}
-            initialProduct={editingProduct}
-            loading={savingProduct}
-            onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
-            onCancel={
-              isFormOpen || editingProduct
-                ? () => {
-                    setIsFormOpen(false);
-                    setEditingProduct(null);
-                  }
-                : undefined
-            }
-          />
-          <p className="mt-3 text-[11px] text-slate-500">
-            Gestiona aquí lo que tienes en el congelador: raciones, tuppers, pan,
-            verdura, etc.
-          </p>
+      <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)] lg:gap-6">
+        <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-900/70 p-3 shadow-sm sm:p-5">
+          <button
+            type="button"
+            onClick={() => {
+              if (editingProduct) {
+                setEditingProduct(null);
+                setIsFormOpen(false);
+                setMessage(null);
+                setProductsError(null);
+                return;
+              }
+
+              setIsFormOpen((previous) => {
+                const next = !previous;
+                if (next) {
+                  setMessage(null);
+                  setProductsError(null);
+                }
+                return next;
+              });
+            }}
+            className="flex w-full items-center justify-between rounded-lg bg-slate-800/80 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+            aria-expanded={isFormVisible}
+          >
+            <span>{editingProduct ? 'Editar producto' : 'Nuevo producto'}</span>
+            <span
+              className={`ml-2 inline-flex h-5 w-5 items-center justify-center text-slate-300 transition-transform ${
+                isFormVisible ? 'rotate-90' : ''
+              }`}
+              aria-hidden="true"
+            >
+              &gt;
+            </span>
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-out ${
+              isFormVisible
+                ? 'max-h-[800px] opacity-100 mt-3'
+                : 'max-h-0 opacity-0 pointer-events-none'
+            }`}
+          >
+            <div className="pt-1">
+              <ProductForm
+                mode={editingProduct ? 'edit' : 'create'}
+                initialProduct={editingProduct}
+                loading={savingProduct}
+                onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
+                onCancel={
+                  isFormVisible
+                    ? () => {
+                        setIsFormOpen(false);
+                        setEditingProduct(null);
+                      }
+                    : undefined
+                }
+              />
+              <p className="mt-3 text-[11px] text-slate-500">
+                Gestiona aquí lo que tienes en el congelador: raciones, tuppers, pan,
+                verdura, etc.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="space-y-3">
-          <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+        <div className="min-w-0 space-y-3">
+          <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-3 sm:p-4">
             <div className="flex flex-wrap items-end gap-3">
-              <div className="flex-1 min-w-[180px]">
+              <div className="min-w-0 flex-1">
                 <label
                   htmlFor="product-search"
                   className="block text-xs font-medium text-slate-300"
@@ -428,7 +458,7 @@ export default function FreezerApp() {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Buscar por nombre…"
-                  className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2 sm:text-sm"
                 />
               </div>
             </div>
