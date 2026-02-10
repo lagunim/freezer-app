@@ -1,0 +1,202 @@
+import { useEffect, useMemo, useState } from 'react';
+import type { Product, ProductInput } from '@/lib/products';
+
+interface ProductFormProps {
+  mode: 'create' | 'edit';
+  initialProduct?: Product | null;
+  loading?: boolean;
+  onSubmit: (input: ProductInput) => Promise<void> | void;
+  onCancel?: () => void;
+}
+
+function toDateInputValue(iso?: string): string {
+  if (!iso) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return toDateInputValue();
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export default function ProductForm({
+  mode,
+  initialProduct,
+  loading = false,
+  onSubmit,
+  onCancel,
+}: ProductFormProps) {
+  const isEdit = mode === 'edit';
+
+  const initialDate = useMemo(
+    () => toDateInputValue(initialProduct?.added_at),
+    [initialProduct]
+  );
+
+  const [name, setName] = useState(initialProduct?.name ?? '');
+  const [quantity, setQuantity] = useState(
+    initialProduct?.quantity != null ? String(initialProduct.quantity) : '1'
+  );
+  const [quantityUnit, setQuantityUnit] = useState(
+    initialProduct?.quantity_unit ?? 'uds'
+  );
+  const [addedAt, setAddedAt] = useState(initialDate);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setName(initialProduct?.name ?? '');
+    setQuantity(
+      initialProduct?.quantity != null ? String(initialProduct.quantity) : '1'
+    );
+    setQuantityUnit(initialProduct?.quantity_unit ?? 'uds');
+    setAddedAt(toDateInputValue(initialProduct?.added_at));
+    setLocalError(null);
+  }, [initialProduct]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLocalError(null);
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setLocalError('El nombre del producto no puede estar vacío.');
+      return;
+    }
+
+    const qtyNumber = Number.parseInt(quantity, 10);
+    if (Number.isNaN(qtyNumber) || qtyNumber < 0) {
+      setLocalError('La cantidad debe ser un número mayor o igual que 0.');
+      return;
+    }
+
+    if (!addedAt) {
+      setLocalError('Selecciona una fecha de alta.');
+      return;
+    }
+
+    const input: ProductInput = {
+      name: trimmedName,
+      quantity: qtyNumber,
+      quantity_unit: quantityUnit,
+      // Normalizamos a inicio de día; el backend lo guardará como timestamptz
+      added_at: new Date(addedAt).toISOString(),
+    };
+
+    await onSubmit(input);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-1">
+        <label htmlFor="product-name" className="text-sm font-medium text-slate-200">
+          Nombre del producto
+        </label>
+        <input
+          id="product-name"
+          type="text"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          placeholder="Ej. Pechugas de pollo"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="space-y-1">
+          <label htmlFor="product-quantity" className="text-sm font-medium text-slate-200">
+            Cantidad
+          </label>
+          <input
+            id="product-quantity"
+            type="number"
+            min={0}
+            required
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            placeholder="Ej. 3"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label
+            htmlFor="product-quantity-unit"
+            className="text-sm font-medium text-slate-200"
+          >
+            Unidad
+          </label>
+          <select
+            id="product-quantity-unit"
+            value={quantityUnit}
+            onChange={(e) => setQuantityUnit(e.target.value)}
+            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          >
+            <option value="uds">uds</option>
+            <option value="g">g</option>
+            <option value="kg">kg</option>
+            <option value="ml">ml</option>
+            <option value="L">L</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label htmlFor="product-added-at" className="text-sm font-medium text-slate-200">
+            Fecha de alta
+          </label>
+          <input
+            id="product-added-at"
+            type="date"
+            required
+            value={addedAt}
+            onChange={(e) => setAddedAt(e.target.value)}
+            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          />
+        </div>
+      </div>
+
+      {localError && (
+        <div className="rounded-lg border border-amber-800/80 bg-amber-950/60 px-4 py-3 text-sm text-amber-100">
+          {localError}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Cancelar
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading
+            ? isEdit
+              ? 'Guardando cambios…'
+              : 'Creando producto…'
+            : isEdit
+              ? 'Guardar cambios'
+              : 'Añadir producto'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
