@@ -27,13 +27,12 @@ export default function FreezerApp() {
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  const isFormVisible = isFormOpen || !!editingProduct;
+  const isFormVisible = isFormOpen;
 
   useEffect(() => {
     const init = async () => {
@@ -79,7 +78,6 @@ export default function FreezerApp() {
   useEffect(() => {
     if (!user) {
       setProducts([]);
-      setEditingProduct(null);
       setIsFormOpen(false);
       setProductsError(null);
       return;
@@ -139,7 +137,6 @@ export default function FreezerApp() {
       setProducts((prev) => [created, ...prev]);
       setMessage('Producto añadido al congelador.');
       setIsFormOpen(false);
-      setEditingProduct(null);
     } catch (err) {
       console.error('Error al crear producto en Supabase:', err);
       setProductsError('No se ha podido crear el producto.');
@@ -148,19 +145,18 @@ export default function FreezerApp() {
     }
   };
 
-  const handleUpdateProduct = async (input: Parameters<typeof updateProduct>[1]) => {
-    if (!editingProduct) return;
-
+  const handleUpdateProduct = async (
+    product: Product,
+    input: Parameters<typeof updateProduct>[1]
+  ) => {
     setSavingProduct(true);
     setProductsError(null);
     try {
-      const updated = await updateProduct(editingProduct.id, input);
+      const updated = await updateProduct(product.id, input);
       setProducts((prev) =>
         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
       );
       setMessage('Producto actualizado.');
-      setIsFormOpen(false);
-      setEditingProduct(null);
     } catch (err) {
       console.error('Error al actualizar producto en Supabase:', err);
       setProductsError('No se ha podido actualizar el producto.');
@@ -382,14 +378,6 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => {
-              if (editingProduct) {
-                setEditingProduct(null);
-                setIsFormOpen(false);
-                setMessage(null);
-                setProductsError(null);
-                return;
-              }
-
               setIsFormOpen((previous) => {
                 const next = !previous;
                 if (next) {
@@ -402,7 +390,7 @@ export default function FreezerApp() {
             className="flex w-full items-center justify-between rounded-lg bg-slate-800/80 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-900"
             aria-expanded={isFormVisible}
           >
-            <span>{editingProduct ? 'Editar producto' : 'Nuevo producto'}</span>
+            <span>Nuevo producto</span>
             <span
               className={`ml-2 inline-flex h-5 w-5 items-center justify-center text-slate-300 transition-transform ${
                 isFormVisible ? 'rotate-90' : ''
@@ -422,15 +410,14 @@ export default function FreezerApp() {
           >
             <div className="pt-1">
               <ProductForm
-                mode={editingProduct ? 'edit' : 'create'}
-                initialProduct={editingProduct}
+                mode="create"
+                initialProduct={null}
                 loading={savingProduct}
-                onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
+                onSubmit={handleCreateProduct}
                 onCancel={
                   isFormVisible
                     ? () => {
                         setIsFormOpen(false);
-                        setEditingProduct(null);
                       }
                     : undefined
                 }
@@ -468,11 +455,7 @@ export default function FreezerApp() {
             products={filteredAndSortedProducts}
             loading={productsLoading}
             onReload={handleReloadProducts}
-            onEdit={(product) => {
-              setEditingProduct(product);
-              setIsFormOpen(true);
-              setMessage(null);
-            }}
+            onUpdateProduct={handleUpdateProduct}
             onDelete={handleDeleteProduct}
             sortBy={sortBy}
             sortDirection={sortDirection}

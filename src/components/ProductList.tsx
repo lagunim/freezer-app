@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { Product } from '@/lib/products';
+import type { Product, ProductInput } from '@/lib/products';
+import ProductForm from '@/components/ProductForm';
 
 type SortField = 'name' | 'quantity' | 'date';
 
@@ -7,7 +8,7 @@ interface ProductListProps {
   products: Product[];
   loading?: boolean;
   onReload?: () => void;
-  onEdit: (product: Product) => void;
+  onUpdateProduct: (product: Product, input: ProductInput) => Promise<void> | void;
   onDelete: (product: Product) => void;
   sortBy?: SortField;
   sortDirection?: 'asc' | 'desc';
@@ -31,13 +32,15 @@ export default function ProductList({
   products,
   loading = false,
   onReload,
-  onEdit,
+  onUpdateProduct,
   onDelete,
   sortBy,
   sortDirection,
   onChangeSort,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
+  const [savingProductId, setSavingProductId] = useState<Product['id'] | null>(null);
 
   const handleHeaderClick = (field: SortField) => {
     if (!onChangeSort) return;
@@ -67,6 +70,20 @@ export default function ProductList({
 
   const handleCancelDelete = () => {
     setProductToDelete(null);
+  };
+
+  const toggleEditForProduct = (product: Product) => {
+    setEditingProductId((current) => (current === product.id ? null : product.id));
+  };
+
+  const handleUpdateProduct = async (product: Product, input: ProductInput) => {
+    setSavingProductId(product.id);
+    try {
+      await onUpdateProduct(product, input);
+      setEditingProductId(null);
+    } finally {
+      setSavingProductId(null);
+    }
   };
 
   if (!loading && products.length === 0) {
@@ -108,6 +125,7 @@ export default function ProductList({
 
   const actionButtons = (product: Product) => {
     const isConfirmingDelete = productToDelete?.id === product.id;
+    const isEditing = editingProductId === product.id;
     const btnClass =
       'inline-flex items-center justify-center rounded-md px-2 py-1 text-[11px] font-medium transition';
     if (isConfirmingDelete) {
@@ -135,10 +153,10 @@ export default function ProductList({
       <div className="flex flex-wrap gap-1.5">
         <button
           type="button"
-          onClick={() => onEdit(product)}
+          onClick={() => toggleEditForProduct(product)}
           className={`${btnClass} border border-slate-600 bg-slate-800/80 text-slate-100 hover:border-sky-600 hover:bg-slate-800`}
         >
-          Editar
+          {isEditing ? 'Cerrar edición' : 'Editar'}
         </button>
         <button
           type="button"
@@ -171,27 +189,47 @@ export default function ProductList({
       <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900/60 shadow-sm sm:hidden">
         <div className="divide-y divide-slate-700/60">
           {products.map((product) => (
-            <div
-              key={product.id}
-              className={`px-3 py-2.5 ${
-                productToDelete?.id === product.id ? 'bg-red-950/30' : ''
-              }`}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-100">
-                    {product.name}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {product.quantity}{' '}
-                    <span className="text-slate-500">
-                      {product.quantity_unit ?? 'uds'}
-                    </span>
-                    {' · '}
-                    {formatDate(product.added_at)}
-                  </p>
+            <div key={product.id} className="px-3 py-2.5">
+              <div
+                className={`${
+                  productToDelete?.id === product.id ? 'bg-red-950/30' : ''
+                }`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-100">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {product.quantity}{' '}
+                      <span className="text-slate-500">
+                        {product.quantity_unit ?? 'uds'}
+                      </span>
+                      {' · '}
+                      {formatDate(product.added_at)}
+                    </p>
+                  </div>
+                  <div className="shrink-0">{actionButtons(product)}</div>
                 </div>
-                <div className="shrink-0">{actionButtons(product)}</div>
+              </div>
+
+              {/* Formulario de edición en línea (móvil) */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-out ${
+                  editingProductId === product.id
+                    ? 'max-h-[800px] opacity-100 mt-3'
+                    : 'max-h-0 opacity-0 pointer-events-none'
+                }`}
+              >
+                <div className="rounded-lg border border-slate-700 bg-slate-900/80 p-3">
+                  <ProductForm
+                    mode="edit"
+                    initialProduct={product}
+                    loading={savingProductId === product.id}
+                    onSubmit={(input) => handleUpdateProduct(product, input)}
+                    onCancel={() => setEditingProductId(null)}
+                  />
+                </div>
               </div>
             </div>
           ))}
@@ -250,29 +288,59 @@ export default function ProductList({
           <tbody className="divide-y divide-slate-700/60 bg-slate-950/40">
             {products.map((product) => {
               const isConfirmingDelete = productToDelete?.id === product.id;
+              const isEditing = editingProductId === product.id;
               return (
-                <tr
-                  key={product.id}
-                  className={`transition-colors ${
-                    isConfirmingDelete ? 'bg-red-950/30' : 'hover:bg-slate-900/40'
-                  }`}
-                >
-                  <td className="px-3 py-2 text-slate-100">{product.name}</td>
-                  <td className="px-3 py-2 text-slate-200">
-                    {product.quantity}{' '}
-                    <span className="text-slate-400">
-                      {product.quantity_unit ?? 'uds'}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-slate-300">
-                    {formatDate(product.added_at)}
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="flex justify-end gap-1.5">
-                      {actionButtons(product)}
-                    </div>
-                  </td>
-                </tr>
+                <>
+                  <tr
+                    key={product.id}
+                    className={`transition-colors ${
+                      isConfirmingDelete ? 'bg-red-950/30' : 'hover:bg-slate-900/40'
+                    }`}
+                  >
+                    <td className="px-3 py-2 text-slate-100">{product.name}</td>
+                    <td className="px-3 py-2 text-slate-200">
+                      {product.quantity}{' '}
+                      <span className="text-slate-400">
+                        {product.quantity_unit ?? 'uds'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-slate-300">
+                      {formatDate(product.added_at)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex justify-end gap-1.5">
+                        {actionButtons(product)}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr
+                    className={`${
+                      isEditing
+                        ? 'table-row'
+                        : 'table-row overflow-hidden transition-all duration-300 ease-out max-h-0 opacity-0'
+                    }`}
+                  >
+                    <td colSpan={4} className="px-3 pb-3 pt-0">
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ease-out ${
+                          isEditing
+                            ? 'max-h-[800px] opacity-100 mt-1'
+                            : 'max-h-0 opacity-0 pointer-events-none'
+                        }`}
+                      >
+                        <div className="rounded-lg border border-slate-700 bg-slate-900/80 p-3">
+                          <ProductForm
+                            mode="edit"
+                            initialProduct={product}
+                            loading={savingProductId === product.id}
+                            onSubmit={(input) => handleUpdateProduct(product, input)}
+                            onCancel={() => setEditingProductId(null)}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </>
               );
             })}
           </tbody>
