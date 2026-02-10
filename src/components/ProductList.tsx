@@ -188,12 +188,23 @@ export default function ProductList({
       {/* Vista tarjetas en móvil */}
       <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900/60 shadow-sm sm:hidden">
         <div className="divide-y divide-slate-700/60">
-          {products.map((product) => (
-            <div key={product.id} className="px-3 py-2.5">
+          {products.map((product) => {
+            const isConfirmingDelete = productToDelete?.id === product.id;
+            const isOutOfStock = product.quantity === 0;
+            const isLowStock = product.quantity > 0 && product.quantity <= 1;
+
+            const stockBgClass = isOutOfStock
+              ? 'bg-red-950/40'
+              : isLowStock
+                ? 'bg-amber-900/25'
+                : '';
+
+            const rowBgClass = isConfirmingDelete ? 'bg-red-950/30' : stockBgClass;
+
+            return (
               <div
-                className={`${
-                  productToDelete?.id === product.id ? 'bg-red-950/30' : ''
-                }`}
+                key={product.id}
+                className={`px-3 py-2.5 ${rowBgClass}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -211,28 +222,28 @@ export default function ProductList({
                   </div>
                   <div className="shrink-0">{actionButtons(product)}</div>
                 </div>
-              </div>
 
-              {/* Formulario de edición en línea (móvil) */}
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-out ${
-                  editingProductId === product.id
-                    ? 'max-h-[800px] opacity-100 mt-3'
-                    : 'max-h-0 opacity-0 pointer-events-none'
-                }`}
-              >
-                <div className="rounded-lg border border-slate-700 bg-slate-900/80 p-3">
-                  <ProductForm
-                    mode="edit"
-                    initialProduct={product}
-                    loading={savingProductId === product.id}
-                    onSubmit={(input) => handleUpdateProduct(product, input)}
-                    onCancel={() => setEditingProductId(null)}
-                  />
+                {/* Formulario de edición en línea (móvil) */}
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-out ${
+                    editingProductId === product.id
+                      ? 'max-h-[800px] opacity-100 mt-3'
+                      : 'max-h-0 opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <div className="rounded-lg border border-slate-700 bg-slate-900/80 p-3">
+                    <ProductForm
+                      mode="edit"
+                      initialProduct={product}
+                      loading={savingProductId === product.id}
+                      onSubmit={(input) => handleUpdateProduct(product, input)}
+                      onCancel={() => setEditingProductId(null)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {loading && (
           <div className="flex items-center gap-2 border-t border-slate-700 bg-slate-900/60 px-3 py-3 text-[11px] text-slate-400">
@@ -289,12 +300,21 @@ export default function ProductList({
             {products.map((product) => {
               const isConfirmingDelete = productToDelete?.id === product.id;
               const isEditing = editingProductId === product.id;
+              const isOutOfStock = product.quantity === 0;
+              const isLowStock = product.quantity > 0 && product.quantity <= 1;
+
+              const stockBgClass = isOutOfStock
+                ? 'bg-red-950/40'
+                : isLowStock
+                  ? 'bg-amber-900/20'
+                  : '';
+
               return (
                 <>
                   <tr
                     key={product.id}
-                    className={`transition-colors ${
-                      isConfirmingDelete ? 'bg-red-950/30' : 'hover:bg-slate-900/40'
+                    className={`transition-colors hover:bg-slate-900/40 ${
+                      isConfirmingDelete ? 'bg-red-950/30' : stockBgClass
                     }`}
                   >
                     <td className="px-3 py-2 text-slate-100">{product.name}</td>
