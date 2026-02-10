@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import LoginForm from '@/components/auth/LoginForm';
@@ -14,6 +14,7 @@ import {
 } from '@/lib/products';
 
 type AuthView = 'login' | 'register';
+type SortField = 'name' | 'quantity' | 'date';
 
 export default function FreezerApp() {
   const [session, setSession] = useState<Session | null>(null);
@@ -28,6 +29,9 @@ export default function FreezerApp() {
   const [savingProduct, setSavingProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     const init = async () => {
@@ -185,6 +189,50 @@ export default function FreezerApp() {
     setError(null);
     setAuthView('login');
   };
+
+  const handleChangeSort = (field: SortField) => {
+    setSortBy((currentSortBy) => {
+      if (currentSortBy === field) {
+        setSortDirection((currentDirection) =>
+          currentDirection === 'asc' ? 'desc' : 'asc'
+        );
+        return currentSortBy;
+      }
+
+      setSortDirection('asc');
+      return field;
+    });
+  };
+
+  const filteredAndSortedProducts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+
+    let result = products;
+
+    if (term) {
+      result = result.filter((product) =>
+        product.name.toLowerCase().includes(term)
+      );
+    }
+
+    const directionFactor = sortDirection === 'asc' ? 1 : -1;
+
+    return [...result].sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortBy === 'quantity') {
+        comparison = a.quantity - b.quantity;
+      } else {
+        const aTime = new Date(a.added_at).getTime();
+        const bTime = new Date(b.added_at).getTime();
+        comparison = aTime - bTime;
+      }
+
+      return comparison * directionFactor;
+    });
+  }, [products, searchTerm, sortBy, sortDirection]);
 
   if (loading) {
     return (
@@ -364,18 +412,43 @@ export default function FreezerApp() {
             verdura, etc.
           </p>
         </div>
+        <div className="space-y-3">
+          <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex-1 min-w-[180px]">
+                <label
+                  htmlFor="product-search"
+                  className="block text-xs font-medium text-slate-300"
+                >
+                  Buscar
+                </label>
+                <input
+                  id="product-search"
+                  type="text"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Buscar por nombre…"
+                  className="mt-1 block w-full rounded-md border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+          </div>
 
-        <ProductList
-          products={products}
-          loading={productsLoading}
-          onReload={handleReloadProducts}
-          onEdit={(product) => {
-            setEditingProduct(product);
-            setIsFormOpen(true);
-            setMessage(null);
-          }}
-          onDelete={handleDeleteProduct}
-        />
+          <ProductList
+            products={filteredAndSortedProducts}
+            loading={productsLoading}
+            onReload={handleReloadProducts}
+            onEdit={(product) => {
+              setEditingProduct(product);
+              setIsFormOpen(true);
+              setMessage(null);
+            }}
+            onDelete={handleDeleteProduct}
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            onChangeSort={handleChangeSort}
+          />
+        </div>
       </div>
     </section>
   );

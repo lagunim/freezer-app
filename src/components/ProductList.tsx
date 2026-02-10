@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import type { Product } from '@/lib/products';
 
+type SortField = 'name' | 'quantity' | 'date';
+
 interface ProductListProps {
   products: Product[];
   loading?: boolean;
   onReload?: () => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  sortBy?: SortField;
+  sortDirection?: 'asc' | 'desc';
+  onChangeSort?: (field: SortField) => void;
 }
 
 function formatDate(iso: string): string {
@@ -28,8 +33,26 @@ export default function ProductList({
   onReload,
   onEdit,
   onDelete,
+  sortBy,
+  sortDirection,
+  onChangeSort,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  const handleHeaderClick = (field: SortField) => {
+    if (!onChangeSort) return;
+    onChangeSort(field);
+  };
+
+  const renderSortIndicator = (field: SortField) => {
+    if (!sortBy || sortBy !== field || !sortDirection) return null;
+
+    return (
+      <span className="ml-1 text-[10px] text-slate-400">
+        {sortDirection === 'asc' ? '↑' : '↓'}
+      </span>
+    );
+  };
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
@@ -103,10 +126,35 @@ export default function ProductList({
         <table className="min-w-full divide-y divide-slate-700/80 text-xs">
           <thead className="bg-slate-800/80">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-slate-300">Nombre</th>
-              <th className="px-3 py-2 text-left font-medium text-slate-300">Cantidad</th>
               <th className="px-3 py-2 text-left font-medium text-slate-300">
-                Fecha de alta
+                <button
+                  type="button"
+                  onClick={() => handleHeaderClick('name')}
+                  className="inline-flex items-center gap-1 text-left text-slate-300 hover:text-slate-50"
+                >
+                  <span>Nombre</span>
+                  {renderSortIndicator('name')}
+                </button>
+              </th>
+              <th className="px-3 py-2 text-left font-medium text-slate-300">
+                <button
+                  type="button"
+                  onClick={() => handleHeaderClick('quantity')}
+                  className="inline-flex items-center gap-1 text-left text-slate-300 hover:text-slate-50"
+                >
+                  <span>Cantidad</span>
+                  {renderSortIndicator('quantity')}
+                </button>
+              </th>
+              <th className="px-3 py-2 text-left font-medium text-slate-300">
+                <button
+                  type="button"
+                  onClick={() => handleHeaderClick('date')}
+                  className="inline-flex items-center gap-1 text-left text-slate-300 hover:text-slate-50"
+                >
+                  <span>Fecha de alta</span>
+                  {renderSortIndicator('date')}
+                </button>
               </th>
               <th className="px-3 py-2 text-right font-medium text-slate-300">Acciones</th>
             </tr>
