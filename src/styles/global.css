@@ -39,3 +39,42 @@
   }
 }
 
+/* Animación para el hint de swipe - chevron pulsante */
+@keyframes chevronPulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(-4px);
+  }
+}
+
+/* Animación sutil de hint inicial para la primera tarjeta */
+@keyframes swipeHint {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  50% {
+    transform: translateX(-12px);
+  }
+  75% {
+    transform: translateX(-8px);
+  }
+}
+
+/* Clases de utilidad para swipe */
+@layer utilities {
+  .animate-chevron-pulse {
+    animation: chevronPulse 2s ease-in-out infinite;
+  }
+  
+  .animate-swipe-hint {
+    animation: swipeHint 1.5s ease-in-out;
+  }
+}
+
