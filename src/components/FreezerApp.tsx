@@ -320,43 +320,60 @@ export default function FreezerApp() {
 
   if (loading) {
     return (
-      <section className="space-y-4">
-        <header className="space-y-1">
-          <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight text-slate-50">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-10 w-10 rounded-2xl bg-slate-900/80 shadow-sm"
-            />
-            <span>Freezer App</span>
-          </h1>
-          <p className="text-sm text-slate-400">
-            Cargando sesión de Supabase…
-          </p>
+      <section>
+        {/* Header */}
+        <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
+          <img
+            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+            alt="Freezer App"
+            className="h-20 px-4 rounded-2xl shadow-sm"
+          />
+          <div className="w-64">
+            <div className="space-y-1 text-center">
+              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                <span>Freezer App</span>
+              </h1>
+              <p className="text-xs text-slate-400 sm:text-sm">
+                Cargando sesión de Supabase…
+              </p>
+            </div>
+          </div>
         </header>
 
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
           <p>Un momento…</p>
         </div>
+
+        {/* Menú flotante de aplicaciones */}
+        <FloatingMenu
+          items={[
+            { id: 'price-hunter', label: 'Price Hunter', href: '/price-hunter', icon: '🔍' }
+          ]}
+        />
       </section>
     );
   }
 
   if (!session || !user) {
     return (
-      <section className="space-y-4">
-        <header className="space-y-1">
-          <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight text-slate-50">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-10 w-10 rounded-2xl bg-slate-900/80 shadow-sm"
-            />
-            <span>Freezer App</span>
-          </h1>
-          <p className="text-sm text-slate-400">
-            Identifícate para gestionar tu congelador.
-          </p>
+      <section>
+        {/* Header */}
+        <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
+          <img
+            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+            alt="Freezer App"
+            className="h-20 px-4 rounded-2xl shadow-sm"
+          />
+          <div className="w-64">
+            <div className="space-y-1 text-center">
+              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                <span>Freezer App</span>
+              </h1>
+              <p className="text-xs text-slate-400 sm:text-sm">
+                Identifícate para gestionar tu congelador.
+              </p>
+            </div>
+          </div>
         </header>
 
         <div className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50">
@@ -414,6 +431,13 @@ export default function FreezerApp() {
             />
           )}
         </div>
+
+        {/* Menú flotante de aplicaciones */}
+        <FloatingMenu
+          items={[
+            { id: 'price-hunter', label: 'Price Hunter', href: '/price-hunter', icon: '🔍' }
+          ]}
+        />
       </section>
     );
   }
@@ -422,20 +446,20 @@ export default function FreezerApp() {
     <section>
       {/* Header */}
       <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-20 px-4 rounded-2xl shadow-sm"
-            />
-            <div>
-        <div className="space-y-1 text-center">
-          <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-            <span>Freezer App</span>
-          </h1>
-          <p className="text-xs text-slate-400 sm:text-sm">
-            {user.email ?? 'usuario sin email'}
-          </p>
-            </div>
+        <img
+          src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+          alt="Freezer App"
+          className="h-20 px-4 rounded-2xl shadow-sm"
+        />
+        <div className="w-64">
+          <div className="space-y-1 text-center">
+            <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+              <span>Freezer App</span>
+            </h1>
+            <p className="text-xs text-left text-slate-400 sm:text-sm">
+              {user.email ?? 'usuario sin email'}
+            </p>
+          </div>
         </div>
       </header>
 

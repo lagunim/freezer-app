@@ -1,34 +1,25 @@
+import FriezaIcon from '@/public/Frieza-icon.png';
+import FloatingMenu from '@/components/FloatingMenu';
+
 export default function PriceHunterApp() {
   return (
-    <section className="space-y-4">
-      {/* Header con botón de volver */}
-      <header className="flex items-center gap-4">
-        <a
-          href="/"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-slate-800/60 text-slate-100 shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300 hover:bg-slate-700/60 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          aria-label="Volver a Freezer App"
-        >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-        </a>
-        <div className="flex-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-50">
-            Price Hunter
-          </h1>
-          <p className="text-sm text-slate-400">
-            Compara precios y encuentra las mejores ofertas
-          </p>
+    <section>
+      {/* Header */}
+      <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
+        <img
+          src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+          alt="Price Hunter"
+          className="h-20 px-4 rounded-2xl shadow-sm"
+        />
+        <div className="w-64">
+          <div className="space-y-1 text-center">
+            <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+              <span>Price Hunter</span>
+            </h1>
+            <p className="text-xs text-left text-slate-400 sm:text-sm">
+              Compara precios y encuentra las mejores ofertas
+            </p>
+          </div>
         </div>
       </header>
 
@@ -54,6 +45,13 @@ export default function PriceHunterApp() {
           </div>
         </div>
       </div>
+
+      {/* Menú flotante de aplicaciones */}
+      <FloatingMenu
+        items={[
+          { id: 'freezer-app', label: 'Freezer App', href: '/', icon: '❄️' }
+        ]}
+      />
     </section>
   );
 }
