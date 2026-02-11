@@ -1,4 +1,5 @@
-import { useRef, useState, useEffect, ReactNode } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 interface SwipeableProductCardProps {
   /** Contenido principal de la tarjeta */
@@ -91,6 +92,8 @@ export default function SwipeableProductCard({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     const touch = e.touches[0];
+    if (!touch) return;
+    
     const deltaX = touch.clientX - touchStartX.current;
     const deltaY = touch.clientY - touchStartY.current;
 
@@ -105,7 +108,8 @@ export default function SwipeableProductCard({
       }
 
       // Determinar si es swipe horizontal o scroll vertical
-      isHorizontalSwipe.current = absDeltaX > absDeltaY;
+      // Requerir que el movimiento horizontal sea claramente mayor que el vertical
+      isHorizontalSwipe.current = absDeltaX > absDeltaY * 1.2;
 
       // Si es scroll vertical, no interceptar
       if (!isHorizontalSwipe.current) {
@@ -118,9 +122,9 @@ export default function SwipeableProductCard({
       return;
     }
 
-    // Prevenir scroll mientras se hace swipe horizontal
-    e.preventDefault();
-
+    // No usamos e.preventDefault() aquí para evitar errores con passive event listeners
+    // En su lugar, confiamos en touch-action: pan-y en el CSS para prevenir el pan horizontal
+    
     isDragging.current = true;
     setIsSwiping(true);
 
