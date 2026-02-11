@@ -33,6 +33,7 @@ export default function FreezerApp() {
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
   const [showShoppingCart, setShowShoppingCart] = useState(false);
   const [productNotification, setProductNotification] = useState<{ productId: string; message: string; type: 'success' | 'error' } | null>(null);
+  const [isNotificationExiting, setIsNotificationExiting] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -77,11 +78,26 @@ export default function FreezerApp() {
 
   // Auto-dismiss product notifications after 3 seconds
   useEffect(() => {
-    if (!productNotification) return;
-    const t = setTimeout(() => {
+    if (!productNotification) {
+      setIsNotificationExiting(false);
+      return;
+    }
+    
+    // Mostrar la notificación durante 2.5 segundos
+    const exitTimer = setTimeout(() => {
+      setIsNotificationExiting(true);
+    }, 2500);
+    
+    // Eliminar completamente después de la animación de salida (500ms adicionales)
+    const removeTimer = setTimeout(() => {
       setProductNotification(null);
+      setIsNotificationExiting(false);
     }, 3000);
-    return () => clearTimeout(t);
+    
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(removeTimer);
+    };
   }, [productNotification]);
 
   useEffect(() => {
@@ -136,7 +152,7 @@ export default function FreezerApp() {
     try {
       const created = await createProduct(user.id, input);
       setProducts((prev) => [created, ...prev]);
-      setMessage('Producto añadido al congelador.');
+      setMessage('Producto añadido al listado.');
       closeForm();
     } catch (err) {
       console.error('Error al crear producto en Supabase:', err);
@@ -171,10 +187,10 @@ export default function FreezerApp() {
     try {
       await deleteProduct(product.id);
       setProductNotification({ productId: product.id, message: 'Producto eliminado.', type: 'success' });
-      // Esperar un momento antes de eliminar el producto para que se vea la notificación
+      // Esperar 3 segundos antes de eliminar el producto para que se vea la notificación completa
       setTimeout(() => {
         setProducts((prev) => prev.filter((p) => p.id !== product.id));
-      }, 500);
+      }, 3000);
     } catch (err) {
       console.error('Error al borrar producto en Supabase:', err);
       setProductNotification({ productId: product.id, message: 'No se ha podido borrar el producto.', type: 'error' });
@@ -492,6 +508,7 @@ export default function FreezerApp() {
           onDelete={handleDeleteProduct}
           onToggleShoppingCart={handleToggleShoppingCart}
           productNotification={productNotification}
+          isNotificationExiting={isNotificationExiting}
           showShoppingCart={showShoppingCart}
         />
       </div>

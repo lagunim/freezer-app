@@ -395,6 +395,8 @@ export default function SwipeableProductCard({
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 300ms ease-out',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'pan-y',
         }}
         onClick={handleContentClick}
       >

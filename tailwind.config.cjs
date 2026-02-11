@@ -5,7 +5,23 @@ module.exports = {
     "./index.html"
   ],
   theme: {
-    extend: {}
+    extend: {
+      keyframes: {
+        slideInUp: {
+          '0%': { 
+            opacity: '0', 
+            transform: 'translateY(10px) scale(0.95)' 
+          },
+          '100%': { 
+            opacity: '1', 
+            transform: 'translateY(0) scale(1)' 
+          }
+        }
+      },
+      animation: {
+        slideInUp: 'slideInUp 0.4s ease-out'
+      }
+    }
   },
   plugins: []
 };

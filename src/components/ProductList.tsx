@@ -10,6 +10,7 @@ export interface ProductListProps {
   onDelete: (product: Product) => void;
   onToggleShoppingCart: (product: Product) => void;
   productNotification?: { productId: string; message: string; type: 'success' | 'error' } | null;
+  isNotificationExiting?: boolean;
   showShoppingCart?: boolean;
 }
 
@@ -65,12 +66,14 @@ export default function ProductList({
   onDelete,
   onToggleShoppingCart,
   productNotification,
+  isNotificationExiting = false,
   showShoppingCart = false,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
   const [savingProductId, setSavingProductId] = useState<Product['id'] | null>(null);
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null);
+  const [isEditClosing, setIsEditClosing] = useState(false);
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
@@ -89,15 +92,28 @@ export default function ProductList({
     setProductToDelete(null);
   };
 
+  const closeEditModal = () => {
+    setIsEditClosing(true);
+    setTimeout(() => {
+      setEditingProductId(null);
+      setIsEditClosing(false);
+    }, 500); // Duración de la animación con rebote
+  };
+
   const toggleEditForProduct = (product: Product) => {
-    setEditingProductId((current) => (current === product.id ? null : product.id));
+    if (editingProductId === product.id) {
+      closeEditModal();
+    } else {
+      setEditingProductId(product.id);
+      setIsEditClosing(false);
+    }
   };
 
   const handleUpdateProduct = async (product: Product, input: ProductInput) => {
     setSavingProductId(product.id);
     try {
       await onUpdateProduct(product, input);
-      setEditingProductId(null);
+      closeEditModal();
     } finally {
       setSavingProductId(null);
     }
@@ -375,21 +391,37 @@ export default function ProductList({
                 </div>
               </div>
 
+              {/* Overlay para cerrar el modal de edición */}
+              {isEditing && (
+                <div
+                  className={`fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-sm transition-opacity duration-800 ease-in-out ${
+                    isEditClosing ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onClick={closeEditModal}
+                  aria-hidden="true"
+                />
+              )}
+
               {/* Formulario de edición expandible */}
               <div
-                className={`overflow-hidden rounded-3xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                  isEditing
-                    ? 'max-h-[800px] opacity-100 mt-3 scale-100'
-                    : 'max-h-0 opacity-0 pointer-events-none scale-95'
+                className={`transition-all duration-500 ${
+                  isEditing && !isEditClosing
+                    ? 'fixed inset-x-3 top-1/2 -translate-y-1/2 z-[110] max-w-sm mx-auto opacity-100 scale-100 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]'
+                    : isEditing && isEditClosing
+                    ? 'fixed inset-x-3 top-[calc(100%+2rem)] z-[110] max-w-sm mx-auto opacity-0 scale-95 ease-[cubic-bezier(0.6,-0.28,0.735,0.045)]'
+                    : 'max-h-0 opacity-0 pointer-events-none overflow-hidden rounded-3xl translate-y-full scale-90'
                 }`}
               >
-                <div className="rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(147,197,253,0.3),0_0_60px_rgba(147,197,253,0.15),inset_0_1px_3px_rgba(255,255,255,0.1)]">
+                <div className="max-h-[85vh] overflow-y-auto rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(147,197,253,0.3),0_0_60px_rgba(147,197,253,0.15),inset_0_1px_3px_rgba(255,255,255,0.1)]">
+                  <h3 className="mb-3 text-base font-semibold text-slate-100">
+                    Editar producto
+                  </h3>
                   <ProductForm
                     mode="edit"
                     initialProduct={product}
                     loading={savingProductId === product.id}
                     onSubmit={(input) => handleUpdateProduct(product, input)}
-                    onCancel={() => setEditingProductId(null)}
+                    onCancel={closeEditModal}
                   />
                 </div>
               </div>
@@ -397,7 +429,11 @@ export default function ProductList({
               {/* Notificación del producto */}
               {productNotification?.productId === product.id && (
                 <div
-                  className={`alert-enter mt-3 rounded-2xl border-2 backdrop-blur-xl px-4 py-3 text-sm font-medium shadow-lg ${
+                  className={`mt-3 rounded-2xl border-2 backdrop-blur-xl px-4 py-3 text-sm font-medium shadow-lg transition-all duration-500 ease-out ${
+                    isNotificationExiting 
+                      ? 'opacity-0 scale-95 -translate-y-2' 
+                      : 'opacity-100 scale-100 translate-y-0 animate-[slideInUp_0.4s_ease-out]'
+                  } ${
                     productNotification.type === 'success'
                       ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                       : 'border-red-400/60 bg-red-500/20 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
