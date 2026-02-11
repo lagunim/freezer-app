@@ -230,6 +230,14 @@ export default function SwipeableProductCard({
     closeSwipe();
   };
 
+  const handleContentClick = (e: React.MouseEvent) => {
+    // Solo cerrar si la tarjeta está abierta y no estamos haciendo swipe
+    if (isOpen && !isSwiping) {
+      e.stopPropagation();
+      closeSwipe();
+    }
+  };
+
   // Registrar event listeners con passive: false para permitir preventDefault
   useEffect(() => {
     const content = contentRef.current;
@@ -383,11 +391,12 @@ export default function SwipeableProductCard({
       {/* Capa de contenido deslizable */}
       <div
         ref={contentRef}
-        className={`relative ${isSwiping ? 'select-none' : ''}`}
+        className={`relative ${isSwiping ? 'select-none' : ''} ${isOpen ? 'cursor-pointer' : ''}`}
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 300ms ease-out',
         }}
+        onClick={handleContentClick}
       >
         {children}
       </div>

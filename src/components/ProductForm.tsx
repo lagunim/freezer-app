@@ -169,45 +169,37 @@ export default function ProductForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 md:space-y-4">
-      <div className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-2.5">
+      <div className="space-y-1">
         <label
           htmlFor="product-name"
-          className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+          className="text-xs font-semibold text-slate-200"
         >
-          <svg className="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
           Nombre del producto
         </label>
-        <div className="relative">
-          <input
-            id="product-name"
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 focus:border-sky-400/50 focus:shadow-[0_0_20px_rgba(56,189,248,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] focus:outline-none md:py-2 md:text-sm"
-            placeholder="Ej. Pechugas de pollo"
-          />
-        </div>
+        <input
+          id="product-name"
+          type="text"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+          placeholder="Ej. Pechugas de pollo"
+        />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         <label
           htmlFor="product-category"
-          className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+          className="text-xs font-semibold text-slate-200"
         >
-          <svg className="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
           Categoría
         </label>
         <select
           id="product-category"
           value={category}
           onChange={(e) => setCategory(e.target.value as ProductCategory)}
-          className="w-full rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl px-4 py-3 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 focus:border-sky-400/50 focus:shadow-[0_0_20px_rgba(56,189,248,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] focus:outline-none md:py-2 md:text-sm"
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
         >
           <option value="Alimentación">🍎 Alimentación</option>
           <option value="Limpieza">🧹 Limpieza</option>
@@ -216,16 +208,16 @@ export default function ProductForm({
       </div>
 
       {/* Checkbox de lista de la compra */}
-      <div className="space-y-2">
-        <label className="flex items-center gap-3 cursor-pointer">
+      <div>
+        <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={inShoppingList}
             onChange={(e) => setInShoppingList(e.target.checked)}
-            className="h-5 w-5 rounded border-white/20 bg-slate-800/40 text-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-200"
+            className="h-4 w-4 rounded border-white/20 bg-slate-800/40 text-purple-500 focus:ring-2 focus:ring-purple-500"
           />
-          <span className="flex items-center gap-2 text-sm font-semibold text-slate-200">
-            <span className="text-lg">🛒</span>
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-200">
+            <span>🛒</span>
             Añadir a lista de la compra
           </span>
         </label>
@@ -233,23 +225,20 @@ export default function ProductForm({
 
       {/* Campo de cantidad a comprar (solo visible si está en lista de compra) */}
       {inShoppingList && (
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label
             htmlFor="shopping-quantity"
-            className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+            className="text-xs font-semibold text-slate-200"
           >
-            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
             Cantidad a comprar (opcional)
           </label>
-          <div className="flex items-center rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] focus-within:border-purple-400/50 focus-within:shadow-[0_0_20px_rgba(168,85,247,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all duration-200">
+          <div className="flex items-center rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1)] focus-within:border-purple-400/50 transition-all">
             <button
               type="button"
               aria-label="Restar cantidad a comprar"
               onClick={() => changeShoppingQuantityBy(-1)}
               disabled={loading || parseQuantity(shoppingQuantity) <= 0}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-l-xl text-xl font-bold text-slate-200 transition-all duration-200 hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:h-10 md:w-10 md:text-lg"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               -
             </button>
@@ -259,7 +248,7 @@ export default function ProductForm({
               min={0}
               value={shoppingQuantity}
               onChange={(e) => setShoppingQuantity(e.target.value)}
-              className="w-full bg-transparent px-3 py-3 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none md:py-2 md:text-sm"
+              className="w-full bg-transparent px-2 py-2 text-sm text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
               placeholder="0"
             />
             <button
@@ -267,7 +256,7 @@ export default function ProductForm({
               aria-label="Sumar cantidad a comprar"
               onClick={() => changeShoppingQuantityBy(1)}
               disabled={loading}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-r-xl text-xl font-bold text-slate-200 transition-all duration-200 hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:h-10 md:w-10 md:text-lg"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               +
             </button>
@@ -275,24 +264,21 @@ export default function ProductForm({
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3 md:gap-4">
-        <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
           <label
             htmlFor="product-quantity"
-            className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+            className="text-xs font-semibold text-slate-200"
           >
-            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-            </svg>
             Cantidad
           </label>
-          <div className="flex items-center rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] focus-within:border-sky-400/50 focus-within:shadow-[0_0_20px_rgba(56,189,248,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all duration-200">
+          <div className="flex items-center rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1)] focus-within:border-sky-400/50 transition-all">
             <button
               type="button"
               aria-label="Restar cantidad"
               onClick={() => changeQuantityBy(-1)}
               disabled={loading || parseQuantity(quantity) <= 0}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-l-xl text-xl font-bold text-slate-200 transition-all duration-200 hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:h-10 md:w-10 md:text-lg"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               -
             </button>
@@ -303,7 +289,7 @@ export default function ProductForm({
               required
               value={quantity}
               onChange={handleQuantityChange}
-              className="w-full bg-transparent px-3 py-3 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none md:py-2 md:text-sm"
+              className="w-full bg-transparent px-2 py-2 text-sm text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
               placeholder="0"
             />
             <button
@@ -311,28 +297,25 @@ export default function ProductForm({
               aria-label="Sumar cantidad"
               onClick={() => changeQuantityBy(1)}
               disabled={loading}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-r-xl text-xl font-bold text-slate-200 transition-all duration-200 hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:h-10 md:w-10 md:text-lg"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               +
             </button>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label
             htmlFor="product-quantity-unit"
-            className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+            className="text-xs font-semibold text-slate-200"
           >
-            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-            </svg>
             Unidad
           </label>
           <select
             id="product-quantity-unit"
             value={quantityUnit}
             onChange={(e) => setQuantityUnit(e.target.value)}
-            className="w-full rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl px-4 py-3 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 focus:border-sky-400/50 focus:shadow-[0_0_20px_rgba(56,189,248,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] focus:outline-none md:py-2 md:text-sm"
+            className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
           >
             <option value="uds">uds</option>
             <option value="g">g</option>
@@ -341,69 +324,57 @@ export default function ProductForm({
             <option value="L">L</option>
           </select>
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="product-added-at"
-            className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
-          >
-            <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Fecha de alta
-          </label>
-          <input
-            id="product-added-at"
-            type="date"
-            required
-            value={addedAt}
-            onChange={(e) => setAddedAt(e.target.value)}
-            className="w-full rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 focus:border-sky-400/50 focus:shadow-[0_0_20px_rgba(56,189,248,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] focus:outline-none md:py-2 md:text-sm"
-          />
-        </div>
+      <div className="space-y-1">
+        <label
+          htmlFor="product-added-at"
+          className="text-xs font-semibold text-slate-200"
+        >
+          Fecha de alta
+        </label>
+        <input
+          id="product-added-at"
+          type="date"
+          required
+          value={addedAt}
+          onChange={(e) => setAddedAt(e.target.value)}
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+        />
       </div>
 
       {localError && (
-        <div className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-950/60 backdrop-blur-xl px-4 py-3 text-sm text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.2)] md:px-4 md:py-3 md:text-sm">
-          <svg className="w-5 h-5 flex-shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-950/60 backdrop-blur-xl px-3 py-2 text-xs text-amber-100 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+          <svg className="w-4 h-4 flex-shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <span>{localError}</span>
         </div>
       )}
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end md:gap-2">
+      <div className="flex gap-2 pt-1">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-slate-800/60 backdrop-blur-xl px-5 py-3.5 text-base font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:px-4 md:py-2 md:text-sm"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-3 py-2 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15)] transition-all hover:bg-slate-800/80 hover:scale-[1.02] active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
             Cancelar
           </button>
         )}
         <button
           type="submit"
           disabled={loading}
-          className="relative inline-flex items-center justify-center gap-2 rounded-xl border border-sky-400/40 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 px-5 py-3.5 text-base font-bold text-white shadow-[0_0_20px_rgba(56,189,248,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 hover:shadow-[0_0_30px_rgba(56,189,248,0.6),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:px-4 md:py-2 md:text-sm"
+          className="flex-1 relative inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-400/40 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 px-3 py-2 text-sm font-bold text-white shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-all hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-[1.02] active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-          <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="relative z-10">
-            {loading
-              ? isEdit
-                ? 'Guardando…'
-                : 'Creando…'
-              : isEdit
-                ? 'Guardar cambios'
-                : 'Añadir producto'}
-          </span>
+          {loading
+            ? isEdit
+              ? 'Guardando…'
+              : 'Creando…'
+            : isEdit
+              ? 'Guardar'
+              : 'Añadir'}
         </button>
       </div>
     </form>

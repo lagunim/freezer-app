@@ -504,18 +504,18 @@ export default function FreezerApp() {
       {/* Modal formulario nuevo producto */}
       {isFormOpen && (
         <div
-          className="fixed inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          className="fixed inset-0 z-30 flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-new-product-title"
           onClick={() => setIsFormOpen(false)}
         >
           <div
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(255,255,255,0.1)] sm:p-6"
+            className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="modal-new-product-title" className="mb-4 text-lg font-semibold text-slate-100">
-              Añadir nuevo producto
+            <h2 id="modal-new-product-title" className="mb-3 text-base font-semibold text-slate-100">
+              Añadir producto
             </h2>
             <ProductForm
               mode="create"
@@ -524,10 +524,6 @@ export default function FreezerApp() {
               onSubmit={handleCreateProduct}
               onCancel={() => setIsFormOpen(false)}
             />
-            <p className="mt-3 text-[11px] text-slate-500">
-              Gestiona aquí lo que tienes en el congelador: raciones, tuppers, pan,
-              verdura, etc.
-            </p>
           </div>
         </div>
       )}
