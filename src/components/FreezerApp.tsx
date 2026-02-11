@@ -6,6 +6,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import ProductForm from '@/components/ProductForm';
 import ProductList from '@/components/ProductList';
+import FloatingMenu from '@/components/FloatingMenu';
 import type { Product, ProductCategory } from '@/lib/products';
 import {
   createProduct,
@@ -566,6 +567,13 @@ export default function FreezerApp() {
       >
         +
       </button>
+
+      {/* Menú flotante de aplicaciones */}
+      <FloatingMenu
+        items={[
+          { id: 'price-hunter', label: 'Price Hunter', href: '/price-hunter', icon: '🔍' }
+        ]}
+      />
 
       {/* Modal formulario nuevo producto */}
       {isFormOpen && (
