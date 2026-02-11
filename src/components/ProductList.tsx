@@ -91,7 +91,7 @@ export default function ProductList({
       <div className="min-w-0 rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-6 text-center transition-colors">
         <p className="mb-1 font-medium text-slate-200">Tu congelador está vacío</p>
         <p className="text-sm text-slate-400">
-          Añade tu primer producto con el formulario de la izquierda.
+          Añade tu primer producto con el botón +.
         </p>
       </div>
     );
