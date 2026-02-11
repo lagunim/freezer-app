@@ -46,6 +46,7 @@ export default function SwipeableProductCard({
   const isHorizontalSwipe = useRef<boolean | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Verificar si el usuario ya ha usado el swipe antes
   useEffect(() => {
@@ -80,8 +81,9 @@ export default function SwipeableProductCard({
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0];
+    if (!touch) return;
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
     touchStartTime.current = Date.now();
@@ -90,7 +92,7 @@ export default function SwipeableProductCard({
     isHorizontalSwipe.current = null;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (e: TouchEvent) => {
     const touch = e.touches[0];
     if (!touch) return;
     
@@ -125,8 +127,8 @@ export default function SwipeableProductCard({
       return;
     }
 
-    // No usamos e.preventDefault() aquí para evitar errores con passive event listeners
-    // En su lugar, confiamos en touch-action: pan-y en el CSS para prevenir el pan horizontal
+    // Prevenir el scroll solo si estamos haciendo swipe horizontal
+    e.preventDefault();
     
     isDragging.current = true;
     setIsSwiping(true);
@@ -180,6 +182,24 @@ export default function SwipeableProductCard({
     closeSwipe();
   };
 
+  // Registrar event listeners con passive: false para permitir preventDefault
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    content.addEventListener('touchstart', handleTouchStart, { passive: true });
+    content.addEventListener('touchmove', handleTouchMove, { passive: false });
+    content.addEventListener('touchend', handleTouchEnd, { passive: true });
+    content.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      content.removeEventListener('touchstart', handleTouchStart);
+      content.removeEventListener('touchmove', handleTouchMove);
+      content.removeEventListener('touchend', handleTouchEnd);
+      content.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [translateX]);
+
   // Cerrar al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
@@ -207,11 +227,6 @@ export default function SwipeableProductCard({
     <div 
       ref={containerRef} 
       className="relative overflow-hidden rounded-3xl"
-      style={{ 
-        touchAction: 'none',
-        WebkitTouchCallout: 'none',
-        WebkitUserSelect: 'none',
-      }}
     >
       {/* Capa de acciones (fondo fijo) */}
       <div
@@ -275,19 +290,12 @@ export default function SwipeableProductCard({
 
       {/* Capa de contenido deslizable */}
       <div
-        className="relative select-none"
+        ref={contentRef}
+        className={`relative ${isSwiping ? 'select-none' : ''}`}
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 300ms ease-out',
-          touchAction: 'none',
-          WebkitUserSelect: 'none',
-          userSelect: 'none',
-          WebkitTouchCallout: 'none',
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
       >
         {children}
       </div>
