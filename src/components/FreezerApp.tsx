@@ -34,6 +34,7 @@ export default function FreezerApp() {
   const [showShoppingCart, setShowShoppingCart] = useState(false);
   const [productNotification, setProductNotification] = useState<{ productId: string; message: string; type: 'success' | 'error' } | null>(null);
   const [isNotificationExiting, setIsNotificationExiting] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const init = async () => {
@@ -223,6 +224,41 @@ export default function FreezerApp() {
       setProductNotification({ productId: product.id, message: 'No se ha podido actualizar el producto.', type: 'error' });
     } finally {
       setSavingProduct(false);
+    }
+  };
+
+  const handleToggleSelection = (productId: string) => {
+    setSelectedProductIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedProductIds(new Set());
+  };
+
+  const handleDeleteMultiple = async (productIds: string[]) => {
+    setProductsError(null);
+    try {
+      // Borrar todos los productos seleccionados en paralelo
+      await Promise.all(productIds.map(id => deleteProduct(id)));
+      
+      setMessage(`${productIds.length} producto${productIds.length > 1 ? 's' : ''} eliminado${productIds.length > 1 ? 's' : ''}.`);
+      
+      // Eliminar los productos del estado
+      setProducts((prev) => prev.filter((p) => !productIds.includes(p.id)));
+      
+      // Limpiar la selección
+      handleClearSelection();
+    } catch (err) {
+      console.error('Error al borrar productos en Supabase:', err);
+      setProductsError('No se han podido borrar algunos productos.');
     }
   };
 
@@ -510,6 +546,10 @@ export default function FreezerApp() {
           productNotification={productNotification}
           isNotificationExiting={isNotificationExiting}
           showShoppingCart={showShoppingCart}
+          selectedProductIds={selectedProductIds}
+          onToggleSelection={handleToggleSelection}
+          onClearSelection={handleClearSelection}
+          onDeleteMultiple={handleDeleteMultiple}
         />
       </div>
 

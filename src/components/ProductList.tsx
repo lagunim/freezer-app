@@ -12,6 +12,10 @@ export interface ProductListProps {
   productNotification?: { productId: string; message: string; type: 'success' | 'error' } | null;
   isNotificationExiting?: boolean;
   showShoppingCart?: boolean;
+  selectedProductIds?: Set<string>;
+  onToggleSelection?: (productId: string) => void;
+  onClearSelection?: () => void;
+  onDeleteMultiple?: (productIds: string[]) => void;
 }
 
 const getBadgeColor = (quantity: number) => {
@@ -68,12 +72,17 @@ export default function ProductList({
   productNotification,
   isNotificationExiting = false,
   showShoppingCart = false,
+  selectedProductIds = new Set(),
+  onToggleSelection,
+  onClearSelection,
+  onDeleteMultiple,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
   const [savingProductId, setSavingProductId] = useState<Product['id'] | null>(null);
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null);
   const [isEditClosing, setIsEditClosing] = useState(false);
+  const [isDeleteMultipleModalOpen, setIsDeleteMultipleModalOpen] = useState(false);
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
@@ -192,11 +201,22 @@ export default function ProductList({
                     {/* Contenido de la tarjeta */}
                     <div className="relative z-10 flex items-center gap-2">
                       {/* Icono de categoría */}
-                      <div className={`flex-shrink-0 rounded-xl border backdrop-blur-xl p-2 flex items-center justify-center ${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor}`}>
-                        <span className="text-3xl">
-                          {getCategoryInfo(product.category).emoji}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleSelection?.(product.id);
+                        }}
+                        className={`flex-shrink-0 rounded-xl border backdrop-blur-xl p-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] w-[52px] h-[52px] ${
+                          selectedProductIds.has(product.id)
+                            ? 'bg-sky-500/40 border-sky-400 shadow-[0_0_25px_rgba(56,189,248,0.6)] scale-110'
+                            : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor} hover:scale-110 active:scale-95`
+                        }`}
+                      >
+                        <span className={selectedProductIds.has(product.id) ? 'text-5xl font-bold' : 'text-3xl'}>
+                          {selectedProductIds.has(product.id) ? '✓' : getCategoryInfo(product.category).emoji}
                         </span>
-                      </div>
+                      </button>
 
                       {/* Información del producto */}
                       <div className="flex-1 min-w-0">
@@ -292,11 +312,22 @@ export default function ProductList({
                   {/* Contenido de la tarjeta */}
                   <div className="relative z-10 flex items-center gap-4">
                     {/* Icono de categoría */}
-                    <div className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-4 flex items-center justify-center ${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor}`}>
-                      <span className="text-6xl">
-                        {getCategoryInfo(product.category).emoji}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSelection?.(product.id);
+                      }}
+                      className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-4 flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] w-[104px] h-[104px] ${
+                        selectedProductIds.has(product.id)
+                          ? 'bg-sky-500/40 border-sky-400 shadow-[0_0_30px_rgba(56,189,248,0.7)] scale-110'
+                          : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor} hover:scale-110 active:scale-95`
+                      }`}
+                    >
+                      <span className={selectedProductIds.has(product.id) ? 'text-8xl font-bold' : 'text-6xl'}>
+                        {selectedProductIds.has(product.id) ? '✓' : getCategoryInfo(product.category).emoji}
                       </span>
-                    </div>
+                    </button>
 
                     {/* Información del producto */}
                     <div className="flex-1 min-w-0">
@@ -466,6 +497,96 @@ export default function ProductList({
             aria-hidden
           />
           Actualizando lista de productos…
+        </div>
+      )}
+
+      {/* Botones flotantes de selección múltiple */}
+      {selectedProductIds.size > 0 && onClearSelection && onDeleteMultiple && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-row gap-3 sm:bottom-8">
+          {/* Botón Cancelar */}
+          <button
+            type="button"
+            onClick={onClearSelection}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-white shadow-[0_0_20px_rgba(148,163,184,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-slate-500 hover:via-slate-600 hover:to-slate-700 hover:shadow-[0_0_25px_rgba(148,163,184,0.4)] hover:scale-110 active:scale-95 sm:h-16 sm:w-16 animate-[slideInUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]"
+            aria-label="Cancelar selección"
+          >
+            <svg className="w-6 h-6 relative z-10 drop-shadow-lg sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Botón Borrar */}
+          <button
+            type="button"
+            onClick={() => setIsDeleteMultipleModalOpen(true)}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white shadow-[0_0_25px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_35px_rgba(239,68,68,0.7)] hover:scale-110 active:scale-95 sm:h-16 sm:w-16 animate-[slideInUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)_0.1s_backwards]"
+            aria-label="Borrar productos seleccionados"
+          >
+            <svg className="w-6 h-6 relative z-10 drop-shadow-lg sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            {/* Badge con cantidad */}
+            <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-xs font-bold text-white shadow-lg">
+              {selectedProductIds.size}
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Modal de confirmación de borrado múltiple */}
+      {isDeleteMultipleModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-500 animate-[fadeIn_0.3s_ease-out]"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsDeleteMultipleModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl border-2 border-red-500/60 bg-slate-900/90 backdrop-blur-xl p-6 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)] animate-[scaleUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-full bg-red-500/20 p-3">
+                  <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+              </div>
+              <p className="mb-2 text-xl font-bold text-white drop-shadow-lg">
+                ¿Borrar {selectedProductIds.size} producto{selectedProductIds.size > 1 ? 's' : ''}?
+              </p>
+              <p className="mb-6 text-sm text-slate-300">
+                Esta acción no se puede deshacer.
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDeleteMultiple?.(Array.from(selectedProductIds));
+                    setIsDeleteMultipleModalOpen(false);
+                  }}
+                  className="relative flex items-center justify-center gap-2 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-3 text-base font-bold text-white shadow-[0_0_20px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95"
+                >
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+                  <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span className="relative z-10">Sí, borrar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteMultipleModalOpen(false)}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-3 text-base font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
