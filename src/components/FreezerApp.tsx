@@ -290,7 +290,7 @@ export default function FreezerApp() {
   return (
     <section className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <header className="flex items-center justify-center rounded-2xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-md p-2 shadow-lg">
+      <header className="flex items-center justify-center rounded-3xl border border-white/10 bg-slate-800/30 backdrop-blur-xl p-2 shadow-lg shadow-white/5">
             <img
               src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
               alt="Freezer App"
@@ -309,23 +309,23 @@ export default function FreezerApp() {
       </header>
 
       {/* Barra de búsqueda */}
-      <div className="sticky top-0 rounded-xl border border-slate-700 bg-slate-900/70 p-3 sm:p-4">
+      <div className="sticky top-0">
         <label htmlFor="product-search" className="sr-only">
           Buscar por nombre
         </label>
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
-            <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-          </span>
+          </div>
           <input
             id="product-search"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nombre…"
-            className="block w-full rounded-xl border border-slate-700 bg-slate-900/60 py-2 pl-9 pr-3 text-sm text-slate-100 placeholder:text-slate-500 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2.5 sm:pl-10 sm:text-base"
+            className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2.5 pl-12 pr-4 text-base text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
           />
         </div>
       </div>
@@ -366,7 +366,7 @@ export default function FreezerApp() {
           setProductsError(null);
           setIsFormOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600/80 bg-slate-800/90 text-2xl font-light text-slate-100 shadow-lg shadow-slate-950/50 backdrop-blur transition hover:bg-slate-700/90 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
+        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl font-light text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
         aria-label="Añadir nuevo producto"
       >
         +
@@ -382,7 +382,7 @@ export default function FreezerApp() {
           onClick={() => setIsFormOpen(false)}
         >
           <div
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-xl sm:p-6"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(255,255,255,0.1)] sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="modal-new-product-title" className="mb-4 text-lg font-semibold text-slate-100">

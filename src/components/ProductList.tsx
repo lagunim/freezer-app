@@ -69,7 +69,7 @@ export default function ProductList({
 
   if (!loading && products.length === 0) {
     return (
-      <div className="min-w-0 rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-6 text-center transition-colors">
+      <div className="min-w-0 rounded-3xl border border-dashed border-white/10 bg-slate-800/30 backdrop-blur-xl p-6 text-center transition-colors shadow-[0_0_20px_rgba(255,255,255,0.08)]">
         <p className="mb-1 font-medium text-slate-200">Tu congelador está vacío</p>
         <p className="text-sm text-slate-400">
           Añade tu primer producto con el botón +.
@@ -113,8 +113,8 @@ export default function ProductList({
             <div key={product.id} className="relative">
               {/* Tarjeta del producto */}
               <div
-                className={`relative overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-3 shadow-lg transition-all duration-200 ${
-                  isConfirmingDelete ? 'ring-2 ring-red-500' : 'hover:shadow-xl'
+                className={`relative overflow-hidden rounded-3xl border border-white/10 bg-slate-800/30 backdrop-blur-xl p-3 shadow-[0_0_20px_rgba(255,255,255,0.08)] transition-all duration-200 ${
+                  isConfirmingDelete ? 'ring-2 ring-red-500' : 'hover:shadow-[0_0_25px_rgba(255,255,255,0.12)]'
                 }`}
               >
                 {/* Fila superior: Nombre y botones */}
@@ -154,7 +154,7 @@ export default function ProductList({
 
                 {/* Modal de confirmación de borrado */}
                 {isConfirmingDelete && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-950/90 backdrop-blur-sm">
+                  <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-slate-950/90 backdrop-blur-sm">
                     <div className="px-4 text-center">
                       <p className="mb-4 text-base font-medium text-white md:mb-3 md:text-sm">
                         ¿Borrar este producto?
@@ -188,7 +188,7 @@ export default function ProductList({
                     : 'max-h-0 opacity-0 pointer-events-none'
                 }`}
               >
-                <div className="rounded-xl border border-slate-700 bg-slate-900/90 p-4">
+                <div className="rounded-3xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_20px_rgba(255,255,255,0.08)]">
                   <ProductForm
                     mode="edit"
                     initialProduct={product}

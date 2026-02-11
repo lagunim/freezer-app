@@ -4,7 +4,22 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-50 min-h-screen antialiased;
+    @apply text-slate-50 min-h-screen antialiased;
+    background: 
+      repeating-linear-gradient(
+        180deg,
+        #0f172a 0%,
+        #172554 15%,
+        #1e1b4b 30%,
+        #581c87 45%,
+        #701a75 60%,
+        #581c87 75%,
+        #1e1b4b 90%,
+        #172554 105%,
+        #0f172a 120%
+      );
+    background-size: 100% 200vh;
+    background-attachment: fixed;
   }
 }
 
