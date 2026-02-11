@@ -440,10 +440,14 @@ export default function FreezerApp() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-new-product-title"
+          onClick={() => setIsFormOpen(false)}
         >
-          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-xl sm:p-6">
-            <h2 id="modal-new-product-title" className="sr-only">
-              Nuevo producto
+          <div
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/95 p-4 shadow-xl sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="modal-new-product-title" className="mb-4 text-lg font-semibold text-slate-100">
+              Añadir nuevo producto
             </h2>
             <ProductForm
               mode="create"
