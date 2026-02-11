@@ -15,7 +15,6 @@ import {
 } from '@/lib/products';
 
 type AuthView = 'login' | 'register';
-type SortField = 'name' | 'quantity' | 'date';
 
 export default function FreezerApp() {
   const [session, setSession] = useState<Session | null>(null);
@@ -30,8 +29,6 @@ export default function FreezerApp() {
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     const init = async () => {
@@ -110,22 +107,6 @@ export default function FreezerApp() {
     }
   };
 
-  const handleReloadProducts = async () => {
-    setProductsLoading(true);
-    setProductsError(null);
-    try {
-      const data = await fetchProducts();
-      setProducts(data);
-    } catch (err) {
-      console.error('Error al recargar productos desde Supabase:', err);
-      setProductsError(
-        'No se han podido recargar los productos. Prueba de nuevo en unos segundos.'
-      );
-    } finally {
-      setProductsLoading(false);
-    }
-  };
-
   const handleCreateProduct = async (input: Parameters<typeof createProduct>[1]) => {
     if (!user) return;
 
@@ -187,20 +168,6 @@ export default function FreezerApp() {
     setAuthView('login');
   };
 
-  const handleChangeSort = (field: SortField) => {
-    setSortBy((currentSortBy) => {
-      if (currentSortBy === field) {
-        setSortDirection((currentDirection) =>
-          currentDirection === 'asc' ? 'desc' : 'asc'
-        );
-        return currentSortBy;
-      }
-
-      setSortDirection('asc');
-      return field;
-    });
-  };
-
   const filteredAndSortedProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
@@ -212,24 +179,13 @@ export default function FreezerApp() {
       );
     }
 
-    const directionFactor = sortDirection === 'asc' ? 1 : -1;
-
+    // Ordenar por fecha descendente (más recientes primero)
     return [...result].sort((a, b) => {
-      let comparison = 0;
-
-      if (sortBy === 'name') {
-        comparison = a.name.localeCompare(b.name);
-      } else if (sortBy === 'quantity') {
-        comparison = a.quantity - b.quantity;
-      } else {
-        const aTime = new Date(a.added_at).getTime();
-        const bTime = new Date(b.added_at).getTime();
-        comparison = aTime - bTime;
-      }
-
-      return comparison * directionFactor;
+      const aTime = new Date(a.added_at).getTime();
+      const bTime = new Date(b.added_at).getTime();
+      return bTime - aTime;
     });
-  }, [products, searchTerm, sortBy, sortDirection]);
+  }, [products, searchTerm]);
 
   if (loading) {
     return (
@@ -333,57 +289,44 @@ export default function FreezerApp() {
 
   return (
     <section className="space-y-3 sm:space-y-4">
-      {/* Zona fija superior: header + búsqueda */}
-      <div className="sticky top-0 z-10 -mx-3 -mt-3 space-y-3 bg-slate-950/95 px-3 pt-3 backdrop-blur sm:-mx-4 sm:-mt-4 sm:px-4 sm:pt-4 pb-3 sm:pb-4">
-        <header className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-              <img
-                src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-                alt="Freezer App"
-                className="h-10 w-10 rounded-2xl bg-slate-900/80 shadow-sm"
-              />
-              <span>Freezer App</span>
-            </h1>
-            <p className="text-xs text-slate-400 sm:text-sm">
-              Autenticado como{' '}
-              <span className="font-medium text-slate-100">
-                {user.email ?? 'usuario sin email'}
-              </span>
-              .
-            </p>
-          </div>
-
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex w-full items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:w-auto sm:px-4 sm:py-2 sm:text-sm"
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </header>
-
-        <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-3 sm:p-4">
-          <label htmlFor="product-search" className="sr-only">
-            Buscar por nombre
-          </label>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
-              <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-            <input
-              id="product-search"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nombre…"
-              className="block w-full rounded-xl border border-slate-700 bg-slate-900/60 py-2 pl-9 pr-3 text-sm text-slate-100 placeholder:text-slate-500 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2.5 sm:pl-10 sm:text-base"
+      {/* Header */}
+      <header className="flex items-center justify-center rounded-2xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-md p-2 shadow-lg">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-20 px-4 rounded-2xl shadow-sm"
             />
-          </div>
+            <div>
+        <div className="space-y-1 text-center">
+          <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+            <span>Freezer App</span>
+          </h1>
+          <p className="text-xs text-slate-400 sm:text-sm">
+            {user.email ?? 'usuario sin email'}
+          </p>
+            </div>
+        </div>
+      </header>
+
+      {/* Barra de búsqueda */}
+      <div className="sticky top-0 rounded-xl border border-slate-700 bg-slate-900/70 p-3 sm:p-4">
+        <label htmlFor="product-search" className="sr-only">
+          Buscar por nombre
+        </label>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
+            <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            id="product-search"
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nombre…"
+            className="block w-full rounded-xl border border-slate-700 bg-slate-900/60 py-2 pl-9 pr-3 text-sm text-slate-100 placeholder:text-slate-500 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2.5 sm:pl-10 sm:text-base"
+          />
         </div>
       </div>
 
@@ -410,12 +353,8 @@ export default function FreezerApp() {
         <ProductList
           products={filteredAndSortedProducts}
           loading={productsLoading}
-          onReload={handleReloadProducts}
           onUpdateProduct={handleUpdateProduct}
           onDelete={handleDeleteProduct}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          onChangeSort={handleChangeSort}
         />
       </div>
 

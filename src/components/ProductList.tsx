@@ -2,18 +2,18 @@ import { useState } from 'react';
 import type { Product, ProductInput } from '@/lib/products';
 import ProductForm from '@/components/ProductForm';
 
-type SortField = 'name' | 'quantity' | 'date';
-
 interface ProductListProps {
   products: Product[];
   loading?: boolean;
-  onReload?: () => void;
   onUpdateProduct: (product: Product, input: ProductInput) => Promise<void> | void;
   onDelete: (product: Product) => void;
-  sortBy?: SortField;
-  sortDirection?: 'asc' | 'desc';
-  onChangeSort?: (field: SortField) => void;
 }
+
+const getBadgeColor = (quantity: number) => {
+  if (quantity === 0) return 'bg-red-500 text-white';
+  if (quantity <= 10) return 'bg-blue-500 text-white';
+  return 'bg-green-500 text-white';
+};
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -31,31 +31,12 @@ function formatDate(iso: string): string {
 export default function ProductList({
   products,
   loading = false,
-  onReload,
   onUpdateProduct,
   onDelete,
-  sortBy,
-  sortDirection,
-  onChangeSort,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
   const [savingProductId, setSavingProductId] = useState<Product['id'] | null>(null);
-
-  const handleHeaderClick = (field: SortField) => {
-    if (!onChangeSort) return;
-    onChangeSort(field);
-  };
-
-  const renderSortIndicator = (field: SortField) => {
-    if (!sortBy || sortBy !== field || !sortDirection) return null;
-
-    return (
-      <span className="ml-1 text-[10px] text-slate-400">
-        {sortDirection === 'asc' ? '↑' : '↓'}
-      </span>
-    );
-  };
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
@@ -100,282 +81,138 @@ export default function ProductList({
   if (loading && products.length === 0) {
     return (
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-200">Productos</h2>
-        <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900/60 p-6">
-          <div className="flex flex-col gap-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-10 animate-pulse rounded bg-slate-800/60"
-                aria-hidden
-              />
-            ))}
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-[11px] text-slate-500">
-            <span
-              className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-sky-500"
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-32 animate-pulse rounded-2xl bg-slate-800/60"
               aria-hidden
             />
-            Cargando productos…
-          </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500">
+          <span
+            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-sky-500"
+            aria-hidden
+          />
+          Cargando productos…
         </div>
       </div>
     );
   }
 
-  const actionButtons = (product: Product) => {
-    const isConfirmingDelete = productToDelete?.id === product.id;
-    const isEditing = editingProductId === product.id;
-    const btnClass =
-      'inline-flex items-center justify-center rounded-md px-2 py-1 text-[11px] font-medium transition';
-    if (isConfirmingDelete) {
-      return (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="py-1 text-[11px] text-amber-100">¿Borrar?</span>
-          <button
-            type="button"
-            onClick={handleConfirmDelete}
-            className={`${btnClass} bg-red-600 text-white hover:bg-red-500`}
-          >
-            Sí
-          </button>
-          <button
-            type="button"
-            onClick={handleCancelDelete}
-            className={`${btnClass} border border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700`}
-          >
-            No
-          </button>
-        </div>
-      );
-    }
-    return (
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          type="button"
-          onClick={() => toggleEditForProduct(product)}
-          className={`${btnClass} border border-slate-600 bg-slate-800/80 text-slate-100 hover:border-sky-600 hover:bg-slate-800`}
-        >
-          {isEditing ? 'Cerrar edición' : 'Editar'}
-        </button>
-        <button
-          type="button"
-          onClick={() => handleDeleteClick(product)}
-          className={`${btnClass} border border-red-900/80 bg-red-950/60 text-red-200 hover:bg-red-950`}
-        >
-          Borrar
-        </button>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-w-0 space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-slate-200">Productos</h2>
-        {onReload && (
-          <button
-            type="button"
-            onClick={onReload}
-            disabled={loading}
-            className="inline-flex shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-medium text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? 'Actualizando…' : 'Actualizar'}
-          </button>
-        )}
-      </div>
+    <div className="min-w-0">
+      {/* Grid de tarjetas */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {products.map((product) => {
+          const isConfirmingDelete = productToDelete?.id === product.id;
+          const isEditing = editingProductId === product.id;
 
-      {/* Vista tarjetas en móvil */}
-      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900/60 shadow-sm sm:hidden">
-        <div className="divide-y divide-slate-700/60">
-          {products.map((product) => {
-            const isConfirmingDelete = productToDelete?.id === product.id;
-            const isOutOfStock = product.quantity === 0;
-            const isLowStock = product.quantity > 0 && product.quantity <= 1;
-
-            const stockBgClass = isOutOfStock
-              ? 'bg-red-950/40'
-              : isLowStock
-                ? 'bg-amber-900/25'
-                : '';
-
-            const rowBgClass = isConfirmingDelete ? 'bg-red-950/30' : stockBgClass;
-
-            return (
+          return (
+            <div key={product.id} className="relative">
+              {/* Tarjeta del producto */}
               <div
-                key={product.id}
-                className={`px-3 py-2.5 ${rowBgClass}`}
+                className={`relative overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-3 shadow-lg transition-all duration-200 ${
+                  isConfirmingDelete ? 'ring-2 ring-red-500' : 'hover:shadow-xl'
+                }`}
               >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-100">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {product.quantity}{' '}
-                      <span className="text-slate-500">
-                        {product.quantity_unit ?? 'uds'}
-                      </span>
-                      {' · '}
-                      {formatDate(product.added_at)}
-                    </p>
+                {/* Fila superior: Nombre y botones */}
+                <div className="mb-2 flex items-start justify-between gap-3">
+                  <h3 className="flex-1 text-base font-medium text-white line-clamp-2 md:text-lg">
+                    {product.name}
+                  </h3>
+                  <div className="flex shrink-0 flex-wrap gap-1.5 md:gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleEditForProduct(product)}
+                      className="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-xs font-medium text-slate-100 transition hover:border-sky-600 hover:bg-slate-800 md:px-3 md:py-1.5"
+                    >
+                      {isEditing ? 'Cerrar' : 'Editar'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteClick(product)}
+                      className="inline-flex items-center justify-center rounded-lg border border-red-900/80 bg-red-950/60 px-3 py-2 text-xs font-medium text-red-200 transition hover:bg-red-950 md:px-3 md:py-1.5"
+                    >
+                      Borrar
+                    </button>
                   </div>
-                  <div className="shrink-0">{actionButtons(product)}</div>
                 </div>
 
-                {/* Formulario de edición en línea (móvil) */}
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-out ${
-                    editingProductId === product.id
-                      ? 'max-h-[800px] opacity-100 mt-3'
-                      : 'max-h-0 opacity-0 pointer-events-none'
-                  }`}
-                >
-                  <div className="rounded-lg border border-slate-700 bg-slate-900/80 p-3">
-                    <ProductForm
-                      mode="edit"
-                      initialProduct={product}
-                      loading={savingProductId === product.id}
-                      onSubmit={(input) => handleUpdateProduct(product, input)}
-                      onCancel={() => setEditingProductId(null)}
-                    />
+                {/* Fila inferior: Badge de cantidad y fecha */}
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold md:px-3 md:py-1 md:text-sm ${getBadgeColor(product.quantity)}`}
+                  >
+                    {product.quantity} {product.quantity_unit ?? 'uds'}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    {formatDate(product.added_at)}
+                  </span>
+                </div>
+
+                {/* Modal de confirmación de borrado */}
+                {isConfirmingDelete && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-950/90 backdrop-blur-sm">
+                    <div className="px-4 text-center">
+                      <p className="mb-4 text-base font-medium text-white md:mb-3 md:text-sm">
+                        ¿Borrar este producto?
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleConfirmDelete}
+                          className="rounded-lg bg-red-600 px-5 py-3 text-base font-medium text-white transition hover:bg-red-500 md:px-4 md:py-2 md:text-sm"
+                        >
+                          Sí, borrar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelDelete}
+                          className="rounded-lg border border-slate-600 bg-slate-800 px-5 py-3 text-base font-medium text-slate-100 transition hover:bg-slate-700 md:px-4 md:py-2 md:text-sm"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* Formulario de edición expandible */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-out ${
+                  isEditing
+                    ? 'max-h-[800px] opacity-100 mt-3'
+                    : 'max-h-0 opacity-0 pointer-events-none'
+                }`}
+              >
+                <div className="rounded-xl border border-slate-700 bg-slate-900/90 p-4">
+                  <ProductForm
+                    mode="edit"
+                    initialProduct={product}
+                    loading={savingProductId === product.id}
+                    onSubmit={(input) => handleUpdateProduct(product, input)}
+                    onCancel={() => setEditingProductId(null)}
+                  />
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Indicador de carga */}
+      {loading && products.length > 0 && (
+        <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+          <span
+            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-sky-500"
+            aria-hidden
+          />
+          Actualizando lista de productos…
         </div>
-        {loading && (
-          <div className="flex items-center gap-2 border-t border-slate-700 bg-slate-900/60 px-3 py-3 text-[11px] text-slate-400">
-            <span
-              className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-sky-500"
-              aria-hidden
-            />
-            Actualizando lista de productos…
-          </div>
-        )}
-      </div>
-
-      {/* Vista tabla en sm y superior */}
-      <div className="hidden overflow-hidden rounded-xl border border-slate-700 bg-slate-900/60 shadow-sm transition-shadow sm:block">
-        <table className="min-w-full divide-y divide-slate-700/80 text-xs">
-          <thead className="bg-slate-800/80">
-            <tr>
-              <th className="px-3 py-2 text-left font-medium text-slate-300">
-                <button
-                  type="button"
-                  onClick={() => handleHeaderClick('name')}
-                  className="inline-flex items-center gap-1 text-left text-slate-300 hover:text-slate-50"
-                >
-                  <span>Nombre</span>
-                  {renderSortIndicator('name')}
-                </button>
-              </th>
-              <th className="px-3 py-2 text-left font-medium text-slate-300">
-                <button
-                  type="button"
-                  onClick={() => handleHeaderClick('quantity')}
-                  className="inline-flex items-center gap-1 text-left text-slate-300 hover:text-slate-50"
-                >
-                  <span>Cantidad</span>
-                  {renderSortIndicator('quantity')}
-                </button>
-              </th>
-              <th className="px-3 py-2 text-left font-medium text-slate-300">
-                <button
-                  type="button"
-                  onClick={() => handleHeaderClick('date')}
-                  className="inline-flex items-center gap-1 text-left text-slate-300 hover:text-slate-50"
-                >
-                  <span>Fecha de alta</span>
-                  {renderSortIndicator('date')}
-                </button>
-              </th>
-              <th className="px-3 py-2 text-right font-medium text-slate-300">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-700/60 bg-slate-950/40">
-            {products.map((product) => {
-              const isConfirmingDelete = productToDelete?.id === product.id;
-              const isEditing = editingProductId === product.id;
-              const isOutOfStock = product.quantity === 0;
-              const isLowStock = product.quantity > 0 && product.quantity <= 1;
-
-              const stockBgClass = isOutOfStock
-                ? 'bg-red-950/40'
-                : isLowStock
-                  ? 'bg-amber-900/20'
-                  : '';
-
-              return (
-                <>
-                  <tr
-                    key={product.id}
-                    className={`transition-colors hover:bg-slate-900/40 ${
-                      isConfirmingDelete ? 'bg-red-950/30' : stockBgClass
-                    }`}
-                  >
-                    <td className="px-3 py-2 text-slate-100">{product.name}</td>
-                    <td className="px-3 py-2 text-slate-200">
-                      {product.quantity}{' '}
-                      <span className="text-slate-400">
-                        {product.quantity_unit ?? 'uds'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-slate-300">
-                      {formatDate(product.added_at)}
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-end gap-1.5">
-                        {actionButtons(product)}
-                      </div>
-                    </td>
-                  </tr>
-                  <tr
-                    className={`${
-                      isEditing
-                        ? 'table-row'
-                        : 'table-row overflow-hidden transition-all duration-300 ease-out max-h-0 opacity-0'
-                    }`}
-                  >
-                    <td colSpan={4} className="px-3 pb-3 pt-0">
-                      <div
-                        className={`overflow-hidden transition-all duration-300 ease-out ${
-                          isEditing
-                            ? 'max-h-[800px] opacity-100 mt-1'
-                            : 'max-h-0 opacity-0 pointer-events-none'
-                        }`}
-                      >
-                        <div className="rounded-lg border border-slate-700 bg-slate-900/80 p-3">
-                          <ProductForm
-                            mode="edit"
-                            initialProduct={product}
-                            loading={savingProductId === product.id}
-                            onSubmit={(input) => handleUpdateProduct(product, input)}
-                            onCancel={() => setEditingProductId(null)}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </>
-              );
-            })}
-          </tbody>
-        </table>
-
-        {loading && (
-          <div className="flex items-center gap-2 border-t border-slate-700 bg-slate-900/60 px-3 py-3 text-[11px] text-slate-400">
-            <span
-              className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-sky-500"
-              aria-hidden
-            />
-            Actualizando lista de productos…
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
