@@ -322,9 +322,9 @@ export default function FreezerApp() {
   }
 
   return (
-    <section className="space-y-2 sm:space-y-3 md:space-y-4">
+    <section>
       {/* Header */}
-      <header className="flex items-center justify-center p-2">
+      <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
             <img
               src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
               alt="Freezer App"
@@ -343,7 +343,7 @@ export default function FreezerApp() {
       </header>
 
       {/* Barra de búsqueda y filtros */}
-      <div className="sticky top-0 z-10 space-y-2 md:space-y-3">
+      <div className="sticky top-0 z-50 space-y-2 md:space-y-3 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
         <div>
           <label htmlFor="product-search" className="sr-only">
             Buscar por nombre
@@ -409,7 +409,7 @@ export default function FreezerApp() {
       </div>
 
       {/* Contenido con scroll: mensajes + lista */}
-      <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24">
+      <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24 mt-2 sm:mt-3 md:mt-4">
         {error && (
           <div className="alert-enter rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
             {error}
