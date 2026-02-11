@@ -18,11 +18,11 @@ interface SwipeableProductCardProps {
   onDelete: () => void;
 }
 
-const SWIPE_THRESHOLD = 80; // Píxeles mínimos para activar swipe
-const VELOCITY_THRESHOLD = 0.3; // Velocidad mínima (px/ms) para swipe rápido
+const SWIPE_THRESHOLD = 60; // Píxeles mínimos para activar swipe (reducido para móvil)
+const VELOCITY_THRESHOLD = 0.2; // Velocidad mínima (px/ms) para swipe rápido (más sensible)
 const MAX_SWIPE = 156; // Ancho máximo de deslizamiento (2 botones de ~78px)
 const ACTIONS_WIDTH = 156; // Ancho del panel de acciones
-const DEAD_ZONE = 10; // Zona muerta para ignorar movimientos pequeños
+const DEAD_ZONE = 5; // Zona muerta para ignorar movimientos pequeños (reducido)
 
 export default function SwipeableProductCard({
   children,
@@ -108,13 +108,16 @@ export default function SwipeableProductCard({
       }
 
       // Determinar si es swipe horizontal o scroll vertical
-      // Requerir que el movimiento horizontal sea claramente mayor que el vertical
-      isHorizontalSwipe.current = absDeltaX > absDeltaY * 1.2;
+      // Más permisivo: solo requiere que el movimiento horizontal sea mayor
+      isHorizontalSwipe.current = absDeltaX > absDeltaY;
 
       // Si es scroll vertical, no interceptar
       if (!isHorizontalSwipe.current) {
         return;
       }
+      
+      // Marcar que hemos iniciado el drag
+      isDragging.current = true;
     }
 
     // Si ya determinamos que es scroll vertical, no hacer nada
@@ -201,7 +204,15 @@ export default function SwipeableProductCard({
   }, [isOpen]);
 
   return (
-    <div ref={containerRef} className="relative overflow-hidden rounded-3xl">
+    <div 
+      ref={containerRef} 
+      className="relative overflow-hidden rounded-3xl"
+      style={{ 
+        touchAction: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+      }}
+    >
       {/* Capa de acciones (fondo fijo) */}
       <div
         className="absolute right-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
@@ -264,14 +275,19 @@ export default function SwipeableProductCard({
 
       {/* Capa de contenido deslizable */}
       <div
-        className={`relative ${isSwiping ? 'select-none' : ''}`}
+        className="relative select-none"
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 300ms ease-out',
+          touchAction: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
+          WebkitTouchCallout: 'none',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
       >
         {children}
       </div>
