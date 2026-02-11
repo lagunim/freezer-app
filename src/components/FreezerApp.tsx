@@ -311,7 +311,7 @@ export default function FreezerApp() {
   return (
     <section className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <header className="flex items-center justify-center rounded-3xl border border-white/10 bg-slate-800/30 backdrop-blur-xl p-2 shadow-lg shadow-white/5">
+      <header className="flex items-center justify-center p-2">
             <img
               src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
               alt="Freezer App"
