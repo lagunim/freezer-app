@@ -8,7 +8,9 @@ export interface ProductListProps {
   loading?: boolean;
   onUpdateProduct: (product: Product, input: ProductInput) => Promise<void> | void;
   onDelete: (product: Product) => void;
+  onToggleShoppingCart: (product: Product) => void;
   productNotification?: { productId: string; message: string; type: 'success' | 'error' } | null;
+  showShoppingCart?: boolean;
 }
 
 const getBadgeColor = (quantity: number) => {
@@ -22,21 +24,21 @@ const getCategoryInfo = (category: ProductCategory) => {
     case 'Alimentación':
       return {
         emoji: '🍎',
-        bgColor: 'bg-emerald-500/20',
+        bgColor: 'bg-emerald-500/10',
         borderColor: 'border-emerald-400/40',
         glowColor: 'shadow-[0_0_20px_rgba(16,185,129,0.3)]'
       };
     case 'Limpieza':
       return {
         emoji: '🧹',
-        bgColor: 'bg-cyan-500/20',
+        bgColor: 'bg-cyan-500/10',
         borderColor: 'border-cyan-400/40',
         glowColor: 'shadow-[0_0_20px_rgba(34,211,238,0.3)]'
       };
     case 'Mascotas':
       return {
         emoji: '🐾',
-        bgColor: 'bg-amber-500/20',
+        bgColor: 'bg-amber-500/10',
         borderColor: 'border-amber-400/40',
         glowColor: 'shadow-[0_0_20px_rgba(251,191,36,0.3)]'
       };
@@ -61,7 +63,9 @@ export default function ProductList({
   loading = false,
   onUpdateProduct,
   onDelete,
+  onToggleShoppingCart,
   productNotification,
+  showShoppingCart = false,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
@@ -153,6 +157,8 @@ export default function ProductList({
                   onClose={() => setOpenSwipeId(null)}
                   onEdit={() => toggleEditForProduct(product)}
                   onDelete={() => handleDeleteClick(product)}
+                  onAddToCart={() => onToggleShoppingCart(product)}
+                  isInCart={product.in_shopping_list}
                 >
                   <div
                     className={`relative overflow-hidden rounded-2xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-2 transition-all duration-300 ${
@@ -184,12 +190,17 @@ export default function ProductList({
                         </h3>
 
                         {/* Badge de cantidad y fecha */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
                           >
                             {product.quantity} {product.quantity_unit ?? 'uds'}
                           </span>
+                          {product.in_shopping_list && product.shopping_quantity && product.shopping_quantity > 0 && (
+                            <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
+                              🛒 {product.shopping_quantity} uds
+                            </span>
+                          )}
                           <span className="text-[10px] text-slate-400 drop-shadow-sm">
                             {formatDate(product.added_at)}
                           </span>
@@ -303,6 +314,11 @@ export default function ProductList({
                         >
                           {product.quantity} {product.quantity_unit ?? 'uds'}
                         </span>
+                        {product.in_shopping_list && product.shopping_quantity && product.shopping_quantity > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-3 py-1 text-sm font-semibold shadow-lg">
+                            🛒 {product.shopping_quantity} uds
+                          </span>
+                        )}
                         <span className="text-xs text-slate-400 drop-shadow-sm">
                           {formatDate(product.added_at)}
                         </span>

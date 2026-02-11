@@ -54,6 +54,12 @@ export default function ProductForm({
     initialProduct?.category ?? 'Alimentación'
   );
   const [addedAt, setAddedAt] = useState(initialDate);
+  const [inShoppingList, setInShoppingList] = useState(
+    initialProduct?.in_shopping_list ?? false
+  );
+  const [shoppingQuantity, setShoppingQuantity] = useState(
+    initialProduct?.shopping_quantity != null ? String(initialProduct.shopping_quantity) : ''
+  );
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,6 +70,10 @@ export default function ProductForm({
     setQuantityUnit(initialProduct?.quantity_unit ?? 'uds');
     setCategory(initialProduct?.category ?? 'Alimentación');
     setAddedAt(toDateInputValue(initialProduct?.added_at));
+    setInShoppingList(initialProduct?.in_shopping_list ?? false);
+    setShoppingQuantity(
+      initialProduct?.shopping_quantity != null ? String(initialProduct.shopping_quantity) : ''
+    );
     setLocalError(null);
   }, [initialProduct]);
 
@@ -100,6 +110,19 @@ export default function ProductForm({
     });
   };
 
+  const changeShoppingQuantityBy = (delta: number) => {
+    setShoppingQuantity((previous) => {
+      const current = parseQuantity(previous);
+      const next = current + delta;
+
+      if (next < 0) {
+        return '0';
+      }
+
+      return String(next);
+    });
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLocalError(null);
@@ -121,6 +144,16 @@ export default function ProductForm({
       return;
     }
 
+    // Validar cantidad de compra si está en lista de compra
+    let shoppingQty: number | null = null;
+    if (inShoppingList && shoppingQuantity.trim() !== '') {
+      shoppingQty = Number.parseInt(shoppingQuantity, 10);
+      if (Number.isNaN(shoppingQty) || shoppingQty < 0) {
+        setLocalError('La cantidad a comprar debe ser un número mayor o igual que 0.');
+        return;
+      }
+    }
+
     const input: ProductInput = {
       name: trimmedName,
       quantity: qtyNumber,
@@ -128,6 +161,8 @@ export default function ProductForm({
       category: category,
       // Normalizamos a inicio de día; el backend lo guardará como timestamptz
       added_at: new Date(addedAt).toISOString(),
+      in_shopping_list: inShoppingList,
+      shopping_quantity: shoppingQty,
     };
 
     await onSubmit(input);
@@ -179,6 +214,66 @@ export default function ProductForm({
           <option value="Mascotas">🐾 Mascotas</option>
         </select>
       </div>
+
+      {/* Checkbox de lista de la compra */}
+      <div className="space-y-2">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={inShoppingList}
+            onChange={(e) => setInShoppingList(e.target.checked)}
+            className="h-5 w-5 rounded border-white/20 bg-slate-800/40 text-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-200"
+          />
+          <span className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+            <span className="text-lg">🛒</span>
+            Añadir a lista de la compra
+          </span>
+        </label>
+      </div>
+
+      {/* Campo de cantidad a comprar (solo visible si está en lista de compra) */}
+      {inShoppingList && (
+        <div className="space-y-2">
+          <label
+            htmlFor="shopping-quantity"
+            className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+          >
+            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            Cantidad a comprar (opcional)
+          </label>
+          <div className="flex items-center rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] focus-within:border-purple-400/50 focus-within:shadow-[0_0_20px_rgba(168,85,247,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all duration-200">
+            <button
+              type="button"
+              aria-label="Restar cantidad a comprar"
+              onClick={() => changeShoppingQuantityBy(-1)}
+              disabled={loading || parseQuantity(shoppingQuantity) <= 0}
+              className="inline-flex h-12 w-12 items-center justify-center rounded-l-xl text-xl font-bold text-slate-200 transition-all duration-200 hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:h-10 md:w-10 md:text-lg"
+            >
+              -
+            </button>
+            <input
+              id="shopping-quantity"
+              type="number"
+              min={0}
+              value={shoppingQuantity}
+              onChange={(e) => setShoppingQuantity(e.target.value)}
+              className="w-full bg-transparent px-3 py-3 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none md:py-2 md:text-sm"
+              placeholder="0"
+            />
+            <button
+              type="button"
+              aria-label="Sumar cantidad a comprar"
+              onClick={() => changeShoppingQuantityBy(1)}
+              disabled={loading}
+              className="inline-flex h-12 w-12 items-center justify-center rounded-r-xl text-xl font-bold text-slate-200 transition-all duration-200 hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 md:h-10 md:w-10 md:text-lg"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3 md:gap-4">
         <div className="space-y-2">

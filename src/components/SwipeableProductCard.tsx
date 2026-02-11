@@ -16,12 +16,18 @@ interface SwipeableProductCardProps {
   onEdit: () => void;
   /** Callback para acción de borrar */
   onDelete: () => void;
+  /** Callback para añadir/quitar de la cesta */
+  onAddToCart: () => void;
+  /** Indica si el producto ya está en la cesta */
+  isInCart: boolean;
 }
 
 const SWIPE_THRESHOLD = 60; // Píxeles mínimos para activar swipe (reducido para móvil)
 const VELOCITY_THRESHOLD = 0.2; // Velocidad mínima (px/ms) para swipe rápido (más sensible)
-const MAX_SWIPE = 156; // Ancho máximo de deslizamiento (2 botones de ~78px)
-const ACTIONS_WIDTH = 156; // Ancho del panel de acciones
+const MAX_SWIPE_LEFT = 156; // Ancho máximo de deslizamiento izquierda (2 botones de ~78px)
+const MAX_SWIPE_RIGHT = 80; // Ancho máximo de deslizamiento derecha (1 botón)
+const ACTIONS_WIDTH_LEFT = 156; // Ancho del panel de acciones izquierda
+const ACTIONS_WIDTH_RIGHT = 80; // Ancho del panel de acciones derecha
 const DEAD_ZONE = 5; // Zona muerta para ignorar movimientos pequeños (reducido)
 
 export default function SwipeableProductCard({
@@ -32,9 +38,12 @@ export default function SwipeableProductCard({
   onClose,
   onEdit,
   onDelete,
+  onAddToCart,
+  isInCart,
 }: SwipeableProductCardProps) {
   const [translateX, setTranslateX] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
   const [showHint, setShowHint] = useState(true);
   
@@ -66,12 +75,27 @@ export default function SwipeableProductCard({
   const closeSwipe = () => {
     setTranslateX(0);
     setIsOpen(false);
+    setSwipeDirection(null);
     onClose();
   };
 
-  const openSwipe = () => {
-    setTranslateX(-MAX_SWIPE);
+  const openSwipeLeft = () => {
+    setTranslateX(-MAX_SWIPE_LEFT);
     setIsOpen(true);
+    setSwipeDirection('left');
+    onOpen(productId);
+    
+    // Marcar que el usuario ya descubrió la funcionalidad de swipe
+    if (showHint) {
+      localStorage.setItem('freezer-swipe-hint-dismissed', 'true');
+      setShowHint(false);
+    }
+  };
+
+  const openSwipeRight = () => {
+    setTranslateX(MAX_SWIPE_RIGHT);
+    setIsOpen(true);
+    setSwipeDirection('right');
     onOpen(productId);
     
     // Marcar que el usuario ya descubrió la funcionalidad de swipe
@@ -138,12 +162,19 @@ export default function SwipeableProductCard({
 
     // Aplicar límites con resistencia
     if (newX > 0) {
-      // Resistencia al deslizar hacia la derecha desde cerrado
-      newX = newX * 0.3;
-    } else if (newX < -MAX_SWIPE) {
-      // Resistencia al exceder el máximo
-      const excess = Math.abs(newX + MAX_SWIPE);
-      newX = -MAX_SWIPE - excess * 0.3;
+      // Permitir swipe hacia la derecha con límite
+      if (newX > MAX_SWIPE_RIGHT) {
+        // Resistencia al exceder el máximo derecha
+        const excess = newX - MAX_SWIPE_RIGHT;
+        newX = MAX_SWIPE_RIGHT + excess * 0.3;
+      }
+    } else {
+      // Swipe hacia la izquierda
+      if (newX < -MAX_SWIPE_LEFT) {
+        // Resistencia al exceder el máximo izquierda
+        const excess = Math.abs(newX + MAX_SWIPE_LEFT);
+        newX = -MAX_SWIPE_LEFT - excess * 0.3;
+      }
     }
 
     setTranslateX(newX);
@@ -158,12 +189,27 @@ export default function SwipeableProductCard({
     const deltaTime = Date.now() - touchStartTime.current;
     const velocity = Math.abs(deltaX) / deltaTime;
 
-    // Determinar si abrir o cerrar basado en distancia o velocidad
-    const shouldOpen =
-      translateX < -SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-
-    if (shouldOpen && translateX < 0) {
-      openSwipe();
+    // Determinar dirección y si abrir o cerrar
+    if (translateX < 0) {
+      // Swipe hacia la izquierda
+      const shouldOpenLeft =
+        translateX < -SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
+      
+      if (shouldOpenLeft) {
+        openSwipeLeft();
+      } else {
+        closeSwipe();
+      }
+    } else if (translateX > 0) {
+      // Swipe hacia la derecha
+      const shouldOpenRight =
+        translateX > SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
+      
+      if (shouldOpenRight) {
+        openSwipeRight();
+      } else {
+        closeSwipe();
+      }
     } else {
       closeSwipe();
     }
@@ -173,11 +219,13 @@ export default function SwipeableProductCard({
     isHorizontalSwipe.current = null;
   };
 
-  const handleActionClick = (action: 'edit' | 'delete') => {
+  const handleActionClick = (action: 'edit' | 'delete' | 'cart') => {
     if (action === 'edit') {
       onEdit();
-    } else {
+    } else if (action === 'delete') {
       onDelete();
+    } else if (action === 'cart') {
+      onAddToCart();
     }
     closeSwipe();
   };
@@ -228,10 +276,10 @@ export default function SwipeableProductCard({
       ref={containerRef} 
       className="relative overflow-hidden rounded-3xl"
     >
-      {/* Capa de acciones (fondo fijo) */}
+      {/* Capa de acciones izquierda (fondo fijo) */}
       <div
         className="absolute right-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
-        style={{ width: `${ACTIONS_WIDTH}px` }}
+        style={{ width: `${ACTIONS_WIDTH_LEFT}px` }}
       >
         {/* Botón Editar */}
         <button
@@ -285,6 +333,50 @@ export default function SwipeableProductCard({
             />
           </svg>
           <span className="text-xs font-bold relative z-10 drop-shadow-md">Borrar</span>
+        </button>
+      </div>
+
+      {/* Capa de acciones derecha (fondo fijo) */}
+      <div
+        className="absolute left-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
+        style={{ width: `${ACTIONS_WIDTH_RIGHT}px` }}
+      >
+        {/* Botón Añadir/Quitar de Cesta */}
+        <button
+          type="button"
+          onClick={() => handleActionClick('cart')}
+          className="relative flex-1 bg-gradient-to-br from-emerald-500 via-green-600 to-green-700 hover:from-emerald-400 hover:via-green-500 hover:to-green-600 active:from-emerald-600 active:via-green-700 active:to-green-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+          aria-label={isInCart ? "Quitar de la cesta" : "Añadir a la cesta"}
+          style={{
+            boxShadow: '0 0 15px rgba(16, 185, 129, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)'
+          }}
+        >
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+          <svg 
+            className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            {isInCart ? (
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2.5} 
+                d="M6 18L18 6M6 6l12 12" 
+              />
+            ) : (
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2.5} 
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" 
+              />
+            )}
+          </svg>
+          <span className="text-xs font-bold relative z-10 drop-shadow-md">
+            {isInCart ? 'Quitar' : 'Cesta'}
+          </span>
         </button>
       </div>
 

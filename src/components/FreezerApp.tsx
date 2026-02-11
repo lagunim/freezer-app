@@ -30,6 +30,7 @@ export default function FreezerApp() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
+  const [showShoppingCart, setShowShoppingCart] = useState(false);
   const [productNotification, setProductNotification] = useState<{ productId: string; message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -171,6 +172,35 @@ export default function FreezerApp() {
     }
   };
 
+  const handleToggleShoppingCart = async (product: Product) => {
+    setSavingProduct(true);
+    setProductsError(null);
+    try {
+      const input: Parameters<typeof updateProduct>[1] = {
+        name: product.name,
+        quantity: product.quantity,
+        quantity_unit: product.quantity_unit,
+        category: product.category,
+        added_at: product.added_at,
+        in_shopping_list: !product.in_shopping_list,
+        shopping_quantity: !product.in_shopping_list ? null : product.shopping_quantity,
+      };
+      const updated = await updateProduct(product.id, input);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+      );
+      const message = updated.in_shopping_list
+        ? 'Producto añadido a la cesta.'
+        : 'Producto quitado de la cesta.';
+      setProductNotification({ productId: product.id, message, type: 'success' });
+    } catch (err) {
+      console.error('Error al actualizar producto en Supabase:', err);
+      setProductNotification({ productId: product.id, message: 'No se ha podido actualizar el producto.', type: 'error' });
+    } finally {
+      setSavingProduct(false);
+    }
+  };
+
   const handleAuthError = (msg: string) => {
     setError(msg);
     setMessage(null);
@@ -199,6 +229,11 @@ export default function FreezerApp() {
 
     let result = products;
 
+    // Filtrar por cesta (si está activo)
+    if (showShoppingCart) {
+      result = result.filter((product) => product.in_shopping_list);
+    }
+
     // Filtrar por categorías seleccionadas (si hay alguna seleccionada)
     if (selectedCategories.length > 0) {
       result = result.filter((product) => 
@@ -219,7 +254,7 @@ export default function FreezerApp() {
       const bTime = new Date(b.added_at).getTime();
       return bTime - aTime;
     });
-  }, [products, searchTerm, selectedCategories]);
+  }, [products, searchTerm, selectedCategories, showShoppingCart]);
 
   if (loading) {
     return (
@@ -365,8 +400,8 @@ export default function FreezerApp() {
           </div>
         </div>
 
-        {/* Filtros por categoría */}
-        <div className="grid grid-cols-3 gap-1.5 md:gap-2">
+        {/* Filtros por categoría y cesta */}
+        <div className="grid grid-cols-4 gap-1.5 md:gap-2">
           <button
             type="button"
             onClick={() => toggleCategory('Alimentación')}
@@ -377,7 +412,7 @@ export default function FreezerApp() {
             }`}
           >
             <span className="text-lg md:text-2xl">🍎</span>
-            <span className="leading-tight">Alimentación</span>
+            <span className="leading-tight">Comida</span>
           </button>
 
           <button
@@ -404,6 +439,19 @@ export default function FreezerApp() {
           >
             <span className="text-lg md:text-2xl">🐾</span>
             <span className="leading-tight">Mascotas</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowShoppingCart(!showShoppingCart)}
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-200 ${
+              showShoppingCart
+                ? 'border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-[1.02]'
+            }`}
+          >
+            <span className="text-lg md:text-2xl">🛒</span>
+            <span className="leading-tight">Cesta</span>
           </button>
         </div>
       </div>
@@ -433,7 +481,9 @@ export default function FreezerApp() {
           loading={productsLoading}
           onUpdateProduct={handleUpdateProduct}
           onDelete={handleDeleteProduct}
+          onToggleShoppingCart={handleToggleShoppingCart}
           productNotification={productNotification}
+          showShoppingCart={showShoppingCart}
         />
       </div>
 
