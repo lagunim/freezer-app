@@ -102,7 +102,7 @@ export default function ProductList({
   if (!loading && products.length === 0) {
     return (
       <div className="min-w-0 rounded-3xl border border-dashed border-white/10 bg-slate-800/30 backdrop-blur-xl p-6 text-center transition-colors shadow-[0_0_20px_rgba(255,255,255,0.08)]">
-        <p className="mb-1 font-medium text-slate-200">Tu congelador está vacío</p>
+        <p className="mb-1 font-medium text-slate-200">No quedan productos en tu casa</p>
         <p className="text-sm text-slate-400">
           Añade tu primer producto con el botón +.
         </p>
@@ -136,7 +136,7 @@ export default function ProductList({
   return (
     <div className="min-w-0">
       {/* Grid de tarjetas */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => {
           const isConfirmingDelete = productToDelete?.id === product.id;
           const isEditing = editingProductId === product.id;
@@ -155,7 +155,7 @@ export default function ProductList({
                   onDelete={() => handleDeleteClick(product)}
                 >
                   <div
-                    className={`relative overflow-hidden rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ${
+                    className={`relative overflow-hidden rounded-2xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-2 transition-all duration-300 ${
                       isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-0.5'
                     }`}
                     style={{
@@ -165,13 +165,13 @@ export default function ProductList({
                     }}
                   >
                     {/* Capa de brillo superior */}
-                    <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
                     
                     {/* Contenido de la tarjeta */}
-                    <div className="relative z-10 flex items-center gap-3">
+                    <div className="relative z-10 flex items-center gap-2">
                       {/* Icono de categoría */}
-                      <div className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-3 flex items-center justify-center ${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor}`}>
-                        <span className="text-5xl">
+                      <div className={`flex-shrink-0 rounded-xl border backdrop-blur-xl p-2 flex items-center justify-center ${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor}`}>
+                        <span className="text-3xl">
                           {getCategoryInfo(product.category).emoji}
                         </span>
                       </div>
@@ -179,18 +179,18 @@ export default function ProductList({
                       {/* Información del producto */}
                       <div className="flex-1 min-w-0">
                         {/* Nombre */}
-                        <h3 className="mb-2 text-base font-medium text-white line-clamp-2 drop-shadow-sm">
+                        <h3 className="mb-1 text-sm font-medium text-white line-clamp-2 drop-shadow-sm">
                           {product.name}
                         </h3>
 
                         {/* Badge de cantidad y fecha */}
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
                           >
                             {product.quantity} {product.quantity_unit ?? 'uds'}
                           </span>
-                          <span className="text-xs text-slate-400 drop-shadow-sm">
+                          <span className="text-[10px] text-slate-400 drop-shadow-sm">
                             {formatDate(product.added_at)}
                           </span>
                         </div>
@@ -201,32 +201,32 @@ export default function ProductList({
 
                 {/* Panel de confirmación expandible */}
                 <div
-                  className={`overflow-hidden rounded-3xl transition-all duration-300 ease-out ${
+                  className={`overflow-hidden rounded-2xl transition-all duration-300 ease-out ${
                     isConfirmingDelete
-                      ? 'max-h-[400px] opacity-100 mt-3'
+                      ? 'max-h-[350px] opacity-100 mt-2'
                       : 'max-h-0 opacity-0 pointer-events-none'
                   }`}
                 >
-                  <div className="rounded-3xl border-2 border-red-500/60 bg-slate-900/60 backdrop-blur-xl p-5 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]">
+                  <div className="rounded-2xl border-2 border-red-500/60 bg-slate-900/60 backdrop-blur-xl p-3 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]">
                     <div className="text-center">
-                      <div className="mb-4 flex justify-center">
-                        <div className="rounded-full bg-red-500/20 p-3">
-                          <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="mb-3 flex justify-center">
+                        <div className="rounded-full bg-red-500/20 p-2">
+                          <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
                         </div>
                       </div>
-                      <p className="mb-5 text-lg font-bold text-white drop-shadow-lg">
+                      <p className="mb-3 text-base font-bold text-white drop-shadow-lg">
                         ¿Borrar este producto?
                       </p>
                       <div className="flex flex-col gap-2">
                         <button
                           type="button"
                           onClick={handleConfirmDelete}
-                          className="relative flex items-center justify-center gap-2 rounded-xl border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-6 py-3.5 text-base font-bold text-white shadow-[0_0_20px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95"
+                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95"
                         >
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-                          <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+                          <svg className="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                           <span className="relative z-10">Sí, borrar</span>
@@ -234,9 +234,9 @@ export default function ProductList({
                         <button
                           type="button"
                           onClick={handleCancelDelete}
-                          className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-slate-800/60 backdrop-blur-xl px-6 py-3.5 text-base font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95"
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                           Cancelar
