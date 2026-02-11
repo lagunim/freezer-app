@@ -161,8 +161,8 @@ export default function ProductList({
                   isInCart={product.in_shopping_list}
                 >
                   <div
-                    className={`relative overflow-hidden rounded-2xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-2 transition-all duration-300 ${
-                      isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-0.5'
+                    className={`relative overflow-hidden rounded-2xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                      isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)] scale-[1.02]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-1 hover:scale-[1.02]'
                     }`}
                     style={{
                       boxShadow: isConfirmingDelete 
@@ -212,10 +212,10 @@ export default function ProductList({
 
                 {/* Panel de confirmación expandible */}
                 <div
-                  className={`overflow-hidden rounded-2xl transition-all duration-300 ease-out ${
+                  className={`overflow-hidden rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                     isConfirmingDelete
-                      ? 'max-h-[350px] opacity-100 mt-2'
-                      : 'max-h-0 opacity-0 pointer-events-none'
+                      ? 'max-h-[350px] opacity-100 mt-2 scale-100'
+                      : 'max-h-0 opacity-0 pointer-events-none scale-95'
                   }`}
                 >
                   <div className="rounded-2xl border-2 border-red-500/60 bg-slate-900/60 backdrop-blur-xl p-3 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]">
@@ -234,7 +234,7 @@ export default function ProductList({
                         <button
                           type="button"
                           onClick={handleConfirmDelete}
-                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95"
+                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95"
                         >
                           <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
                           <svg className="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +245,7 @@ export default function ProductList({
                         <button
                           type="button"
                           onClick={handleCancelDelete}
-                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95"
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -261,8 +261,8 @@ export default function ProductList({
               {/* Versión desktop: con botones visibles */}
               <div className="hidden md:block">
                 <div
-                  className={`relative overflow-hidden rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ${
-                    isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-0.5'
+                  className={`relative overflow-hidden rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                    isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)] scale-[1.02]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-1 hover:scale-[1.02]'
                   }`}
                   style={{
                     boxShadow: isConfirmingDelete 
@@ -293,14 +293,14 @@ export default function ProductList({
                           <button
                             type="button"
                             onClick={() => toggleEditForProduct(product)}
-                            className="inline-flex items-center justify-center rounded-lg border border-sky-500/40 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-[0_0_10px_rgba(56,189,248,0.2)] transition-all duration-200 hover:border-sky-400 hover:bg-slate-800 hover:shadow-[0_0_15px_rgba(56,189,248,0.4)] hover:scale-105"
+                            className="inline-flex items-center justify-center rounded-lg border border-sky-500/40 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-[0_0_10px_rgba(56,189,248,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:border-sky-400 hover:bg-slate-800 hover:shadow-[0_0_15px_rgba(56,189,248,0.4)] hover:scale-110 active:scale-95"
                           >
                             {isEditing ? 'Cerrar' : 'Editar'}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteClick(product)}
-                            className="inline-flex items-center justify-center rounded-lg border border-red-500/40 bg-red-950/60 px-3 py-1.5 text-xs font-medium text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.2)] transition-all duration-200 hover:bg-red-950 hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:scale-105"
+                            className="inline-flex items-center justify-center rounded-lg border border-red-500/40 bg-red-950/60 px-3 py-1.5 text-xs font-medium text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-red-950 hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:scale-110 active:scale-95"
                           >
                             Borrar
                           </button>
@@ -329,10 +329,10 @@ export default function ProductList({
 
                 {/* Panel de confirmación expandible desktop */}
                 <div
-                  className={`overflow-hidden rounded-3xl transition-all duration-300 ease-out ${
+                  className={`overflow-hidden rounded-3xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                     isConfirmingDelete
-                      ? 'max-h-[300px] opacity-100 mt-3'
-                      : 'max-h-0 opacity-0 pointer-events-none'
+                      ? 'max-h-[300px] opacity-100 mt-3 scale-100'
+                      : 'max-h-0 opacity-0 pointer-events-none scale-95'
                   }`}
                 >
                   <div className="rounded-3xl border-2 border-red-500/60 bg-slate-900/60 backdrop-blur-xl p-4 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]">
@@ -351,7 +351,7 @@ export default function ProductList({
                         <button
                           type="button"
                           onClick={handleConfirmDelete}
-                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-2 text-sm font-bold text-white shadow-[0_0_15px_rgba(239,68,68,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_25px_rgba(239,68,68,0.6),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95"
+                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-2 text-sm font-bold text-white shadow-[0_0_15px_rgba(239,68,68,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_25px_rgba(239,68,68,0.6),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-110 active:scale-95"
                         >
                           <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
                           <svg className="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -362,7 +362,7 @@ export default function ProductList({
                         <button
                           type="button"
                           onClick={handleCancelDelete}
-                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-2 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95"
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-2 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-110 active:scale-95"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -377,10 +377,10 @@ export default function ProductList({
 
               {/* Formulario de edición expandible */}
               <div
-                className={`overflow-hidden rounded-3xl transition-all duration-300 ease-out ${
+                className={`overflow-hidden rounded-3xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                   isEditing
-                    ? 'max-h-[800px] opacity-100 mt-3'
-                    : 'max-h-0 opacity-0 pointer-events-none'
+                    ? 'max-h-[800px] opacity-100 mt-3 scale-100'
+                    : 'max-h-0 opacity-0 pointer-events-none scale-95'
                 }`}
               >
                 <div className="rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(147,197,253,0.3),0_0_60px_rgba(147,197,253,0.15),inset_0_1px_3px_rgba(255,255,255,0.1)]">

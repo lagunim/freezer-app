@@ -28,6 +28,7 @@ export default function FreezerApp() {
   const [productsError, setProductsError] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isFormClosing, setIsFormClosing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
   const [showShoppingCart, setShowShoppingCart] = useState(false);
@@ -119,6 +120,14 @@ export default function FreezerApp() {
     }
   };
 
+  const closeForm = () => {
+    setIsFormClosing(true);
+    setTimeout(() => {
+      setIsFormOpen(false);
+      setIsFormClosing(false);
+    }, 500); // Duración de la animación con rebote
+  };
+
   const handleCreateProduct = async (input: Parameters<typeof createProduct>[1]) => {
     if (!user) return;
 
@@ -128,7 +137,7 @@ export default function FreezerApp() {
       const created = await createProduct(user.id, input);
       setProducts((prev) => [created, ...prev]);
       setMessage('Producto añadido al congelador.');
-      setIsFormOpen(false);
+      closeForm();
     } catch (err) {
       console.error('Error al crear producto en Supabase:', err);
       setProductsError('No se ha podido crear el producto.');
@@ -405,10 +414,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory('Alimentación')}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
               selectedCategories.includes('Alimentación')
-                ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-[1.02]'
+                ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
             <span className="text-lg md:text-2xl">🍎</span>
@@ -418,10 +427,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory('Limpieza')}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
               selectedCategories.includes('Limpieza')
-                ? 'border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-[1.02]'
+                ? 'border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
             <span className="text-lg md:text-2xl">🧹</span>
@@ -431,10 +440,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory('Mascotas')}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
               selectedCategories.includes('Mascotas')
-                ? 'border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-[1.02]'
+                ? 'border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
             <span className="text-lg md:text-2xl">🐾</span>
@@ -444,10 +453,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => setShowShoppingCart(!showShoppingCart)}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
               showShoppingCart
-                ? 'border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-[1.02]'
+                ? 'border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
             <span className="text-lg md:text-2xl">🛒</span>
@@ -495,7 +504,7 @@ export default function FreezerApp() {
           setProductsError(null);
           setIsFormOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl font-light text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
+        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl font-light text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 hover:rotate-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
         aria-label="Añadir nuevo producto"
       >
         +
@@ -504,14 +513,18 @@ export default function FreezerApp() {
       {/* Modal formulario nuevo producto */}
       {isFormOpen && (
         <div
-          className="fixed inset-0 z-30 flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm"
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-500 ${
+            isFormClosing ? 'opacity-0' : 'animate-[fadeIn_0.3s_ease-out]'
+          }`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-new-product-title"
-          onClick={() => setIsFormOpen(false)}
+          onClick={closeForm}
         >
           <div
-            className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            className={`w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)] ${
+              isFormClosing ? 'animate-[scaleDown_0.5s_ease-out]' : 'animate-[scaleUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="modal-new-product-title" className="mb-3 text-base font-semibold text-slate-100">
@@ -522,7 +535,7 @@ export default function FreezerApp() {
               initialProduct={null}
               loading={savingProduct}
               onSubmit={handleCreateProduct}
-              onCancel={() => setIsFormOpen(false)}
+              onCancel={closeForm}
             />
           </div>
         </div>

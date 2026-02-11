@@ -238,7 +238,7 @@ export default function ProductForm({
               aria-label="Restar cantidad a comprar"
               onClick={() => changeShoppingQuantityBy(-1)}
               disabled={loading || parseQuantity(shoppingQuantity) <= 0}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               -
             </button>
@@ -256,7 +256,7 @@ export default function ProductForm({
               aria-label="Sumar cantidad a comprar"
               onClick={() => changeShoppingQuantityBy(1)}
               disabled={loading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               +
             </button>
@@ -278,7 +278,7 @@ export default function ProductForm({
               aria-label="Restar cantidad"
               onClick={() => changeQuantityBy(-1)}
               disabled={loading || parseQuantity(quantity) <= 0}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               -
             </button>
@@ -297,7 +297,7 @@ export default function ProductForm({
               aria-label="Sumar cantidad"
               onClick={() => changeQuantityBy(1)}
               disabled={loading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all hover:bg-white/10 active:bg-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
             >
               +
             </button>
@@ -358,7 +358,7 @@ export default function ProductForm({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-3 py-2 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15)] transition-all hover:bg-slate-800/80 hover:scale-[1.02] active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-3 py-2 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-800/80 hover:scale-105 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
           >
             Cancelar
           </button>
@@ -366,7 +366,7 @@ export default function ProductForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 relative inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-400/40 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 px-3 py-2 text-sm font-bold text-white shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-all hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-[1.02] active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex-1 relative inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-400/40 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 px-3 py-2 text-sm font-bold text-white shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-105 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
         >
           {loading
             ? isEdit
