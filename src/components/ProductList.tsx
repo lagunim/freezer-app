@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Product, ProductInput } from '@/lib/products';
+import type { Product, ProductInput, ProductCategory } from '@/lib/products';
 import ProductForm from '@/components/ProductForm';
 import SwipeableProductCard from '@/components/SwipeableProductCard';
 
@@ -14,6 +14,17 @@ const getBadgeColor = (quantity: number) => {
   if (quantity === 0) return 'bg-red-500 text-white';
   if (quantity <= 10) return 'bg-blue-500 text-white';
   return 'bg-green-500 text-white';
+};
+
+const getCategoryInfo = (category: ProductCategory) => {
+  switch (category) {
+    case 'Alimentación':
+      return { emoji: '🍎', color: 'bg-emerald-500/90 text-white border-emerald-400/40' };
+    case 'Limpieza':
+      return { emoji: '🧹', color: 'bg-cyan-500/90 text-white border-cyan-400/40' };
+    case 'Mascotas':
+      return { emoji: '🐾', color: 'bg-amber-500/90 text-white border-amber-400/40' };
+  }
 };
 
 function formatDate(iso: string): string {
@@ -141,11 +152,17 @@ export default function ProductList({
                     
                     {/* Contenido de la tarjeta */}
                     <div className="relative z-10">
-                      {/* Fila superior: Nombre sin botones (botones accesibles mediante swipe) */}
-                      <div className="mb-2">
-                        <h3 className="text-base font-medium text-white line-clamp-2 drop-shadow-sm">
+                      {/* Fila superior: Nombre y categoría */}
+                      <div className="mb-2 flex items-start gap-2">
+                        <h3 className="flex-1 text-base font-medium text-white line-clamp-2 drop-shadow-sm">
                           {product.name}
                         </h3>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-xs font-bold shadow-lg ${getCategoryInfo(product.category).color}`}
+                        >
+                          <span>{getCategoryInfo(product.category).emoji}</span>
+                          <span className="hidden sm:inline">{product.category}</span>
+                        </span>
                       </div>
 
                       {/* Fila inferior: Badge de cantidad y fecha */}
@@ -230,9 +247,17 @@ export default function ProductList({
                   <div className="relative z-10">
                     {/* Fila superior: Nombre y botones */}
                     <div className="mb-2 flex items-start justify-between gap-3">
-                      <h3 className="flex-1 text-lg font-medium text-white line-clamp-2 drop-shadow-sm">
-                        {product.name}
-                      </h3>
+                      <div className="flex-1 flex items-start gap-2">
+                        <h3 className="flex-1 text-lg font-medium text-white line-clamp-2 drop-shadow-sm">
+                          {product.name}
+                        </h3>
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold shadow-lg ${getCategoryInfo(product.category).color}`}
+                        >
+                          <span>{getCategoryInfo(product.category).emoji}</span>
+                          <span>{product.category}</span>
+                        </span>
+                      </div>
                       <div className="flex shrink-0 flex-wrap gap-2">
                         <button
                           type="button"

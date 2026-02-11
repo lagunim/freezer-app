@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 
+export type ProductCategory = 'Limpieza' | 'Alimentación' | 'Mascotas';
+
 export interface Product {
   id: string;
   user_id: string;
@@ -9,6 +11,10 @@ export interface Product {
    * Unidad de la cantidad (ej. "g", "ml", "uds").
    */
   quantity_unit: string;
+  /**
+   * Categoría del producto.
+   */
+  category: ProductCategory;
   added_at: string;
   created_at?: string;
   updated_at?: string | null;
@@ -21,6 +27,10 @@ export interface ProductInput {
    * Unidad de la cantidad (ej. "g", "ml", "uds").
    */
   quantity_unit: string;
+  /**
+   * Categoría del producto.
+   */
+  category: ProductCategory;
   /**
    * Fecha en ISO (por ejemplo, '2024-01-31' o '2024-01-31T00:00:00Z').
    */
@@ -49,6 +59,7 @@ export async function createProduct(
     name: input.name,
     quantity: input.quantity,
     quantity_unit: input.quantity_unit,
+    category: input.category,
     added_at: input.added_at,
   };
 
@@ -75,6 +86,7 @@ export async function updateProduct(
       name: input.name,
       quantity: input.quantity,
       quantity_unit: input.quantity_unit,
+      category: input.category,
       added_at: input.added_at,
     })
     .eq('id', id)

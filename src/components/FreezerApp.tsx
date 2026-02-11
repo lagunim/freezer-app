@@ -6,7 +6,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
 import ProductForm from '@/components/ProductForm';
 import ProductList from '@/components/ProductList';
-import type { Product } from '@/lib/products';
+import type { Product, ProductCategory } from '@/lib/products';
 import {
   createProduct,
   deleteProduct,
@@ -29,6 +29,7 @@ export default function FreezerApp() {
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -168,11 +169,31 @@ export default function FreezerApp() {
     setAuthView('login');
   };
 
+  const toggleCategory = (category: ProductCategory) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(category)) {
+        // Si ya está seleccionada, la quitamos
+        return prev.filter((c) => c !== category);
+      } else {
+        // Si no está seleccionada, la añadimos
+        return [...prev, category];
+      }
+    });
+  };
+
   const filteredAndSortedProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
     let result = products;
 
+    // Filtrar por categorías seleccionadas (si hay alguna seleccionada)
+    if (selectedCategories.length > 0) {
+      result = result.filter((product) => 
+        selectedCategories.includes(product.category)
+      );
+    }
+
+    // Filtrar por término de búsqueda
     if (term) {
       result = result.filter((product) =>
         product.name.toLowerCase().includes(term)
@@ -185,7 +206,7 @@ export default function FreezerApp() {
       const bTime = new Date(b.added_at).getTime();
       return bTime - aTime;
     });
-  }, [products, searchTerm]);
+  }, [products, searchTerm, selectedCategories]);
 
   if (loading) {
     return (
@@ -308,25 +329,69 @@ export default function FreezerApp() {
         </div>
       </header>
 
-      {/* Barra de búsqueda */}
-      <div className="sticky top-0">
-        <label htmlFor="product-search" className="sr-only">
-          Buscar por nombre
-        </label>
-        <div className="relative">
-          <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      {/* Barra de búsqueda y filtros */}
+      <div className="sticky top-0 z-10 space-y-3">
+        <div>
+          <label htmlFor="product-search" className="sr-only">
+            Buscar por nombre
+          </label>
+          <div className="relative">
+            <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              id="product-search"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nombre…"
+              className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2.5 pl-12 pr-4 text-base text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
+            />
           </div>
-          <input
-            id="product-search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nombre…"
-            className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2.5 pl-12 pr-4 text-base text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
-          />
+        </div>
+
+        {/* Filtros por categoría */}
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => toggleCategory('Alimentación')}
+            className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-xs font-bold transition-all duration-200 ${
+              selectedCategories.includes('Alimentación')
+                ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-[1.02]'
+            }`}
+          >
+            <span className="text-2xl">🍎</span>
+            <span className="leading-tight">Alimentación</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleCategory('Limpieza')}
+            className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-xs font-bold transition-all duration-200 ${
+              selectedCategories.includes('Limpieza')
+                ? 'border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-[1.02]'
+            }`}
+          >
+            <span className="text-2xl">🧹</span>
+            <span className="leading-tight">Limpieza</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleCategory('Mascotas')}
+            className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-xs font-bold transition-all duration-200 ${
+              selectedCategories.includes('Mascotas')
+                ? 'border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105'
+                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-[1.02]'
+            }`}
+          >
+            <span className="text-2xl">🐾</span>
+            <span className="leading-tight">Mascotas</span>
+          </button>
         </div>
       </div>
 

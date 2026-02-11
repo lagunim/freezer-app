@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Product, ProductInput } from '@/lib/products';
+import type { Product, ProductInput, ProductCategory } from '@/lib/products';
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -50,6 +50,9 @@ export default function ProductForm({
   const [quantityUnit, setQuantityUnit] = useState(
     initialProduct?.quantity_unit ?? 'uds'
   );
+  const [category, setCategory] = useState<ProductCategory>(
+    initialProduct?.category ?? 'Alimentación'
+  );
   const [addedAt, setAddedAt] = useState(initialDate);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -59,6 +62,7 @@ export default function ProductForm({
       initialProduct?.quantity != null ? String(initialProduct.quantity) : '1'
     );
     setQuantityUnit(initialProduct?.quantity_unit ?? 'uds');
+    setCategory(initialProduct?.category ?? 'Alimentación');
     setAddedAt(toDateInputValue(initialProduct?.added_at));
     setLocalError(null);
   }, [initialProduct]);
@@ -121,6 +125,7 @@ export default function ProductForm({
       name: trimmedName,
       quantity: qtyNumber,
       quantity_unit: quantityUnit,
+      category: category,
       // Normalizamos a inicio de día; el backend lo guardará como timestamptz
       added_at: new Date(addedAt).toISOString(),
     };
@@ -151,6 +156,28 @@ export default function ProductForm({
             placeholder="Ej. Pechugas de pollo"
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor="product-category"
+          className="flex items-center gap-2 text-sm font-semibold text-slate-200 md:text-sm"
+        >
+          <svg className="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          Categoría
+        </label>
+        <select
+          id="product-category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as ProductCategory)}
+          className="w-full rounded-xl border border-white/20 bg-slate-800/40 backdrop-blur-xl px-4 py-3 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 focus:border-sky-400/50 focus:shadow-[0_0_20px_rgba(56,189,248,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] focus:outline-none md:py-2 md:text-sm"
+        >
+          <option value="Alimentación">🍎 Alimentación</option>
+          <option value="Limpieza">🧹 Limpieza</option>
+          <option value="Mascotas">🐾 Mascotas</option>
+        </select>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 md:gap-4">
