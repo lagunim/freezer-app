@@ -42,6 +42,8 @@ export default function ProductList({
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
+    // Cerrar cualquier tarjeta deslizada cuando se abre el modal
+    setOpenSwipeId(null);
   };
 
   const handleConfirmDelete = () => {
@@ -125,13 +127,13 @@ export default function ProductList({
                   onDelete={() => handleDeleteClick(product)}
                 >
                   <div
-                    className={`relative overflow-hidden rounded-3xl border border-white/20 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ${
-                      isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_35px_rgba(147,197,253,0.3),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:border-white/30 hover:-translate-y-0.5'
+                    className={`relative overflow-hidden rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ${
+                      isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-0.5'
                     }`}
                     style={{
                       boxShadow: isConfirmingDelete 
                         ? '0 0 30px rgba(239, 68, 68, 0.5), 0 8px 16px rgba(0, 0, 0, 0.4)'
-                        : '0 0 20px rgba(147, 197, 253, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
+                        : '0 0 25px rgba(147, 197, 253, 0.2), 0 0 50px rgba(147, 197, 253, 0.1), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
                     }}
                   >
                     {/* Capa de brillo superior */}
@@ -158,47 +160,67 @@ export default function ProductList({
                         </span>
                       </div>
                     </div>
-
-                    {/* Modal de confirmación de borrado */}
-                    {isConfirmingDelete && (
-                      <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-slate-950/90 backdrop-blur-sm">
-                        <div className="px-4 text-center">
-                          <p className="mb-4 text-base font-medium text-white">
-                            ¿Borrar este producto?
-                          </p>
-                          <div className="flex justify-center gap-2">
-                            <button
-                              type="button"
-                              onClick={handleConfirmDelete}
-                              className="rounded-lg bg-red-600 px-5 py-3 text-base font-medium text-white transition hover:bg-red-500"
-                            >
-                              Sí, borrar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleCancelDelete}
-                              className="rounded-lg border border-slate-600 bg-slate-800 px-5 py-3 text-base font-medium text-slate-100 transition hover:bg-slate-700"
-                            >
-                              Cancelar
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </SwipeableProductCard>
+
+                {/* Panel de confirmación expandible */}
+                <div
+                  className={`overflow-hidden rounded-3xl transition-all duration-300 ease-out ${
+                    isConfirmingDelete
+                      ? 'max-h-[400px] opacity-100 mt-3'
+                      : 'max-h-0 opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <div className="rounded-3xl border-2 border-red-500/60 bg-slate-900/60 backdrop-blur-xl p-5 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]">
+                    <div className="text-center">
+                      <div className="mb-4 flex justify-center">
+                        <div className="rounded-full bg-red-500/20 p-3">
+                          <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="mb-5 text-lg font-bold text-white drop-shadow-lg">
+                        ¿Borrar este producto?
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={handleConfirmDelete}
+                          className="relative flex items-center justify-center gap-2 rounded-xl border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-6 py-3.5 text-base font-bold text-white shadow-[0_0_20px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_30px_rgba(239,68,68,0.7),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-95"
+                        >
+                          <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+                          <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span className="relative z-10">Sí, borrar</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelDelete}
+                          className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-slate-800/60 backdrop-blur-xl px-6 py-3.5 text-base font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Versión desktop: con botones visibles */}
               <div className="hidden md:block">
                 <div
-                  className={`relative overflow-hidden rounded-3xl border border-white/20 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ${
-                    isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_35px_rgba(147,197,253,0.3),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:border-white/30 hover:-translate-y-0.5'
+                  className={`relative overflow-hidden rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-3 transition-all duration-300 ${
+                    isConfirmingDelete ? 'ring-2 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'hover:shadow-[0_0_40px_rgba(147,197,253,0.5),0_0_80px_rgba(147,197,253,0.2),0_8px_16px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(255,255,255,0.15)] hover:border-sky-400/50 hover:-translate-y-0.5'
                   }`}
                   style={{
                     boxShadow: isConfirmingDelete 
                       ? '0 0 30px rgba(239, 68, 68, 0.5), 0 8px 16px rgba(0, 0, 0, 0.4)'
-                      : '0 0 20px rgba(147, 197, 253, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
+                      : '0 0 25px rgba(147, 197, 253, 0.2), 0 0 50px rgba(147, 197, 253, 0.1), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1)'
                   }}
                 >
                   {/* Capa de brillo superior */}
@@ -241,45 +263,65 @@ export default function ProductList({
                       </span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Modal de confirmación de borrado */}
-                  {isConfirmingDelete && (
-                    <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-slate-950/90 backdrop-blur-sm">
-                      <div className="px-4 text-center">
-                        <p className="mb-3 text-sm font-medium text-white">
-                          ¿Borrar este producto?
-                        </p>
-                        <div className="flex justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500"
-                          >
-                            Sí, borrar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleCancelDelete}
-                            className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
-                          >
-                            Cancelar
-                          </button>
+                {/* Panel de confirmación expandible desktop */}
+                <div
+                  className={`overflow-hidden rounded-3xl transition-all duration-300 ease-out ${
+                    isConfirmingDelete
+                      ? 'max-h-[300px] opacity-100 mt-3'
+                      : 'max-h-0 opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <div className="rounded-3xl border-2 border-red-500/60 bg-slate-900/60 backdrop-blur-xl p-4 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]">
+                    <div className="text-center">
+                      <div className="mb-3 flex justify-center">
+                        <div className="rounded-full bg-red-500/20 p-2">
+                          <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
                         </div>
                       </div>
+                      <p className="mb-4 text-base font-bold text-white drop-shadow-lg">
+                        ¿Borrar este producto?
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleConfirmDelete}
+                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 px-4 py-2 text-sm font-bold text-white shadow-[0_0_15px_rgba(239,68,68,0.4),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_25px_rgba(239,68,68,0.6),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95"
+                        >
+                          <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+                          <svg className="w-4 h-4 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span className="relative z-10">Sí, borrar</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelDelete}
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-slate-800/60 backdrop-blur-xl px-4 py-2 text-sm font-semibold text-slate-200 shadow-[0_0_15px_rgba(148,163,184,0.15),inset_0_1px_2px_rgba(255,255,255,0.05)] transition-all duration-200 hover:bg-slate-800/80 hover:shadow-[0_0_20px_rgba(148,163,184,0.25),inset_0_1px_2px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
               {/* Formulario de edición expandible */}
               <div
-                className={`overflow-hidden transition-all duration-300 ease-out ${
+                className={`overflow-hidden rounded-3xl transition-all duration-300 ease-out ${
                   isEditing
                     ? 'max-h-[800px] opacity-100 mt-3'
                     : 'max-h-0 opacity-0 pointer-events-none'
                 }`}
               >
-                <div className="rounded-3xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_20px_rgba(255,255,255,0.08)]">
+                <div className="rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(147,197,253,0.3),0_0_60px_rgba(147,197,253,0.15),inset_0_1px_3px_rgba(255,255,255,0.1)]">
                   <ProductForm
                     mode="edit"
                     initialProduct={product}
