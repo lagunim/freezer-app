@@ -3,11 +3,12 @@ import type { Product, ProductInput, ProductCategory } from '@/lib/products';
 import ProductForm from '@/components/ProductForm';
 import SwipeableProductCard from '@/components/SwipeableProductCard';
 
-interface ProductListProps {
+export interface ProductListProps {
   products: Product[];
   loading?: boolean;
   onUpdateProduct: (product: Product, input: ProductInput) => Promise<void> | void;
   onDelete: (product: Product) => void;
+  productNotification?: { productId: string; message: string; type: 'success' | 'error' } | null;
 }
 
 const getBadgeColor = (quantity: number) => {
@@ -60,6 +61,7 @@ export default function ProductList({
   loading = false,
   onUpdateProduct,
   onDelete,
+  productNotification,
 }: ProductListProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
@@ -375,6 +377,30 @@ export default function ProductList({
                   />
                 </div>
               </div>
+
+              {/* Notificación del producto */}
+              {productNotification?.productId === product.id && (
+                <div
+                  className={`alert-enter mt-3 rounded-2xl border-2 backdrop-blur-xl px-4 py-3 text-sm font-medium shadow-lg ${
+                    productNotification.type === 'success'
+                      ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : 'border-red-400/60 bg-red-500/20 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {productNotification.type === 'success' ? (
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    )}
+                    <span>{productNotification.message}</span>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

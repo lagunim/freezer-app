@@ -30,6 +30,7 @@ export default function FreezerApp() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
+  const [productNotification, setProductNotification] = useState<{ productId: string; message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -71,6 +72,15 @@ export default function FreezerApp() {
     }, 5000);
     return () => clearTimeout(t);
   }, [message, error]);
+
+  // Auto-dismiss product notifications after 3 seconds
+  useEffect(() => {
+    if (!productNotification) return;
+    const t = setTimeout(() => {
+      setProductNotification(null);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [productNotification]);
 
   useEffect(() => {
     if (!user) {
@@ -137,10 +147,10 @@ export default function FreezerApp() {
       setProducts((prev) =>
         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
       );
-      setMessage('Producto actualizado.');
+      setProductNotification({ productId: product.id, message: 'Producto actualizado.', type: 'success' });
     } catch (err) {
       console.error('Error al actualizar producto en Supabase:', err);
-      setProductsError('No se ha podido actualizar el producto.');
+      setProductNotification({ productId: product.id, message: 'No se ha podido actualizar el producto.', type: 'error' });
     } finally {
       setSavingProduct(false);
     }
@@ -150,11 +160,14 @@ export default function FreezerApp() {
     setProductsError(null);
     try {
       await deleteProduct(product.id);
-      setProducts((prev) => prev.filter((p) => p.id !== product.id));
-      setMessage('Producto eliminado.');
+      setProductNotification({ productId: product.id, message: 'Producto eliminado.', type: 'success' });
+      // Esperar un momento antes de eliminar el producto para que se vea la notificación
+      setTimeout(() => {
+        setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      }, 500);
     } catch (err) {
       console.error('Error al borrar producto en Supabase:', err);
-      setProductsError('No se ha podido borrar el producto.');
+      setProductNotification({ productId: product.id, message: 'No se ha podido borrar el producto.', type: 'error' });
     }
   };
 
@@ -420,6 +433,7 @@ export default function FreezerApp() {
           loading={productsLoading}
           onUpdateProduct={handleUpdateProduct}
           onDelete={handleDeleteProduct}
+          productNotification={productNotification}
         />
       </div>
 
