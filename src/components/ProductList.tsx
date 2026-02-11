@@ -19,11 +19,26 @@ const getBadgeColor = (quantity: number) => {
 const getCategoryInfo = (category: ProductCategory) => {
   switch (category) {
     case 'Alimentación':
-      return { emoji: '🍎', color: 'bg-emerald-500/90 text-white border-emerald-400/40' };
+      return {
+        emoji: '🍎',
+        bgColor: 'bg-emerald-500/20',
+        borderColor: 'border-emerald-400/40',
+        glowColor: 'shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+      };
     case 'Limpieza':
-      return { emoji: '🧹', color: 'bg-cyan-500/90 text-white border-cyan-400/40' };
+      return {
+        emoji: '🧹',
+        bgColor: 'bg-cyan-500/20',
+        borderColor: 'border-cyan-400/40',
+        glowColor: 'shadow-[0_0_20px_rgba(34,211,238,0.3)]'
+      };
     case 'Mascotas':
-      return { emoji: '🐾', color: 'bg-amber-500/90 text-white border-amber-400/40' };
+      return {
+        emoji: '🐾',
+        bgColor: 'bg-amber-500/20',
+        borderColor: 'border-amber-400/40',
+        glowColor: 'shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+      };
   }
 };
 
@@ -151,30 +166,32 @@ export default function ProductList({
                     <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
                     
                     {/* Contenido de la tarjeta */}
-                    <div className="relative z-10">
-                      {/* Fila superior: Nombre y categoría */}
-                      <div className="mb-2 flex items-start gap-2">
-                        <h3 className="flex-1 text-base font-medium text-white line-clamp-2 drop-shadow-sm">
-                          {product.name}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-xs font-bold shadow-lg ${getCategoryInfo(product.category).color}`}
-                        >
-                          <span>{getCategoryInfo(product.category).emoji}</span>
-                          <span className="hidden sm:inline">{product.category}</span>
+                    <div className="relative z-10 flex items-center gap-3">
+                      {/* Icono de categoría */}
+                      <div className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-3 flex items-center justify-center ${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor}`}>
+                        <span className="text-5xl">
+                          {getCategoryInfo(product.category).emoji}
                         </span>
                       </div>
 
-                      {/* Fila inferior: Badge de cantidad y fecha */}
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
-                        >
-                          {product.quantity} {product.quantity_unit ?? 'uds'}
-                        </span>
-                        <span className="text-xs text-slate-400 drop-shadow-sm">
-                          {formatDate(product.added_at)}
-                        </span>
+                      {/* Información del producto */}
+                      <div className="flex-1 min-w-0">
+                        {/* Nombre */}
+                        <h3 className="mb-2 text-base font-medium text-white line-clamp-2 drop-shadow-sm">
+                          {product.name}
+                        </h3>
+
+                        {/* Badge de cantidad y fecha */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
+                          >
+                            {product.quantity} {product.quantity_unit ?? 'uds'}
+                          </span>
+                          <span className="text-xs text-slate-400 drop-shadow-sm">
+                            {formatDate(product.added_at)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -244,48 +261,50 @@ export default function ProductList({
                   <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
                   
                   {/* Contenido de la tarjeta */}
-                  <div className="relative z-10">
-                    {/* Fila superior: Nombre y botones */}
-                    <div className="mb-2 flex items-start justify-between gap-3">
-                      <div className="flex-1 flex items-start gap-2">
+                  <div className="relative z-10 flex items-center gap-4">
+                    {/* Icono de categoría */}
+                    <div className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-4 flex items-center justify-center ${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor}`}>
+                      <span className="text-6xl">
+                        {getCategoryInfo(product.category).emoji}
+                      </span>
+                    </div>
+
+                    {/* Información del producto */}
+                    <div className="flex-1 min-w-0">
+                      {/* Fila superior: Nombre y botones */}
+                      <div className="mb-2 flex items-start justify-between gap-3">
                         <h3 className="flex-1 text-lg font-medium text-white line-clamp-2 drop-shadow-sm">
                           {product.name}
                         </h3>
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleEditForProduct(product)}
+                            className="inline-flex items-center justify-center rounded-lg border border-sky-500/40 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-[0_0_10px_rgba(56,189,248,0.2)] transition-all duration-200 hover:border-sky-400 hover:bg-slate-800 hover:shadow-[0_0_15px_rgba(56,189,248,0.4)] hover:scale-105"
+                          >
+                            {isEditing ? 'Cerrar' : 'Editar'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClick(product)}
+                            className="inline-flex items-center justify-center rounded-lg border border-red-500/40 bg-red-950/60 px-3 py-1.5 text-xs font-medium text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.2)] transition-all duration-200 hover:bg-red-950 hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:scale-105"
+                          >
+                            Borrar
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Fila inferior: Badge de cantidad y fecha */}
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold shadow-lg ${getCategoryInfo(product.category).color}`}
+                          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
                         >
-                          <span>{getCategoryInfo(product.category).emoji}</span>
-                          <span>{product.category}</span>
+                          {product.quantity} {product.quantity_unit ?? 'uds'}
+                        </span>
+                        <span className="text-xs text-slate-400 drop-shadow-sm">
+                          {formatDate(product.added_at)}
                         </span>
                       </div>
-                      <div className="flex shrink-0 flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => toggleEditForProduct(product)}
-                          className="inline-flex items-center justify-center rounded-lg border border-sky-500/40 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-[0_0_10px_rgba(56,189,248,0.2)] transition-all duration-200 hover:border-sky-400 hover:bg-slate-800 hover:shadow-[0_0_15px_rgba(56,189,248,0.4)] hover:scale-105"
-                        >
-                          {isEditing ? 'Cerrar' : 'Editar'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteClick(product)}
-                          className="inline-flex items-center justify-center rounded-lg border border-red-500/40 bg-red-950/60 px-3 py-1.5 text-xs font-medium text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.2)] transition-all duration-200 hover:bg-red-950 hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:scale-105"
-                        >
-                          Borrar
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Fila inferior: Badge de cantidad y fecha */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
-                      >
-                        {product.quantity} {product.quantity_unit ?? 'uds'}
-                      </span>
-                      <span className="text-xs text-slate-400 drop-shadow-sm">
-                        {formatDate(product.added_at)}
-                      </span>
                     </div>
                   </div>
                 </div>
