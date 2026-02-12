@@ -195,88 +195,90 @@ export default function PriceForm({
             )}
           </div>
 
-          {/* Precio total pagado */}
-          <div>
-            <label
-              htmlFor="total-price"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
-              Precio pagado (€)
-            </label>
-            <input
-              id="total-price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={totalPrice}
-              onChange={(e) => setTotalPrice(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-              placeholder="Ej: 3.40"
-              required
-            />
+          {/* Precio pagado y Cantidad */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="total-price"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Precio pagado (€)
+              </label>
+              <input
+                id="total-price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={totalPrice}
+                onChange={(e) => setTotalPrice(e.target.value)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                placeholder="Ej: 3.40"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="quantity"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Cantidad (g o ml)
+              </label>
+              <input
+                id="quantity"
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                placeholder="Ej: 250"
+                required
+              />
+            </div>
           </div>
 
-          {/* Cantidad */}
-          <div>
-            <label
-              htmlFor="quantity"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
-              Cantidad (en gramos o ml)
-            </label>
-            <input
-              id="quantity"
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-              placeholder="Ej: 250"
-              required
-            />
-          </div>
+          {/* Unidad de comparación y Supermercado */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="unit"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Unidad
+              </label>
+              <select
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value as Unit)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                required
+              >
+                {AVAILABLE_UNITS.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Unidad de normalización */}
-          <div>
-            <label
-              htmlFor="unit"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
-              Unidad de comparación
-            </label>
-            <select
-              id="unit"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value as Unit)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-              required
-            >
-              {AVAILABLE_UNITS.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Supermercado */}
-          <div>
-            <label
-              htmlFor="supermarket"
-              className="mb-2 block text-sm font-medium text-slate-300"
-            >
-              Supermercado
-            </label>
-            <input
-              id="supermarket"
-              type="text"
-              value={supermarket}
-              onChange={(e) => setSupermarket(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-              placeholder="Ej: Mercadona"
-              required
-            />
+            <div>
+              <label
+                htmlFor="supermarket"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Supermercado
+              </label>
+              <input
+                id="supermarket"
+                type="text"
+                value={supermarket}
+                onChange={(e) => setSupermarket(e.target.value)}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                placeholder="Ej: Mercadona"
+                required
+              />
+            </div>
           </div>
 
           {/* Fecha */}

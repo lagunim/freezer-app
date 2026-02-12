@@ -197,8 +197,7 @@ export default function PriceHunterApp() {
     }
 
     return prices.filter((price) =>
-      price.product_name.toLowerCase().includes(term) ||
-      price.supermarket.toLowerCase().includes(term)
+      price.product_name.toLowerCase().includes(term)
     );
   }, [prices, searchTerm]);
 
@@ -327,7 +326,7 @@ export default function PriceHunterApp() {
       <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
         <div>
           <label htmlFor="price-search" className="sr-only">
-            Buscar por producto o supermercado
+            Buscar por producto
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
@@ -340,7 +339,7 @@ export default function PriceHunterApp() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por producto o supermercado…"
+              placeholder="Buscar por producto…"
               className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
             />
           </div>
@@ -360,7 +359,7 @@ export default function PriceHunterApp() {
       )}
 
       {/* Main Content */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
         <PriceTable
           prices={filteredPrices}
           loading={pricesLoading}

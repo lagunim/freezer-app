@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { PriceEntry, PriceInput } from '@/lib/priceHunter';
 import { calculateNormalizedPrice } from '@/lib/priceHunter';
 
@@ -9,6 +9,9 @@ export interface PriceTableProps {
   onDelete: (id: string) => void;
   searchTerm?: string;
 }
+
+type SortField = 'product_name' | 'price' | 'date';
+type SortDirection = 'asc' | 'desc';
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -41,6 +44,8 @@ export default function PriceTable({
 }: PriceTableProps) {
   const [priceToDelete, setPriceToDelete] = useState<string | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceEntry | null>(null);
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const handleRowClick = (price: PriceEntry) => {
     setSelectedPrice(price);
@@ -69,6 +74,67 @@ export default function PriceTable({
   const handleEditClick = (price: PriceEntry) => {
     setSelectedPrice(null);
     onEdit(price);
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Si ya está ordenado por este campo, invertir la dirección
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si es un campo nuevo, ordenar ascendente por defecto (excepto fecha que es descendente)
+      setSortField(field);
+      setSortDirection(field === 'date' ? 'desc' : 'asc');
+    }
+  };
+
+  const sortedPrices = useMemo(() => {
+    const sorted = [...prices].sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      switch (sortField) {
+        case 'product_name':
+          aValue = a.product_name.toLowerCase();
+          bValue = b.product_name.toLowerCase();
+          break;
+        case 'price':
+          aValue = calculateNormalizedPrice(a.total_price, a.quantity, a.unit);
+          bValue = calculateNormalizedPrice(b.total_price, b.quantity, b.unit);
+          break;
+        case 'date':
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [prices, sortField, sortDirection]);
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return (
+        <svg className="ml-1 inline h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+        </svg>
+      );
+    }
+    
+    return sortDirection === 'asc' ? (
+      <svg className="ml-1 inline h-4 w-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="ml-1 inline h-4 w-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    );
   };
 
   if (loading) {
@@ -109,19 +175,31 @@ export default function PriceTable({
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-slate-700">
-              <th className="px-3 py-2 text-left text-sm font-semibold text-slate-300">
+              <th 
+                className="px-2 py-2 text-left text-sm font-semibold text-slate-300 cursor-pointer hover:text-slate-100 transition-colors select-none"
+                onClick={() => handleSort('product_name')}
+              >
                 Producto
+                <SortIcon field="product_name" />
               </th>
-              <th className="px-3 py-2 text-left text-sm font-semibold text-slate-300">
+              <th 
+                className="px-2 py-2 text-left text-sm font-semibold text-slate-300 cursor-pointer hover:text-slate-100 transition-colors select-none"
+                onClick={() => handleSort('price')}
+              >
                 Precio
+                <SortIcon field="price" />
               </th>
-              <th className="px-3 py-2 text-left text-sm font-semibold text-slate-300">
-                Supermercado
+              <th 
+                className="px-2 py-2 text-left text-sm font-semibold text-slate-300 cursor-pointer hover:text-slate-100 transition-colors select-none"
+                onClick={() => handleSort('date')}
+              >
+                Fecha
+                <SortIcon field="date" />
               </th>
             </tr>
           </thead>
           <tbody>
-            {prices.map((price) => {
+            {sortedPrices.map((price) => {
               const normalizedPrice = calculateNormalizedPrice(
                 price.total_price,
                 price.quantity,
@@ -133,14 +211,14 @@ export default function PriceTable({
                   onClick={() => handleRowClick(price)}
                   className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
                 >
-                  <td className="px-3 py-3 text-sm text-slate-100">
+                  <td className="px-2 py-2 text-sm text-slate-100">
                     {price.product_name}
                   </td>
-                  <td className="px-3 py-3 text-sm font-medium text-sky-400 whitespace-nowrap">
+                  <td className="px-2 py-2 text-sm font-medium text-sky-400 whitespace-nowrap">
                     {formatPrice(normalizedPrice)}/{price.unit}
                   </td>
-                  <td className="px-3 py-3 text-sm text-slate-300">
-                    {price.supermarket}
+                  <td className="px-2 py-2 text-sm text-slate-400 whitespace-nowrap">
+                    {formatDate(price.date)}
                   </td>
                 </tr>
               );
