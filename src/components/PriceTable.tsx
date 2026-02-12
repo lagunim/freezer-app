@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { PriceEntry, PriceInput } from '@/lib/priceHunter';
-import { calculateNormalizedPrice } from '@/lib/priceHunter';
+import { calculateNormalizedPrice, fetchPricesByProduct, fetchPricesBySupermarket } from '@/lib/priceHunter';
 
 export interface PriceTableProps {
   prices: PriceEntry[];
@@ -46,6 +46,12 @@ export default function PriceTable({
   const [selectedPrice, setSelectedPrice] = useState<PriceEntry | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  
+  // Estados para la vista de historial
+  const [historyView, setHistoryView] = useState<{ type: 'product' | 'supermarket', value: string } | null>(null);
+  const [historyPrices, setHistoryPrices] = useState<PriceEntry[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   const handleRowClick = (price: PriceEntry) => {
     setSelectedPrice(price);
@@ -74,6 +80,50 @@ export default function PriceTable({
   const handleEditClick = (price: PriceEntry) => {
     setSelectedPrice(null);
     onEdit(price);
+  };
+
+  const handleViewProductHistory = async (productName: string) => {
+    setLoadingHistory(true);
+    setHistoryError(null);
+    setHistoryView({ type: 'product', value: productName });
+    
+    try {
+      const data = await fetchPricesByProduct(productName);
+      setHistoryPrices(data);
+    } catch (error) {
+      console.error('Error al cargar historial de producto:', error);
+      setHistoryError('No se pudo cargar el historial del producto');
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleViewSupermarketHistory = async (supermarket: string) => {
+    setLoadingHistory(true);
+    setHistoryError(null);
+    setHistoryView({ type: 'supermarket', value: supermarket });
+    
+    try {
+      const data = await fetchPricesBySupermarket(supermarket);
+      setHistoryPrices(data);
+    } catch (error) {
+      console.error('Error al cargar historial de supermercado:', error);
+      setHistoryError('No se pudo cargar el historial del supermercado');
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleCloseHistory = () => {
+    setHistoryView(null);
+    setHistoryPrices([]);
+    setHistoryError(null);
+  };
+
+  const handleBackToDetails = () => {
+    setHistoryView(null);
+    setHistoryPrices([]);
+    setHistoryError(null);
   };
 
   const handleSort = (field: SortField) => {
@@ -256,9 +306,18 @@ export default function PriceTable({
               {/* Producto */}
               <div>
                 <p className="text-xs font-medium text-slate-400">Producto</p>
-                <p className="mt-1 text-base font-medium text-slate-100">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewProductHistory(selectedPrice.product_name);
+                  }}
+                  className="mt-1 text-base font-medium text-sky-400 hover:text-sky-300 hover:underline cursor-pointer transition-all flex items-center gap-1.5 group"
+                >
                   {selectedPrice.product_name}
-                </p>
+                  <svg className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
 
               {/* Precio calculado */}
@@ -297,7 +356,18 @@ export default function PriceTable({
               {/* Supermercado */}
               <div>
                 <p className="text-xs font-medium text-slate-400">Supermercado</p>
-                <p className="mt-1 text-sm text-slate-100">{selectedPrice.supermarket}</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewSupermarketHistory(selectedPrice.supermarket);
+                  }}
+                  className="mt-1 text-sm text-sky-400 hover:text-sky-300 hover:underline cursor-pointer transition-all flex items-center gap-1.5 group"
+                >
+                  {selectedPrice.supermarket}
+                  <svg className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
 
               {/* Fecha */}
@@ -322,6 +392,217 @@ export default function PriceTable({
                 Eliminar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de historial */}
+      {historyView && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={handleCloseHistory}
+        >
+          <div
+            className="mx-4 w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-[slideInUp_0.3s_ease-out] rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header con breadcrumb */}
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleBackToDetails}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+                  aria-label="Volver"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <span>Detalles</span>
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span className="text-slate-100 font-medium">
+                    Historial de {historyView.type === 'product' ? 'Producto' : 'Supermercado'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseHistory}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+                aria-label="Cerrar"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Título */}
+            <div className="mb-6">
+              <h3 className="text-2xl font-semibold text-slate-100">
+                {historyView.type === 'product' ? '📦 ' : '🏪 '}
+                {historyView.value}
+              </h3>
+              <p className="mt-1 text-sm text-slate-400">
+                {historyView.type === 'product' 
+                  ? 'Todos los precios registrados de este producto'
+                  : 'Todos los productos registrados en este supermercado'}
+              </p>
+            </div>
+
+            {/* Estados de carga y error */}
+            {loadingHistory && (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
+                  <p className="text-sm text-slate-400">Cargando historial...</p>
+                </div>
+              </div>
+            )}
+
+            {historyError && (
+              <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚠️</span>
+                  <p className="text-sm text-red-300">{historyError}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Estadísticas */}
+            {!loadingHistory && !historyError && historyPrices.length > 0 && (
+              <>
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {(() => {
+                    const normalizedPrices = historyPrices.map(p => 
+                      calculateNormalizedPrice(p.total_price, p.quantity, p.unit)
+                    );
+                    const minPrice = Math.min(...normalizedPrices);
+                    const maxPrice = Math.max(...normalizedPrices);
+                    const avgPrice = normalizedPrices.reduce((a, b) => a + b, 0) / normalizedPrices.length;
+
+                    return (
+                      <>
+                        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
+                          <p className="text-xs font-medium text-slate-400">Precio Mínimo</p>
+                          <p className="mt-1 text-xl font-semibold text-green-400">
+                            {formatPrice(minPrice)}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
+                          <p className="text-xs font-medium text-slate-400">Precio Promedio</p>
+                          <p className="mt-1 text-xl font-semibold text-sky-400">
+                            {formatPrice(avgPrice)}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
+                          <p className="text-xs font-medium text-slate-400">Precio Máximo</p>
+                          <p className="mt-1 text-xl font-semibold text-red-400">
+                            {formatPrice(maxPrice)}
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* Tabla de historial */}
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-700">
+                        {historyView.type === 'supermarket' && (
+                          <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                            Producto
+                          </th>
+                        )}
+                        {historyView.type === 'product' && (
+                          <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                            Supermercado
+                          </th>
+                        )}
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                          Precio Normalizado
+                        </th>
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                          Precio Total
+                        </th>
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                          Cantidad
+                        </th>
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                          Fecha
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historyPrices.map((price) => {
+                        const normalizedPrice = calculateNormalizedPrice(
+                          price.total_price,
+                          price.quantity,
+                          price.unit
+                        );
+                        return (
+                          <tr
+                            key={price.id}
+                            className="border-b border-slate-800 transition-colors hover:bg-slate-800/40"
+                          >
+                            {historyView.type === 'supermarket' && (
+                              <td className="px-2 py-3 text-sm text-slate-100">
+                                {price.product_name}
+                              </td>
+                            )}
+                            {historyView.type === 'product' && (
+                              <td className="px-2 py-3 text-sm text-slate-100">
+                                {price.supermarket}
+                              </td>
+                            )}
+                            <td className="px-2 py-3 text-sm font-medium text-sky-400 whitespace-nowrap">
+                              {formatPrice(normalizedPrice)}/{price.unit}
+                            </td>
+                            <td className="px-2 py-3 text-sm text-slate-300 whitespace-nowrap">
+                              {formatPrice(price.total_price)}
+                            </td>
+                            <td className="px-2 py-3 text-sm text-slate-300 whitespace-nowrap">
+                              {price.quantity} g/ml
+                            </td>
+                            <td className="px-2 py-3 text-sm text-slate-400 whitespace-nowrap">
+                              {formatDate(price.date)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Información adicional */}
+                <div className="mt-6 rounded-lg border border-slate-700 bg-slate-800/20 p-4">
+                  <p className="text-sm text-slate-400">
+                    <span className="font-medium text-slate-300">{historyPrices.length}</span> {historyPrices.length === 1 ? 'registro encontrado' : 'registros encontrados'}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Sin resultados */}
+            {!loadingHistory && !historyError && historyPrices.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-800/40">
+                  <span className="text-4xl">📭</span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-slate-100">
+                    Sin historial disponible
+                  </h3>
+                  <p className="max-w-md text-sm text-slate-400">
+                    No hay registros de precios para {historyView.type === 'product' ? 'este producto' : 'este supermercado'}.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

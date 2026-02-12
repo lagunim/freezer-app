@@ -143,3 +143,45 @@ export async function fetchUniqueProductNames(): Promise<string[]> {
   const uniqueNames = [...new Set(data.map((item) => item.product_name))];
   return uniqueNames;
 }
+
+/**
+ * Obtiene todos los precios históricos de un producto específico
+ * @param productName - Nombre del producto a buscar
+ * @returns Array de precios ordenados por fecha descendente
+ */
+export async function fetchPricesByProduct(
+  productName: string
+): Promise<PriceEntry[]> {
+  const { data, error } = await supabase
+    .from('price_hunter_prices')
+    .select('*')
+    .eq('product_name', productName)
+    .order('date', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as PriceEntry[]) ?? [];
+}
+
+/**
+ * Obtiene todos los precios históricos registrados en un supermercado específico
+ * @param supermarket - Nombre del supermercado a buscar
+ * @returns Array de precios ordenados por fecha descendente
+ */
+export async function fetchPricesBySupermarket(
+  supermarket: string
+): Promise<PriceEntry[]> {
+  const { data, error } = await supabase
+    .from('price_hunter_prices')
+    .select('*')
+    .eq('supermarket', supermarket)
+    .order('date', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as PriceEntry[]) ?? [];
+}
