@@ -22,3 +22,5 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+VERIFICACION_HISTORIAL.md
+test-history-feature.js

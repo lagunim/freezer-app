@@ -303,27 +303,41 @@ export default function PriceTable({
             </div>
 
             <div className="space-y-4">
-              {/* Producto */}
-              <div>
-                <p className="text-xs font-medium text-slate-400">Producto</p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewProductHistory(selectedPrice.product_name);
-                  }}
-                  className="mt-1 text-base font-medium text-sky-400 hover:text-sky-300 hover:underline cursor-pointer transition-all flex items-center gap-1.5 group"
-                >
-                  {selectedPrice.product_name}
-                  <svg className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+              {/* Producto - Tarjeta clicable mejorada */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewProductHistory(selectedPrice.product_name);
+                }}
+                className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl">📦</span>
+                      <p className="text-xs font-medium text-slate-400">Producto</p>
+                    </div>
+                    <p className="text-base font-semibold text-slate-100 group-hover:text-sky-400 transition-colors">
+                      {selectedPrice.product_name}
+                    </p>
+                    <p className="text-xs text-sky-400/60 group-hover:text-sky-400 mt-1 transition-colors">
+                      Ver historial completo →
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0 mt-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500/10 text-sky-400 transition-all group-hover:bg-sky-500/20 group-hover:scale-110">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </button>
 
               {/* Precio calculado */}
-              <div>
-                <p className="text-xs font-medium text-slate-400">Precio normalizado</p>
-                <p className="mt-1 text-lg font-semibold text-sky-400">
+              <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-4">
+                <p className="text-xs font-medium text-slate-400 mb-2">Precio normalizado</p>
+                <p className="text-2xl font-bold text-sky-400">
                   {formatPrice(
                     calculateNormalizedPrice(
                       selectedPrice.total_price,
@@ -331,49 +345,63 @@ export default function PriceTable({
                       selectedPrice.unit
                     )
                   )}
-                  /{selectedPrice.unit}
+                  <span className="text-base font-normal text-slate-400 ml-1">/{selectedPrice.unit}</span>
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Precio pagado */}
-                <div>
-                  <p className="text-xs font-medium text-slate-400">Precio pagado</p>
-                  <p className="mt-1 text-sm text-slate-100">
+                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                  <p className="text-xs font-medium text-slate-400 mb-1">Precio pagado</p>
+                  <p className="text-base font-semibold text-slate-100">
                     {formatPrice(selectedPrice.total_price)}
                   </p>
                 </div>
 
                 {/* Cantidad */}
-                <div>
-                  <p className="text-xs font-medium text-slate-400">Cantidad</p>
-                  <p className="mt-1 text-sm text-slate-100">
+                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                  <p className="text-xs font-medium text-slate-400 mb-1">Cantidad</p>
+                  <p className="text-base font-semibold text-slate-100">
                     {selectedPrice.quantity} g/ml
                   </p>
                 </div>
               </div>
 
-              {/* Supermercado */}
-              <div>
-                <p className="text-xs font-medium text-slate-400">Supermercado</p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewSupermarketHistory(selectedPrice.supermarket);
-                  }}
-                  className="mt-1 text-sm text-sky-400 hover:text-sky-300 hover:underline cursor-pointer transition-all flex items-center gap-1.5 group"
-                >
-                  {selectedPrice.supermarket}
-                  <svg className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+              {/* Supermercado - Tarjeta clicable mejorada */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewSupermarketHistory(selectedPrice.supermarket);
+                }}
+                className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl">🏪</span>
+                      <p className="text-xs font-medium text-slate-400">Supermercado</p>
+                    </div>
+                    <p className="text-base font-semibold text-slate-100 group-hover:text-sky-400 transition-colors">
+                      {selectedPrice.supermarket}
+                    </p>
+                    <p className="text-xs text-sky-400/60 group-hover:text-sky-400 mt-1 transition-colors">
+                      Ver todos los productos →
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0 mt-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500/10 text-sky-400 transition-all group-hover:bg-sky-500/20 group-hover:scale-110">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </button>
 
               {/* Fecha */}
-              <div>
-                <p className="text-xs font-medium text-slate-400">Fecha de compra</p>
-                <p className="mt-1 text-sm text-slate-100">{formatDate(selectedPrice.date)}</p>
+              <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                <p className="text-xs font-medium text-slate-400 mb-1">Fecha de compra</p>
+                <p className="text-base font-semibold text-slate-100">{formatDate(selectedPrice.date)}</p>
               </div>
             </div>
 
