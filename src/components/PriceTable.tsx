@@ -7,6 +7,7 @@ export interface PriceTableProps {
   loading?: boolean;
   onEdit: (price: PriceEntry) => void;
   onDelete: (id: string) => void;
+  searchTerm?: string;
 }
 
 function formatDate(iso: string): string {
@@ -36,6 +37,7 @@ export default function PriceTable({
   loading = false,
   onEdit,
   onDelete,
+  searchTerm = '',
 }: PriceTableProps) {
   const [priceToDelete, setPriceToDelete] = useState<string | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceEntry | null>(null);
@@ -81,17 +83,20 @@ export default function PriceTable({
   }
 
   if (prices.length === 0) {
+    const isSearching = searchTerm.trim() !== '';
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-sky-500/20 to-slate-800/40 shadow-[0_0_30px_rgba(56,189,248,0.2)]">
-          <span className="text-4xl">📊</span>
+          <span className="text-4xl">{isSearching ? '🔍' : '📊'}</span>
         </div>
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-slate-100">
-            No hay precios registrados
+            {isSearching ? 'No se encontraron resultados' : 'No hay precios registrados'}
           </h3>
           <p className="max-w-md text-sm text-slate-400">
-            Comienza añadiendo precios de productos para compararlos entre supermercados.
+            {isSearching
+              ? 'Intenta con otros términos de búsqueda.'
+              : 'Comienza añadiendo precios de productos para compararlos entre supermercados.'}
           </p>
         </div>
       </div>

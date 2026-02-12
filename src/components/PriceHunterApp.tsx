@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import FriezaIcon from '@/public/Frieza-icon.png';
@@ -32,6 +32,7 @@ export default function PriceHunterApp() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPrice, setEditingPrice] = useState<PriceEntry | null>(null);
   const [productSuggestions, setProductSuggestions] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const init = async () => {
@@ -188,6 +189,19 @@ export default function PriceHunterApp() {
     setIsFormOpen(true);
   };
 
+  const filteredPrices = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+
+    if (!term) {
+      return prices;
+    }
+
+    return prices.filter((price) =>
+      price.product_name.toLowerCase().includes(term) ||
+      price.supermarket.toLowerCase().includes(term)
+    );
+  }, [prices, searchTerm]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -309,6 +323,30 @@ export default function PriceHunterApp() {
         </button>
       </header>
 
+      {/* Barra de búsqueda */}
+      <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
+        <div>
+          <label htmlFor="price-search" className="sr-only">
+            Buscar por producto o supermercado
+          </label>
+          <div className="relative">
+            <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              id="price-search"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por producto o supermercado…"
+              className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Messages */}
       {message && (
         <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-green-500/50 bg-green-500/10 p-3">
@@ -324,10 +362,11 @@ export default function PriceHunterApp() {
       {/* Main Content */}
       <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
         <PriceTable
-          prices={prices}
+          prices={filteredPrices}
           loading={pricesLoading}
           onEdit={handleEdit}
           onDelete={handleDeletePrice}
+          searchTerm={searchTerm}
         />
       </div>
 
