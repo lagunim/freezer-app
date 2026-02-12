@@ -185,7 +185,7 @@ export default function ProductForm({
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
           placeholder="Ej. Pechugas de pollo"
         />
       </div>
@@ -202,7 +202,7 @@ export default function ProductForm({
             id="product-category"
             value={category}
             onChange={(e) => setCategory(e.target.value as ProductCategory)}
-            className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+            className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
           >
             <option value="Alimentación">🍎 Alimentación</option>
             <option value="Limpieza">🧹 Limpieza</option>
@@ -233,7 +233,7 @@ export default function ProductForm({
               min={0}
               value={shoppingQuantity}
               onChange={(e) => setShoppingQuantity(e.target.value)}
-              className="w-full bg-transparent px-2 py-2 text-sm text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              className="w-full bg-transparent px-2 py-2 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
               placeholder="0"
             />
             <button
@@ -274,7 +274,7 @@ export default function ProductForm({
               required
               value={quantity}
               onChange={handleQuantityChange}
-              className="w-full bg-transparent px-2 py-2 text-sm text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              className="w-full bg-transparent px-2 py-2 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
               placeholder="0"
             />
             <button
@@ -300,7 +300,7 @@ export default function ProductForm({
             id="product-quantity-unit"
             value={quantityUnit}
             onChange={(e) => setQuantityUnit(e.target.value)}
-            className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+            className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
           >
             <option value="uds">uds</option>
             <option value="g">g</option>
@@ -324,7 +324,7 @@ export default function ProductForm({
           required
           value={addedAt}
           onChange={(e) => setAddedAt(e.target.value)}
-          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
         />
       </div>
 
