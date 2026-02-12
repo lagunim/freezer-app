@@ -1,5 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
-
 interface MenuItem {
   id: string;
   label: string;
@@ -12,83 +10,39 @@ interface FloatingMenuProps {
 }
 
 export default function FloatingMenu({ items }: FloatingMenuProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const targetApp = items[0];
 
-  // Cerrar el menú al hacer clic fuera
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
-
-  // Cerrar el menú al presionar Escape
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isMenuOpen]);
+  if (!targetApp) {
+    return null;
+  }
 
   return (
-    <div ref={menuRef} className="fixed bottom-6 left-6 z-20 sm:bottom-8 sm:left-8">
-      {/* Menú emergente */}
-      {isMenuOpen && (
-        <div
-          className="absolute bottom-16 left-0 mb-2 min-w-[200px] animate-[slideInUp_0.3s_ease-out] rounded-xl border border-white/10 bg-slate-800/90 backdrop-blur-xl p-2 shadow-[0_0_30px_rgba(255,255,255,0.15)]"
-          role="menu"
-          aria-label="Menú de aplicaciones"
-        >
-          {items.map((item) => (
-            <a
-              key={item.id}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-slate-100 transition-all duration-200 hover:bg-slate-700/60 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-sky-500"
-              role="menuitem"
-            >
-              {item.icon && <span className="text-xl">{item.icon}</span>}
-              <span>{item.label}</span>
-            </a>
-          ))}
-        </div>
-      )}
-
-      {/* Botón flotante */}
-      <button
-        type="button"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl font-light text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 sm:text-3xl"
-        aria-label="Menú de aplicaciones"
-        aria-expanded={isMenuOpen}
-        aria-haspopup="true"
+    <div className="fixed bottom-6 left-6 z-20 sm:bottom-8 sm:left-8">
+      <a
+        href={targetApp.href}
+        className="group flex min-h-[44px] items-center gap-2.5 rounded-full border border-white/10 bg-slate-700/40 px-3.5 py-2.5 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:gap-3 sm:px-4"
+        aria-label={`Ir a ${targetApp.label}`}
+        title={`Ir a ${targetApp.label}`}
       >
+        {targetApp.icon && (
+          <span className="text-xl leading-none sm:text-2xl" aria-hidden>
+            {targetApp.icon}
+          </span>
+        )}
+        <span className="max-w-[120px] truncate text-xs font-semibold tracking-wide text-slate-100/95 sm:max-w-none sm:text-sm">
+          {targetApp.label}
+        </span>
         <svg
-          className="h-6 w-6 sm:h-7 sm:w-7"
+          className="h-4 w-4 text-slate-300 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-4.5 sm:w-4.5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
           strokeWidth="2"
+          aria-hidden
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-      </button>
+      </a>
     </div>
   );
 }

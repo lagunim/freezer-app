@@ -141,8 +141,18 @@ export default function PriceForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-lg animate-[slideInUp_0.3s_ease-out] rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={() => {
+        if (!loading) {
+          onCancel?.();
+        }
+      }}
+    >
+      <div
+        className="mx-4 w-full max-w-lg animate-[slideInUp_0.3s_ease-out] rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-slate-100">
             {isEdit ? 'Editar precio' : 'Añadir nuevo precio'}

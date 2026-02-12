@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { PriceEntry, PriceInput } from '@/lib/priceHunter';
 import { calculateNormalizedPrice, fetchPricesByProduct, fetchPricesBySupermarket } from '@/lib/priceHunter';
 
@@ -79,9 +79,24 @@ export default function PriceTable({
   };
 
   const handleEditClick = (price: PriceEntry) => {
-    setSelectedPrice(null);
     onEdit(price);
   };
+
+  // Mantener el modal de detalles sincronizado con los datos actuales
+  // (por ejemplo, tras editar un precio desde ese modal).
+  useEffect(() => {
+    if (!selectedPrice) return;
+
+    const updatedSelectedPrice = prices.find((p) => p.id === selectedPrice.id);
+    if (!updatedSelectedPrice) {
+      setSelectedPrice(null);
+      return;
+    }
+
+    if (updatedSelectedPrice !== selectedPrice) {
+      setSelectedPrice(updatedSelectedPrice);
+    }
+  }, [prices, selectedPrice]);
 
   const handleViewProductHistory = async (productName: string) => {
     setLoadingHistory(true);

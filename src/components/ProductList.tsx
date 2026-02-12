@@ -488,15 +488,16 @@ export default function ProductList({
 
       {/* Botones flotantes de selección múltiple */}
       {selectedProductIds.size > 0 && onClearSelection && onDeleteMultiple && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-row gap-3 sm:bottom-8">
+        <div className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 sm:bottom-10 md:bottom-8">
+          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-slate-900/65 px-2 py-2 backdrop-blur-xl shadow-[0_0_25px_rgba(15,23,42,0.45)]">
           {/* Botón Cancelar */}
           <button
             type="button"
             onClick={onClearSelection}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-white shadow-[0_0_20px_rgba(148,163,184,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-slate-500 hover:via-slate-600 hover:to-slate-700 hover:shadow-[0_0_25px_rgba(148,163,184,0.4)] hover:scale-110 active:scale-95 sm:h-16 sm:w-16 animate-[slideInUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]"
+            className="flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 text-white shadow-[0_0_20px_rgba(148,163,184,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-slate-500 hover:via-slate-600 hover:to-slate-700 hover:shadow-[0_0_25px_rgba(148,163,184,0.4)] hover:scale-105 active:scale-95 sm:h-14 sm:w-14 animate-[slideInUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]"
             aria-label="Cancelar selección"
           >
-            <svg className="w-6 h-6 relative z-10 drop-shadow-lg sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -505,17 +506,18 @@ export default function ProductList({
           <button
             type="button"
             onClick={() => setIsDeleteMultipleModalOpen(true)}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white shadow-[0_0_25px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_35px_rgba(239,68,68,0.7)] hover:scale-110 active:scale-95 sm:h-16 sm:w-16 animate-[slideInUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)_0.1s_backwards]"
+            className="relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white shadow-[0_0_25px_rgba(239,68,68,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:from-red-400 hover:via-red-500 hover:to-red-600 hover:shadow-[0_0_35px_rgba(239,68,68,0.7)] hover:scale-105 active:scale-95 sm:h-14 sm:w-14 animate-[slideInUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)_0.1s_backwards]"
             aria-label="Borrar productos seleccionados"
           >
-            <svg className="w-6 h-6 relative z-10 drop-shadow-lg sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             {/* Badge con cantidad */}
-            <div className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-xs font-bold text-white shadow-lg">
+            <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-[10px] font-bold text-white shadow-lg sm:h-6 sm:w-6 sm:text-xs">
               {selectedProductIds.size}
             </div>
           </button>
+          </div>
         </div>
       )}
 

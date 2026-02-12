@@ -23,6 +23,63 @@
   }
 }
 
+/* Transiciones entre páginas (Freezer App <-> Price Hunter) */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root) {
+    animation: appFadeOut 220ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: appFadeIn 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Fallback visual sutil para navegadores sin View Transition */
+  .page-shell {
+    animation: pageEnter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes appFadeOut {
+  from {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(2px);
+    transform: scale(0.995);
+  }
+}
+
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: scale(1.005);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Transiciones suaves para alertas con rebote */
 .alert-enter {
   animation: alertFadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
