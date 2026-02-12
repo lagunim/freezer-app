@@ -445,22 +445,34 @@ export default function FreezerApp() {
   return (
     <section>
       {/* Header */}
-      <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-        <img
-          src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-          alt="Freezer App"
-          className="h-20 px-4 rounded-2xl shadow-sm"
-        />
-        <div className="w-64">
-          <div className="space-y-1 text-center">
-            <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-              <span>Freezer App</span>
-            </h1>
-            <p className="text-xs text-left text-slate-400 sm:text-sm">
-              {user.email ?? 'usuario sin email'}
-            </p>
+      <header className="flex items-center justify-between p-2 mb-2 sm:mb-3 md:mb-4">
+        <div className="flex items-center">
+          <img
+            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+            alt="Freezer App"
+            className="h-20 px-4 rounded-2xl shadow-sm"
+          />
+          <div className="w-64">
+            <div className="space-y-1 text-center">
+              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                <span>Freezer App</span>
+              </h1>
+              <p className="text-xs text-left text-slate-400 sm:text-sm">
+                {user.email ?? 'usuario sin email'}
+              </p>
+            </div>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
       </header>
 
       {/* Barra de búsqueda y filtros */}

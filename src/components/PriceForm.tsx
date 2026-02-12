@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { PriceEntry, PriceInput } from '@/lib/priceHunter';
+import type { PriceEntry, PriceInput, Unit } from '@/lib/priceHunter';
 
 interface PriceFormProps {
   mode: 'create' | 'edit';
@@ -30,7 +30,7 @@ function toDateInputValue(iso?: string): string {
   return `${year}-${month}-${day}`;
 }
 
-const COMMON_UNITS = ['100g', '100ml', '1Kg', '1L', '500g', '500ml'];
+const AVAILABLE_UNITS: Unit[] = ['100g', '1Kg', '100ml', '1L'];
 
 export default function PriceForm({
   mode,
@@ -43,10 +43,13 @@ export default function PriceForm({
   const isEdit = mode === 'edit';
 
   const [productName, setProductName] = useState(initialPrice?.product_name ?? '');
-  const [price, setPrice] = useState(
-    initialPrice?.price != null ? String(initialPrice.price) : ''
+  const [totalPrice, setTotalPrice] = useState(
+    initialPrice?.total_price != null ? String(initialPrice.total_price) : ''
   );
-  const [unit, setUnit] = useState(initialPrice?.unit ?? '100g');
+  const [quantity, setQuantity] = useState(
+    initialPrice?.quantity != null ? String(initialPrice.quantity) : ''
+  );
+  const [unit, setUnit] = useState<Unit>(initialPrice?.unit ?? '1Kg');
   const [supermarket, setSupermarket] = useState(initialPrice?.supermarket ?? '');
   const [date, setDate] = useState(toDateInputValue(initialPrice?.date));
   const [localError, setLocalError] = useState<string | null>(null);
@@ -55,8 +58,9 @@ export default function PriceForm({
 
   useEffect(() => {
     setProductName(initialPrice?.product_name ?? '');
-    setPrice(initialPrice?.price != null ? String(initialPrice.price) : '');
-    setUnit(initialPrice?.unit ?? '100g');
+    setTotalPrice(initialPrice?.total_price != null ? String(initialPrice.total_price) : '');
+    setQuantity(initialPrice?.quantity != null ? String(initialPrice.quantity) : '');
+    setUnit(initialPrice?.unit ?? '1Kg');
     setSupermarket(initialPrice?.supermarket ?? '');
     setDate(toDateInputValue(initialPrice?.date));
     setLocalError(null);
@@ -96,15 +100,15 @@ export default function PriceForm({
       return;
     }
 
-    const priceNumber = Number.parseFloat(price);
-    if (Number.isNaN(priceNumber) || priceNumber < 0) {
+    const totalPriceNumber = Number.parseFloat(totalPrice);
+    if (Number.isNaN(totalPriceNumber) || totalPriceNumber < 0) {
       setLocalError('El precio debe ser un número mayor o igual que 0.');
       return;
     }
 
-    const trimmedUnit = unit.trim();
-    if (!trimmedUnit) {
-      setLocalError('La unidad no puede estar vacía.');
+    const quantityNumber = Number.parseFloat(quantity);
+    if (Number.isNaN(quantityNumber) || quantityNumber <= 0) {
+      setLocalError('La cantidad debe ser un número mayor que 0.');
       return;
     }
 
@@ -121,8 +125,9 @@ export default function PriceForm({
 
     const input: PriceInput = {
       product_name: trimmedProductName,
-      price: priceNumber,
-      unit: trimmedUnit,
+      total_price: totalPriceNumber,
+      quantity: quantityNumber,
+      unit: unit,
       supermarket: trimmedSupermarket,
       date: new Date(date).toISOString(),
     };
@@ -190,61 +195,69 @@ export default function PriceForm({
             )}
           </div>
 
-          {/* Precio */}
+          {/* Precio total pagado */}
           <div>
             <label
-              htmlFor="price"
+              htmlFor="total-price"
               className="mb-2 block text-sm font-medium text-slate-300"
             >
-              Precio (€)
+              Precio pagado (€)
             </label>
             <input
-              id="price"
+              id="total-price"
               type="number"
               step="0.01"
               min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              value={totalPrice}
+              onChange={(e) => setTotalPrice(e.target.value)}
               className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-              placeholder="Ej: 2.50"
+              placeholder="Ej: 3.40"
               required
             />
           </div>
 
-          {/* Unidad */}
+          {/* Cantidad */}
+          <div>
+            <label
+              htmlFor="quantity"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              Cantidad (en gramos o ml)
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+              placeholder="Ej: 250"
+              required
+            />
+          </div>
+
+          {/* Unidad de normalización */}
           <div>
             <label
               htmlFor="unit"
               className="mb-2 block text-sm font-medium text-slate-300"
             >
-              Unidad
+              Unidad de comparación
             </label>
-            <div className="flex gap-2">
-              <select
-                id="unit"
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-                required
-              >
-                {COMMON_UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-                <option value="custom">Personalizado</option>
-              </select>
-              {unit === 'custom' && (
-                <input
-                  type="text"
-                  value={unit === 'custom' ? '' : unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-                  placeholder="Ej: 2Kg"
-                  required
-                />
-              )}
-            </div>
+            <select
+              id="unit"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value as Unit)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+              required
+            >
+              {AVAILABLE_UNITS.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Supermercado */}
