@@ -81,7 +81,6 @@ export default function ProductList({
   const [editingProductId, setEditingProductId] = useState<Product['id'] | null>(null);
   const [savingProductId, setSavingProductId] = useState<Product['id'] | null>(null);
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null);
-  const [isEditClosing, setIsEditClosing] = useState(false);
   const [isDeleteMultipleModalOpen, setIsDeleteMultipleModalOpen] = useState(false);
 
   const handleDeleteClick = (product: Product) => {
@@ -102,11 +101,7 @@ export default function ProductList({
   };
 
   const closeEditModal = () => {
-    setIsEditClosing(true);
-    setTimeout(() => {
-      setEditingProductId(null);
-      setIsEditClosing(false);
-    }, 500); // Duración de la animación con rebote
+    setEditingProductId(null);
   };
 
   const toggleEditForProduct = (product: Product) => {
@@ -114,7 +109,6 @@ export default function ProductList({
       closeEditModal();
     } else {
       setEditingProductId(product.id);
-      setIsEditClosing(false);
     }
   };
 
@@ -422,40 +416,32 @@ export default function ProductList({
                 </div>
               </div>
 
-              {/* Overlay para cerrar el modal de edición */}
+              {/* Modal de edición */}
               {isEditing && (
                 <div
-                  className={`fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-sm transition-opacity duration-800 ease-in-out ${
-                    isEditClosing ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="modal-edit-product-title"
                   onClick={closeEditModal}
-                  aria-hidden="true"
-                />
-              )}
-
-              {/* Formulario de edición expandible */}
-              <div
-                className={`transition-all duration-500 ${
-                  isEditing && !isEditClosing
-                    ? 'fixed inset-x-3 top-1/2 -translate-y-1/2 z-[110] max-w-sm mx-auto opacity-100 scale-100 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]'
-                    : isEditing && isEditClosing
-                    ? 'fixed inset-x-3 top-[calc(100%+2rem)] z-[110] max-w-sm mx-auto opacity-0 scale-95 ease-[cubic-bezier(0.6,-0.28,0.735,0.045)]'
-                    : 'max-h-0 opacity-0 pointer-events-none overflow-hidden rounded-3xl translate-y-full scale-90'
-                }`}
-              >
-                <div className="max-h-[85vh] overflow-y-auto rounded-3xl border-2 border-sky-400/30 bg-slate-800/40 backdrop-blur-xl p-4 shadow-[0_0_30px_rgba(147,197,253,0.3),0_0_60px_rgba(147,197,253,0.15),inset_0_1px_3px_rgba(255,255,255,0.1)]">
-                  <h3 className="mb-3 text-base font-semibold text-slate-100">
-                    Editar producto
-                  </h3>
-                  <ProductForm
-                    mode="edit"
-                    initialProduct={product}
-                    loading={savingProductId === product.id}
-                    onSubmit={(input) => handleUpdateProduct(product, input)}
-                    onCancel={closeEditModal}
-                  />
+                >
+                  <div
+                    className="w-full max-w-sm max-h-[85vh] overflow-y-auto animate-[slideInUp_0.3s_ease-out] rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 id="modal-edit-product-title" className="mb-3 text-base font-semibold text-slate-100">
+                      Editar producto
+                    </h3>
+                    <ProductForm
+                      mode="edit"
+                      initialProduct={product}
+                      loading={savingProductId === product.id}
+                      onSubmit={(input) => handleUpdateProduct(product, input)}
+                      onCancel={closeEditModal}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Notificación del producto */}
               {productNotification?.productId === product.id && (
@@ -536,13 +522,13 @@ export default function ProductList({
       {/* Modal de confirmación de borrado múltiple */}
       {isDeleteMultipleModalOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-500 animate-[fadeIn_0.3s_ease-out]"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           onClick={() => setIsDeleteMultipleModalOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-3xl border-2 border-red-500/60 bg-slate-900/90 backdrop-blur-xl p-6 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)] animate-[scaleUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]"
+            className="w-full max-w-sm animate-[slideInUp_0.3s_ease-out] rounded-3xl border-2 border-red-500/60 bg-slate-900/90 backdrop-blur-xl p-6 shadow-[0_0_40px_rgba(239,68,68,0.6),0_0_80px_rgba(239,68,68,0.3),inset_0_1px_3px_rgba(255,100,100,0.3)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
