@@ -585,7 +585,7 @@ export default function PriceTable({
             {/* Estadísticas */}
             {!loadingHistory && !historyError && filteredHistoryPrices.length > 0 && (
               <>
-                <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="mb-5 space-y-2.5">
                   {(() => {
                     const normalizedPrices = filteredHistoryPrices.map(p => 
                       calculateNormalizedPrice(p.total_price, p.quantity, p.unit)
@@ -602,42 +602,41 @@ export default function PriceTable({
 
                     return (
                       <>
-                        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-                          <p className="text-xs font-medium text-slate-400 mb-2">Precio Mínimo</p>
-                          <div className="flex items-baseline justify-between gap-2">
-                            <p className="text-xl font-semibold text-green-400">
+                        <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800/35 backdrop-blur-sm">
+                          <div className="px-2 py-2.5 text-center sm:px-3">
+                            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Mín</p>
+                            <p className="mt-0.5 text-base font-semibold leading-none text-green-400 sm:text-lg">
                               {formatPrice(minPrice)}
                             </p>
-                            <div className="flex flex-col items-end text-right">
-                              <p className="text-xs text-slate-400 truncate max-w-[120px]">
-                                {historyView.type === 'product' ? minPriceEntry.supermarket : minPriceEntry.product_name}
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                {formatDate(minPriceEntry.date)}
-                              </p>
-                            </div>
                           </div>
-                        </div>
-                        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-                          <p className="text-xs font-medium text-slate-400">Precio Promedio</p>
-                          <p className="mt-1 text-xl font-semibold text-sky-400">
-                            {formatPrice(avgPrice)}
-                          </p>
-                        </div>
-                        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-                          <p className="text-xs font-medium text-slate-400 mb-2">Precio Máximo</p>
-                          <div className="flex items-baseline justify-between gap-2">
-                            <p className="text-xl font-semibold text-red-400">
+                          <div className="border-x border-slate-700/90 px-2 py-2.5 text-center sm:px-3">
+                            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Media</p>
+                            <p className="mt-0.5 text-base font-semibold leading-none text-sky-400 sm:text-lg">
+                              {formatPrice(avgPrice)}
+                            </p>
+                          </div>
+                          <div className="px-2 py-2.5 text-center sm:px-3">
+                            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Máx</p>
+                            <p className="mt-0.5 text-base font-semibold leading-none text-red-400 sm:text-lg">
                               {formatPrice(maxPrice)}
                             </p>
-                            <div className="flex flex-col items-end text-right">
-                              <p className="text-xs text-slate-400 truncate max-w-[120px]">
-                                {historyView.type === 'product' ? maxPriceEntry.supermarket : maxPriceEntry.product_name}
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                {formatDate(maxPriceEntry.date)}
-                              </p>
-                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-1.5 text-[11px] text-slate-400 sm:grid-cols-2">
+                          <div className="truncate rounded-lg border border-green-500/20 bg-green-500/10 px-2.5 py-1.5">
+                            <span className="font-medium text-green-300">Mejor:</span>{' '}
+                            <span className="text-slate-300">
+                              {historyView.type === 'product' ? minPriceEntry.supermarket : minPriceEntry.product_name}
+                            </span>{' '}
+                            <span className="text-slate-500">· {formatDate(minPriceEntry.date)}</span>
+                          </div>
+                          <div className="truncate rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5">
+                            <span className="font-medium text-red-300">Peor:</span>{' '}
+                            <span className="text-slate-300">
+                              {historyView.type === 'product' ? maxPriceEntry.supermarket : maxPriceEntry.product_name}
+                            </span>{' '}
+                            <span className="text-slate-500">· {formatDate(maxPriceEntry.date)}</span>
                           </div>
                         </div>
                       </>
