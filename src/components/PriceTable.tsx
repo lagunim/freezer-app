@@ -52,6 +52,7 @@ export default function PriceTable({
   const [historyPrices, setHistoryPrices] = useState<PriceEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('all');
 
   const handleRowClick = (price: PriceEntry) => {
     setSelectedPrice(price);
@@ -124,7 +125,29 @@ export default function PriceTable({
     setHistoryView(null);
     setHistoryPrices([]);
     setHistoryError(null);
+    setTimeFilter('all'); // Reset filter when going back
   };
+
+  // Filtrar precios según el rango temporal seleccionado
+  const filteredHistoryPrices = useMemo(() => {
+    if (timeFilter === 'all') {
+      return historyPrices;
+    }
+
+    const now = new Date();
+    const filterDate = new Date();
+
+    if (timeFilter === '6months') {
+      filterDate.setMonth(now.getMonth() - 6);
+    } else if (timeFilter === '1year') {
+      filterDate.setFullYear(now.getFullYear() - 1);
+    }
+
+    return historyPrices.filter(price => {
+      const priceDate = new Date(price.date);
+      return priceDate >= filterDate;
+    });
+  }, [historyPrices, timeFilter]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -468,7 +491,7 @@ export default function PriceTable({
             </div>
 
             {/* Título */}
-            <div className="mb-6">
+            <div className="mb-4">
               <h3 className="text-2xl font-semibold text-slate-100">
                 {historyView.type === 'product' ? '📦 ' : '🏪 '}
                 {historyView.value}
@@ -479,6 +502,51 @@ export default function PriceTable({
                   : 'Todos los productos registrados en este supermercado'}
               </p>
             </div>
+
+            {/* Filtros temporales (solo para vista de producto) */}
+            {historyView.type === 'product' && (
+              <div className="mb-6 flex flex-wrap gap-2">
+                <button
+                  onClick={() => setTimeFilter('6months')}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    timeFilter === '6months'
+                      ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/30'
+                      : 'border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100'
+                  }`}
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>6 meses</span>
+                </button>
+                <button
+                  onClick={() => setTimeFilter('1year')}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    timeFilter === '1year'
+                      ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/30'
+                      : 'border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100'
+                  }`}
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>1 año</span>
+                </button>
+                <button
+                  onClick={() => setTimeFilter('all')}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    timeFilter === 'all'
+                      ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/30'
+                      : 'border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100'
+                  }`}
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Histórico</span>
+                </button>
+              </div>
+            )}
 
             {/* Estados de carga y error */}
             {loadingHistory && (
@@ -500,24 +568,40 @@ export default function PriceTable({
             )}
 
             {/* Estadísticas */}
-            {!loadingHistory && !historyError && historyPrices.length > 0 && (
+            {!loadingHistory && !historyError && filteredHistoryPrices.length > 0 && (
               <>
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {(() => {
-                    const normalizedPrices = historyPrices.map(p => 
+                    const normalizedPrices = filteredHistoryPrices.map(p => 
                       calculateNormalizedPrice(p.total_price, p.quantity, p.unit)
                     );
                     const minPrice = Math.min(...normalizedPrices);
                     const maxPrice = Math.max(...normalizedPrices);
                     const avgPrice = normalizedPrices.reduce((a, b) => a + b, 0) / normalizedPrices.length;
 
+                    // Encontrar los registros con precio mínimo y máximo
+                    const minPriceIndex = normalizedPrices.indexOf(minPrice);
+                    const maxPriceIndex = normalizedPrices.indexOf(maxPrice);
+                    const minPriceEntry = filteredHistoryPrices[minPriceIndex];
+                    const maxPriceEntry = filteredHistoryPrices[maxPriceIndex];
+
                     return (
                       <>
                         <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-                          <p className="text-xs font-medium text-slate-400">Precio Mínimo</p>
-                          <p className="mt-1 text-xl font-semibold text-green-400">
-                            {formatPrice(minPrice)}
-                          </p>
+                          <p className="text-xs font-medium text-slate-400 mb-2">Precio Mínimo</p>
+                          <div className="flex items-baseline justify-between gap-2">
+                            <p className="text-xl font-semibold text-green-400">
+                              {formatPrice(minPrice)}
+                            </p>
+                            <div className="flex flex-col items-end text-right">
+                              <p className="text-xs text-slate-400 truncate max-w-[120px]">
+                                {historyView.type === 'product' ? minPriceEntry.supermarket : minPriceEntry.product_name}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {formatDate(minPriceEntry.date)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                         <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
                           <p className="text-xs font-medium text-slate-400">Precio Promedio</p>
@@ -526,10 +610,20 @@ export default function PriceTable({
                           </p>
                         </div>
                         <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-                          <p className="text-xs font-medium text-slate-400">Precio Máximo</p>
-                          <p className="mt-1 text-xl font-semibold text-red-400">
-                            {formatPrice(maxPrice)}
-                          </p>
+                          <p className="text-xs font-medium text-slate-400 mb-2">Precio Máximo</p>
+                          <div className="flex items-baseline justify-between gap-2">
+                            <p className="text-xl font-semibold text-red-400">
+                              {formatPrice(maxPrice)}
+                            </p>
+                            <div className="flex flex-col items-end text-right">
+                              <p className="text-xs text-slate-400 truncate max-w-[120px]">
+                                {historyView.type === 'product' ? maxPriceEntry.supermarket : maxPriceEntry.product_name}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {formatDate(maxPriceEntry.date)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </>
                     );
@@ -566,7 +660,7 @@ export default function PriceTable({
                       </tr>
                     </thead>
                     <tbody>
-                      {historyPrices.map((price) => {
+                      {filteredHistoryPrices.map((price) => {
                         const normalizedPrice = calculateNormalizedPrice(
                           price.total_price,
                           price.quantity,
@@ -609,14 +703,19 @@ export default function PriceTable({
                 {/* Información adicional */}
                 <div className="mt-6 rounded-lg border border-slate-700 bg-slate-800/20 p-4">
                   <p className="text-sm text-slate-400">
-                    <span className="font-medium text-slate-300">{historyPrices.length}</span> {historyPrices.length === 1 ? 'registro encontrado' : 'registros encontrados'}
+                    <span className="font-medium text-slate-300">{filteredHistoryPrices.length}</span> {filteredHistoryPrices.length === 1 ? 'registro encontrado' : 'registros encontrados'}
+                    {historyView.type === 'product' && timeFilter !== 'all' && (
+                      <span className="ml-2 text-slate-500">
+                        (de {historyPrices.length} {historyPrices.length === 1 ? 'total' : 'totales'})
+                      </span>
+                    )}
                   </p>
                 </div>
               </>
             )}
 
-            {/* Sin resultados */}
-            {!loadingHistory && !historyError && historyPrices.length === 0 && (
+            {/* Sin resultados - No hay datos en absoluto */}
+            {!loadingHistory && !historyError && filteredHistoryPrices.length === 0 && historyPrices.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-800/40">
                   <span className="text-4xl">📭</span>
@@ -628,6 +727,29 @@ export default function PriceTable({
                   <p className="max-w-md text-sm text-slate-400">
                     No hay registros de precios para {historyView.type === 'product' ? 'este producto' : 'este supermercado'}.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {/* Sin resultados - Filtro sin coincidencias */}
+            {!loadingHistory && !historyError && filteredHistoryPrices.length === 0 && historyPrices.length > 0 && (
+              <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-sky-700/20 to-slate-800/40">
+                  <span className="text-4xl">🔍</span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-slate-100">
+                    Sin resultados en este período
+                  </h3>
+                  <p className="max-w-md text-sm text-slate-400">
+                    No hay registros en el rango temporal seleccionado. Prueba con "Histórico" para ver todos los datos.
+                  </p>
+                  <button
+                    onClick={() => setTimeFilter('all')}
+                    className="mt-4 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-sky-700"
+                  >
+                    Ver histórico completo
+                  </button>
                 </div>
               </div>
             )}

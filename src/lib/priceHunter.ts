@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 
-export type Unit = '100g' | '1Kg' | '100ml' | '1L';
+export type Unit = '1Kg' | '1L' | 'Docena';
 
 export interface PriceEntry {
   id: string;
@@ -27,26 +27,29 @@ export interface PriceInput {
 /**
  * Calcula el precio normalizado según la unidad seleccionada
  * @param totalPrice - Precio total pagado
- * @param quantity - Cantidad del producto (en gramos o ml)
+ * @param quantity - Cantidad del producto (en gramos, ml o unidades)
  * @param unit - Unidad de normalización
  * @returns Precio normalizado por unidad
  */
 export function calculateNormalizedPrice(
   totalPrice: number,
   quantity: number,
-  unit: Unit
+  unit: Unit | string // Permitir string para compatibilidad con datos antiguos
 ): number {
   if (quantity <= 0) return 0;
 
   const pricePerUnit = totalPrice / quantity;
 
   switch (unit) {
-    case '100g':
-    case '100ml':
-      return pricePerUnit * 100;
     case '1Kg':
     case '1L':
       return pricePerUnit * 1000;
+    case 'Docena':
+      return pricePerUnit * 12;
+    // Compatibilidad con datos antiguos (100g, 100ml)
+    case '100g':
+    case '100ml':
+      return pricePerUnit * 100;
     default:
       return 0;
   }

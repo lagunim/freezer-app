@@ -30,7 +30,7 @@ function toDateInputValue(iso?: string): string {
   return `${year}-${month}-${day}`;
 }
 
-const AVAILABLE_UNITS: Unit[] = ['100g', '1Kg', '100ml', '1L'];
+const AVAILABLE_UNITS: Unit[] = ['1Kg', '1L', 'Docena'];
 
 export default function PriceForm({
   mode,
@@ -200,7 +200,7 @@ export default function PriceForm({
             <div>
               <label
                 htmlFor="total-price"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-slate-300 min-h-[20px]"
               >
                 Precio pagado (€)
               </label>
@@ -220,9 +220,9 @@ export default function PriceForm({
             <div>
               <label
                 htmlFor="quantity"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-slate-300 min-h-[20px]"
               >
-                Cantidad (g o ml)
+                Cantidad
               </label>
               <input
                 id="quantity"
@@ -232,7 +232,7 @@ export default function PriceForm({
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-                placeholder="Ej: 250"
+                placeholder="Ej: 250 (g, ml o unidades)"
                 required
               />
             </div>

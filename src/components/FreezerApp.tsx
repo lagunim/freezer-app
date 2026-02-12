@@ -29,7 +29,6 @@ export default function FreezerApp() {
   const [productsError, setProductsError] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isFormClosing, setIsFormClosing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
   const [showShoppingCart, setShowShoppingCart] = useState(false);
@@ -139,11 +138,7 @@ export default function FreezerApp() {
   };
 
   const closeForm = () => {
-    setIsFormClosing(true);
-    setTimeout(() => {
-      setIsFormOpen(false);
-      setIsFormClosing(false);
-    }, 500); // Duración de la animación con rebote
+    setIsFormOpen(false);
   };
 
   const handleCreateProduct = async (input: Parameters<typeof createProduct>[1]) => {
@@ -614,18 +609,14 @@ export default function FreezerApp() {
       {/* Modal formulario nuevo producto */}
       {isFormOpen && (
         <div
-          className={`fixed inset-0 z-[100] flex items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm transition-opacity duration-500 ${
-            isFormClosing ? 'opacity-0' : 'animate-[fadeIn_0.3s_ease-out]'
-          }`}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-new-product-title"
           onClick={closeForm}
         >
           <div
-            className={`w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-800/40 backdrop-blur-xl p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)] ${
-              isFormClosing ? 'animate-[scaleDown_0.5s_ease-out]' : 'animate-[scaleUp_0.5s_cubic-bezier(0.34,1.56,0.64,1)]'
-            }`}
+            className="w-full max-w-sm max-h-[85vh] overflow-y-auto animate-[slideInUp_0.3s_ease-out] rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="modal-new-product-title" className="mb-3 text-base font-semibold text-slate-100">
