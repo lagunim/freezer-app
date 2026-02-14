@@ -14,6 +14,8 @@ import {
   fetchPrices,
   updatePrice,
   fetchUniqueProductNames,
+  fetchUniqueBrands,
+  fetchUniqueSupermarkets,
 } from '@/lib/priceHunter';
 import {
   createProduct,
@@ -38,6 +40,8 @@ export default function PriceHunterApp() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPrice, setEditingPrice] = useState<PriceEntry | null>(null);
   const [productSuggestions, setProductSuggestions] = useState<string[]>([]);
+  const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
+  const [supermarketSuggestions, setSupermarketSuggestions] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -93,12 +97,16 @@ export default function PriceHunterApp() {
       setPricesLoading(true);
       setPricesError(null);
       try {
-        const [pricesData, suggestions] = await Promise.all([
+        const [pricesData, suggestions, brands, supermarkets] = await Promise.all([
           fetchPrices(),
           fetchUniqueProductNames(),
+          fetchUniqueBrands(),
+          fetchUniqueSupermarkets(),
         ]);
         setPrices(pricesData);
         setProductSuggestions(suggestions);
+        setBrandSuggestions(brands);
+        setSupermarketSuggestions(supermarkets);
       } catch (err) {
         console.error('Error al cargar precios desde Supabase:', err);
         setPricesError(
@@ -158,8 +166,14 @@ export default function PriceHunterApp() {
       setMessage('Precio añadido correctamente.');
       closeForm();
       // Actualizar sugerencias
-      const suggestions = await fetchUniqueProductNames();
+      const [suggestions, brands, supermarkets] = await Promise.all([
+        fetchUniqueProductNames(),
+        fetchUniqueBrands(),
+        fetchUniqueSupermarkets(),
+      ]);
       setProductSuggestions(suggestions);
+      setBrandSuggestions(brands);
+      setSupermarketSuggestions(supermarkets);
 
       if (options?.addToDespensa) {
         const newQty = Math.max(1, Math.round(input.quantity));
@@ -220,8 +234,14 @@ export default function PriceHunterApp() {
       setMessage('Precio actualizado correctamente.');
       closeForm();
       // Actualizar sugerencias
-      const suggestions = await fetchUniqueProductNames();
+      const [suggestions, brands, supermarkets] = await Promise.all([
+        fetchUniqueProductNames(),
+        fetchUniqueBrands(),
+        fetchUniqueSupermarkets(),
+      ]);
       setProductSuggestions(suggestions);
+      setBrandSuggestions(brands);
+      setSupermarketSuggestions(supermarkets);
     } catch (err) {
       console.error('Error al actualizar precio en Supabase:', err);
       setPricesError('No se ha podido actualizar el precio.');
@@ -237,8 +257,14 @@ export default function PriceHunterApp() {
       setPrices((prev) => prev.filter((p) => p.id !== id));
       setMessage('Precio eliminado correctamente.');
       // Actualizar sugerencias
-      const suggestions = await fetchUniqueProductNames();
+      const [suggestions, brands, supermarkets] = await Promise.all([
+        fetchUniqueProductNames(),
+        fetchUniqueBrands(),
+        fetchUniqueSupermarkets(),
+      ]);
       setProductSuggestions(suggestions);
+      setBrandSuggestions(brands);
+      setSupermarketSuggestions(supermarkets);
     } catch (err) {
       console.error('Error al borrar precio en Supabase:', err);
       setPricesError('No se ha podido borrar el precio.');
@@ -446,6 +472,8 @@ export default function PriceHunterApp() {
           initialPrice={editingPrice}
           loading={savingPrice}
           productSuggestions={productSuggestions}
+          brandSuggestions={brandSuggestions}
+          supermarketSuggestions={supermarketSuggestions}
           onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
           onCancel={closeForm}
         />

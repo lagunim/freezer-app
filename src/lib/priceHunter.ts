@@ -6,6 +6,7 @@ export interface PriceEntry {
   id: string;
   user_id: string;
   product_name: string;
+  brand?: string | null;
   total_price: number;
   quantity: number;
   unit: Unit;
@@ -17,6 +18,7 @@ export interface PriceEntry {
 
 export interface PriceInput {
   product_name: string;
+  brand: string;
   total_price: number;
   quantity: number;
   unit: Unit;
@@ -75,6 +77,7 @@ export async function createPrice(
   const payload = {
     user_id: userId,
     product_name: input.product_name,
+    brand: input.brand?.trim() || null,
     total_price: input.total_price,
     quantity: input.quantity,
     unit: input.unit,
@@ -103,6 +106,7 @@ export async function updatePrice(
     .from('price_hunter_prices')
     .update({
       product_name: input.product_name,
+      brand: input.brand?.trim() || null,
       total_price: input.total_price,
       quantity: input.quantity,
       unit: input.unit,
@@ -145,6 +149,34 @@ export async function fetchUniqueProductNames(): Promise<string[]> {
   // Obtener nombres únicos
   const uniqueNames = [...new Set(data.map((item) => item.product_name))];
   return uniqueNames;
+}
+
+export async function fetchUniqueBrands(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('price_hunter_prices')
+    .select('brand')
+    .order('brand', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const unique = [...new Set((data ?? []).map((item) => item.brand).filter((b): b is string => b != null && b.trim() !== ''))];
+  return unique.sort((a, b) => a.localeCompare(b));
+}
+
+export async function fetchUniqueSupermarkets(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('price_hunter_prices')
+    .select('supermarket')
+    .order('supermarket', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const unique = [...new Set((data ?? []).map((item) => item.supermarket))];
+  return unique.sort((a, b) => a.localeCompare(b));
 }
 
 /**

@@ -372,6 +372,16 @@ export default function PriceTable({
                 </div>
               </button>
 
+              {/* Marca */}
+              <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                <p className="text-xs font-medium text-slate-400 mb-1">Marca</p>
+                <p className="text-base font-semibold text-slate-100">
+                  {selectedPrice.brand && selectedPrice.brand.trim() !== ''
+                    ? selectedPrice.brand
+                    : '—'}
+                </p>
+              </div>
+
               {/* Precio calculado */}
               <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-4">
                 <p className="text-xs font-medium text-slate-400 mb-2">Precio normalizado</p>

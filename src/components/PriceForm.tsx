@@ -6,6 +6,8 @@ interface PriceFormProps {
   initialPrice?: PriceEntry | null;
   loading?: boolean;
   productSuggestions?: string[];
+  brandSuggestions?: string[];
+  supermarketSuggestions?: string[];
   onSubmit: (
     input: PriceInput,
     options?: { addToDespensa?: boolean }
@@ -40,12 +42,15 @@ export default function PriceForm({
   initialPrice,
   loading = false,
   productSuggestions = [],
+  brandSuggestions = [],
+  supermarketSuggestions = [],
   onSubmit,
   onCancel,
 }: PriceFormProps) {
   const isEdit = mode === 'edit';
 
   const [productName, setProductName] = useState(initialPrice?.product_name ?? '');
+  const [brand, setBrand] = useState(initialPrice?.brand ?? '');
   const [totalPrice, setTotalPrice] = useState(
     initialPrice?.total_price != null ? String(initialPrice.total_price) : ''
   );
@@ -58,10 +63,15 @@ export default function PriceForm({
   const [localError, setLocalError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [showSuggestionsBrand, setShowSuggestionsBrand] = useState(false);
+  const [filteredBrandSuggestions, setFilteredBrandSuggestions] = useState<string[]>([]);
+  const [showSuggestionsSupermarket, setShowSuggestionsSupermarket] = useState(false);
+  const [filteredSupermarketSuggestions, setFilteredSupermarketSuggestions] = useState<string[]>([]);
   const [addToDespensa, setAddToDespensa] = useState(true);
 
   useEffect(() => {
     setProductName(initialPrice?.product_name ?? '');
+    setBrand(initialPrice?.brand ?? '');
     setTotalPrice(initialPrice?.total_price != null ? String(initialPrice.total_price) : '');
     setQuantity(initialPrice?.quantity != null ? String(initialPrice.quantity) : '');
     setUnit(initialPrice?.unit ?? '1Kg');
@@ -84,6 +94,30 @@ export default function PriceForm({
     setFilteredSuggestions(filtered);
   }, [productName, productSuggestions]);
 
+  useEffect(() => {
+    if (brand.trim() === '') {
+      setFilteredBrandSuggestions([]);
+      setShowSuggestionsBrand(false);
+      return;
+    }
+    const filtered = brandSuggestions.filter((s) =>
+      s.toLowerCase().includes(brand.toLowerCase())
+    );
+    setFilteredBrandSuggestions(filtered);
+  }, [brand, brandSuggestions]);
+
+  useEffect(() => {
+    if (supermarket.trim() === '') {
+      setFilteredSupermarketSuggestions([]);
+      setShowSuggestionsSupermarket(false);
+      return;
+    }
+    const filtered = supermarketSuggestions.filter((s) =>
+      s.toLowerCase().includes(supermarket.toLowerCase())
+    );
+    setFilteredSupermarketSuggestions(filtered);
+  }, [supermarket, supermarketSuggestions]);
+
   const handleProductNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setProductName(event.target.value);
     setShowSuggestions(true);
@@ -92,6 +126,26 @@ export default function PriceForm({
   const handleSuggestionClick = (suggestion: string) => {
     setProductName(suggestion);
     setShowSuggestions(false);
+  };
+
+  const handleBrandChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setBrand(event.target.value);
+    setShowSuggestionsBrand(true);
+  };
+
+  const handleBrandSuggestionClick = (suggestion: string) => {
+    setBrand(suggestion);
+    setShowSuggestionsBrand(false);
+  };
+
+  const handleSupermarketChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSupermarket(event.target.value);
+    setShowSuggestionsSupermarket(true);
+  };
+
+  const handleSupermarketSuggestionClick = (suggestion: string) => {
+    setSupermarket(suggestion);
+    setShowSuggestionsSupermarket(false);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -129,6 +183,7 @@ export default function PriceForm({
 
     const input: PriceInput = {
       product_name: trimmedProductName,
+      brand: brand.trim(),
       total_price: totalPriceNumber,
       quantity: quantityNumber,
       unit: unit,
@@ -213,6 +268,41 @@ export default function PriceForm({
             )}
           </div>
 
+          {/* Marca con autocompletado */}
+          <div className="relative">
+            <label
+              htmlFor="brand"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              Marca
+            </label>
+            <input
+              id="brand"
+              type="text"
+              value={brand}
+              onChange={handleBrandChange}
+              onFocus={() => setShowSuggestionsBrand(true)}
+              onBlur={() => setTimeout(() => setShowSuggestionsBrand(false), 200)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+              placeholder="Ej: Hacendado"
+              autoComplete="off"
+            />
+            {showSuggestionsBrand && filteredBrandSuggestions.length > 0 && (
+              <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-800 shadow-lg">
+                {filteredBrandSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleBrandSuggestionClick(suggestion)}
+                    className="w-full px-4 py-2 text-left text-sm text-slate-100 transition-colors hover:bg-slate-700"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Precio pagado y Cantidad */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -280,7 +370,7 @@ export default function PriceForm({
               </select>
             </div>
 
-            <div>
+            <div className="relative">
               <label
                 htmlFor="supermarket"
                 className="mb-2 block text-sm font-medium text-slate-300"
@@ -291,11 +381,28 @@ export default function PriceForm({
                 id="supermarket"
                 type="text"
                 value={supermarket}
-                onChange={(e) => setSupermarket(e.target.value)}
+                onChange={handleSupermarketChange}
+                onFocus={() => setShowSuggestionsSupermarket(true)}
+                onBlur={() => setTimeout(() => setShowSuggestionsSupermarket(false), 200)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
                 placeholder="Ej: Mercadona"
                 required
+                autoComplete="off"
               />
+              {showSuggestionsSupermarket && filteredSupermarketSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-700 bg-slate-800 shadow-lg">
+                  {filteredSupermarketSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleSupermarketSuggestionClick(suggestion)}
+                      className="w-full px-4 py-2 text-left text-sm text-slate-100 transition-colors hover:bg-slate-700"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
