@@ -7,7 +7,7 @@ import RegisterForm from '@/components/auth/RegisterForm';
 import PriceForm from '@/components/PriceForm';
 import PriceTable from '@/components/PriceTable';
 import FloatingMenu from '@/components/FloatingMenu';
-import type { PriceEntry, PriceInput } from '@/lib/priceHunter';
+import type { PriceEntry, PriceInput, Unit } from '@/lib/priceHunter';
 import {
   createPrice,
   deletePrice,
@@ -15,6 +15,12 @@ import {
   updatePrice,
   fetchUniqueProductNames,
 } from '@/lib/priceHunter';
+import {
+  createProduct,
+  updateProduct,
+  fetchProducts,
+} from '@/lib/products';
+import type { ProductInput } from '@/lib/products';
 
 type AuthView = 'login' | 'register';
 
@@ -125,7 +131,23 @@ export default function PriceHunterApp() {
     setEditingPrice(null);
   };
 
-  const handleCreatePrice = async (input: PriceInput) => {
+  function mapUnitToQuantityUnit(unit: Unit): string {
+    switch (unit) {
+      case '1Kg':
+        return 'g';
+      case '1L':
+        return 'ml';
+      case 'Docena':
+        return 'uds';
+      default:
+        return 'g';
+    }
+  }
+
+  const handleCreatePrice = async (
+    input: PriceInput,
+    options?: { addToDespensa?: boolean }
+  ) => {
     if (!user) return;
 
     setSavingPrice(true);
@@ -138,6 +160,45 @@ export default function PriceHunterApp() {
       // Actualizar sugerencias
       const suggestions = await fetchUniqueProductNames();
       setProductSuggestions(suggestions);
+
+      if (options?.addToDespensa) {
+        const newQty = Math.max(1, Math.round(input.quantity));
+        const quantityUnit = mapUnitToQuantityUnit(input.unit);
+        const productNameNormalized = input.product_name.trim().toLowerCase();
+        try {
+          const products = await fetchProducts();
+          const existing = products.find(
+            (p) => p.name.trim().toLowerCase() === productNameNormalized
+          );
+          if (existing) {
+            await updateProduct(existing.id, {
+              name: existing.name,
+              quantity: existing.quantity + newQty,
+              quantity_unit: existing.quantity_unit,
+              category: existing.category,
+              added_at: existing.added_at,
+              in_shopping_list: existing.in_shopping_list,
+              shopping_quantity: existing.shopping_quantity ?? null,
+            });
+          } else {
+            const productInput: ProductInput = {
+              name: input.product_name.trim(),
+              quantity: newQty,
+              quantity_unit: quantityUnit,
+              category: 'Alimentación',
+              added_at: input.date,
+              in_shopping_list: false,
+              shopping_quantity: null,
+            };
+            await createProduct(user.id, productInput);
+          }
+        } catch (despensaErr) {
+          console.error('Error al añadir/actualizar en la despensa:', despensaErr);
+          setMessage(
+            'Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.'
+          );
+        }
+      }
     } catch (err) {
       console.error('Error al crear precio en Supabase:', err);
       setPricesError('No se ha podido crear el precio.');

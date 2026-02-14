@@ -6,7 +6,10 @@ interface PriceFormProps {
   initialPrice?: PriceEntry | null;
   loading?: boolean;
   productSuggestions?: string[];
-  onSubmit: (input: PriceInput) => Promise<void> | void;
+  onSubmit: (
+    input: PriceInput,
+    options?: { addToDespensa?: boolean }
+  ) => Promise<void> | void;
   onCancel?: () => void;
 }
 
@@ -55,6 +58,7 @@ export default function PriceForm({
   const [localError, setLocalError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [addToDespensa, setAddToDespensa] = useState(true);
 
   useEffect(() => {
     setProductName(initialPrice?.product_name ?? '');
@@ -133,7 +137,11 @@ export default function PriceForm({
     };
 
     try {
-      await onSubmit(input);
+      if (isEdit) {
+        await onSubmit(input);
+      } else {
+        await onSubmit(input, { addToDespensa });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error desconocido';
       setLocalError(message);
@@ -308,6 +316,25 @@ export default function PriceForm({
               required
             />
           </div>
+
+          {/* Añadir a la despensa (solo en creación) */}
+          {!isEdit && (
+            <div className="flex items-center gap-3">
+              <input
+                id="add-to-despensa"
+                type="checkbox"
+                checked={addToDespensa}
+                onChange={(e) => setAddToDespensa(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-sky-600 focus:ring-2 focus:ring-sky-500 focus:ring-offset-0 focus:ring-offset-slate-900"
+              />
+              <label
+                htmlFor="add-to-despensa"
+                className="text-sm text-slate-300 cursor-pointer select-none"
+              >
+                Añadir también a la despensa (Freezer App)
+              </label>
+            </div>
+          )}
 
           {/* Error local */}
           {localError && (
