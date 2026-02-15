@@ -18,6 +18,8 @@ export interface ProductListProps {
   onDeleteMultiple?: (productIds: string[]) => void;
 }
 
+const EMPTY_SELECTION = new Set<string>();
+
 const getBadgeColor = (quantity: number) => {
   if (quantity === 0) return 'bg-red-500 text-white';
   if (quantity <= 10) return 'bg-blue-500 text-white';
@@ -72,7 +74,7 @@ export default function ProductList({
   productNotification,
   isNotificationExiting = false,
   showShoppingCart = false,
-  selectedProductIds = new Set(),
+  selectedProductIds = EMPTY_SELECTION,
   onToggleSelection,
   onClearSelection,
   onDeleteMultiple,

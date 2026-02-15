@@ -305,8 +305,8 @@ export default function FreezerApp() {
       );
     }
 
-    // Ordenar por fecha descendente (más recientes primero)
-    return [...result].sort((a, b) => {
+    // Ordenar por fecha descendente (más recientes primero) — toSorted() inmutable (js-tosorted-immutable)
+    return result.toSorted((a, b) => {
       const aTime = new Date(a.added_at).getTime();
       const bTime = new Date(b.added_at).getTime();
       return bTime - aTime;

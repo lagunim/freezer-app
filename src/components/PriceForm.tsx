@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { PriceEntry, PriceInput, Unit } from '@/lib/priceHunter';
 
 interface PriceFormProps {
@@ -62,60 +62,30 @@ export default function PriceForm({
   const [date, setDate] = useState(toDateInputValue(initialPrice?.date));
   const [localError, setLocalError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestionsBrand, setShowSuggestionsBrand] = useState(false);
-  const [filteredBrandSuggestions, setFilteredBrandSuggestions] = useState<string[]>([]);
   const [showSuggestionsSupermarket, setShowSuggestionsSupermarket] = useState(false);
-  const [filteredSupermarketSuggestions, setFilteredSupermarketSuggestions] = useState<string[]>([]);
   const [addToDespensa, setAddToDespensa] = useState(true);
 
-  useEffect(() => {
-    setProductName(initialPrice?.product_name ?? '');
-    setBrand(initialPrice?.brand ?? '');
-    setTotalPrice(initialPrice?.total_price != null ? String(initialPrice.total_price) : '');
-    setQuantity(initialPrice?.quantity != null ? String(initialPrice.quantity) : '');
-    setUnit(initialPrice?.unit ?? '1Kg');
-    setSupermarket(initialPrice?.supermarket ?? '');
-    setDate(toDateInputValue(initialPrice?.date));
-    setLocalError(null);
-  }, [initialPrice]);
-
-  // Filtrar sugerencias basadas en el input del usuario
-  useEffect(() => {
-    if (productName.trim() === '') {
-      setFilteredSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    const filtered = productSuggestions.filter((suggestion) =>
+  // Derivar listas filtradas durante el render (rerender-derived-state-no-effect)
+  const filteredSuggestions = useMemo(() => {
+    if (productName.trim() === '') return [];
+    return productSuggestions.filter((suggestion) =>
       suggestion.toLowerCase().includes(productName.toLowerCase())
     );
-    setFilteredSuggestions(filtered);
   }, [productName, productSuggestions]);
 
-  useEffect(() => {
-    if (brand.trim() === '') {
-      setFilteredBrandSuggestions([]);
-      setShowSuggestionsBrand(false);
-      return;
-    }
-    const filtered = brandSuggestions.filter((s) =>
+  const filteredBrandSuggestions = useMemo(() => {
+    if (brand.trim() === '') return [];
+    return brandSuggestions.filter((s) =>
       s.toLowerCase().includes(brand.toLowerCase())
     );
-    setFilteredBrandSuggestions(filtered);
   }, [brand, brandSuggestions]);
 
-  useEffect(() => {
-    if (supermarket.trim() === '') {
-      setFilteredSupermarketSuggestions([]);
-      setShowSuggestionsSupermarket(false);
-      return;
-    }
-    const filtered = supermarketSuggestions.filter((s) =>
+  const filteredSupermarketSuggestions = useMemo(() => {
+    if (supermarket.trim() === '') return [];
+    return supermarketSuggestions.filter((s) =>
       s.toLowerCase().includes(supermarket.toLowerCase())
     );
-    setFilteredSupermarketSuggestions(filtered);
   }, [supermarket, supermarketSuggestions]);
 
   const handleProductNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {

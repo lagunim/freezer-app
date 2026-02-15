@@ -468,6 +468,7 @@ export default function PriceHunterApp() {
       {/* Price Form Modal */}
       {isFormOpen && (
         <PriceForm
+          key={editingPrice?.id ?? 'create'}
           mode={editingPrice ? 'edit' : 'create'}
           initialPrice={editingPrice}
           loading={savingPrice}

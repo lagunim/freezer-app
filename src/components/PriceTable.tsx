@@ -43,7 +43,7 @@ export default function PriceTable({
   searchTerm = '',
 }: PriceTableProps) {
   const [priceToDelete, setPriceToDelete] = useState<string | null>(null);
-  const [selectedPrice, setSelectedPrice] = useState<PriceEntry | null>(null);
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   
@@ -54,12 +54,18 @@ export default function PriceTable({
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('all');
 
+  // Derivar precio seleccionado desde ID (rerender-derived-state-no-effect)
+  const selectedPrice = useMemo(
+    () => (selectedPriceId ? prices.find((p) => p.id === selectedPriceId) ?? null : null),
+    [prices, selectedPriceId]
+  );
+
   const handleRowClick = (price: PriceEntry) => {
-    setSelectedPrice(price);
+    setSelectedPriceId(price.id);
   };
 
   const handleCloseDetail = () => {
-    setSelectedPrice(null);
+    setSelectedPriceId(null);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -70,7 +76,7 @@ export default function PriceTable({
     if (priceToDelete) {
       onDelete(priceToDelete);
       setPriceToDelete(null);
-      setSelectedPrice(null);
+      setSelectedPriceId(null);
     }
   };
 
@@ -81,22 +87,6 @@ export default function PriceTable({
   const handleEditClick = (price: PriceEntry) => {
     onEdit(price);
   };
-
-  // Mantener el modal de detalles sincronizado con los datos actuales
-  // (por ejemplo, tras editar un precio desde ese modal).
-  useEffect(() => {
-    if (!selectedPrice) return;
-
-    const updatedSelectedPrice = prices.find((p) => p.id === selectedPrice.id);
-    if (!updatedSelectedPrice) {
-      setSelectedPrice(null);
-      return;
-    }
-
-    if (updatedSelectedPrice !== selectedPrice) {
-      setSelectedPrice(updatedSelectedPrice);
-    }
-  }, [prices, selectedPrice]);
 
   const handleViewProductHistory = async (productName: string) => {
     setLoadingHistory(true);
@@ -176,7 +166,7 @@ export default function PriceTable({
   };
 
   const sortedPrices = useMemo(() => {
-    const sorted = [...prices].sort((a, b) => {
+    return prices.toSorted((a, b) => {
       let aValue: string | number;
       let bValue: string | number;
 
@@ -201,8 +191,6 @@ export default function PriceTable({
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-
-    return sorted;
   }, [prices, sortField, sortDirection]);
 
   const SortIcon = ({ field }: { field: SortField }) => {
