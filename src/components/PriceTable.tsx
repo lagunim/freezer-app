@@ -54,6 +54,7 @@ export default function PriceTable({
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('all');
   const [priceBeforeHistory, setPriceBeforeHistory] = useState<PriceEntry | null>(null);
+  const [supermarketHistorySearchTerm, setSupermarketHistorySearchTerm] = useState('');
 
   const handleRowClick = (price: PriceEntry) => {
     setDetailPrice(price);
@@ -69,6 +70,7 @@ export default function PriceTable({
     setHistoryPrices([]);
     setHistoryError(null);
     setTimeFilter('all');
+    setSupermarketHistorySearchTerm('');
   };
 
   const handleDeleteClick = (id: string) => {
@@ -112,6 +114,7 @@ export default function PriceTable({
   const handleViewSupermarketHistory = async (supermarket: string, priceFromDetail?: PriceEntry | null) => {
     setPriceBeforeHistory(priceFromDetail ?? null);
     setDetailPrice(null);
+    setSupermarketHistorySearchTerm('');
     setLoadingHistory(true);
     setHistoryError(null);
     setHistoryView({ type: 'supermarket', value: supermarket });
@@ -131,6 +134,7 @@ export default function PriceTable({
     setHistoryView(null);
     setHistoryPrices([]);
     setHistoryError(null);
+    setSupermarketHistorySearchTerm('');
   };
 
   const handleBackToDetails = () => {
@@ -140,6 +144,7 @@ export default function PriceTable({
     setHistoryPrices([]);
     setHistoryError(null);
     setTimeFilter('all');
+    setSupermarketHistorySearchTerm('');
   };
 
   // Filtrar precios según el rango temporal seleccionado
@@ -162,6 +167,18 @@ export default function PriceTable({
       return priceDate >= filterDate;
     });
   }, [historyPrices, timeFilter]);
+
+  // En historial de supermercado, filtrar por nombre de producto según la búsqueda
+  const historyTablePrices = useMemo(() => {
+    if (historyView?.type !== 'supermarket') {
+      return filteredHistoryPrices;
+    }
+    const term = supermarketHistorySearchTerm.trim().toLowerCase();
+    if (!term) return filteredHistoryPrices;
+    return filteredHistoryPrices.filter((p) =>
+      p.product_name.toLowerCase().includes(term)
+    );
+  }, [historyView?.type, filteredHistoryPrices, supermarketHistorySearchTerm]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -558,6 +575,30 @@ export default function PriceTable({
               </p>
             </div>
 
+            {/* Barra de búsqueda (solo para historial de supermercado) */}
+            {historyView.type === 'supermarket' && (
+              <div className="mb-6">
+                <label htmlFor="supermarket-history-search" className="sr-only">
+                  Buscar por producto
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-400" aria-hidden>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="supermarket-history-search"
+                    type="text"
+                    value={supermarketHistorySearchTerm}
+                    onChange={(e) => setSupermarketHistorySearchTerm(e.target.value)}
+                    placeholder="Buscar por producto…"
+                    className="block w-full rounded-xl border border-slate-700 bg-slate-800/50 py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Filtros temporales (solo para vista de producto) */}
             {historyView.type === 'product' && (
               <div className="mb-6 flex flex-wrap gap-2">
@@ -622,69 +663,63 @@ export default function PriceTable({
               </div>
             )}
 
-            {/* Estadísticas */}
+            {/* Estadísticas (solo para historial de producto) */}
+            {!loadingHistory && !historyError && filteredHistoryPrices.length > 0 && historyView.type === 'product' && (
+              <div className="mb-5 space-y-2.5">
+                {(() => {
+                  const normalizedPrices = filteredHistoryPrices.map(p =>
+                    calculateNormalizedPrice(p.total_price, p.quantity, p.unit)
+                  );
+                  const minPrice = Math.min(...normalizedPrices);
+                  const maxPrice = Math.max(...normalizedPrices);
+                  const avgPrice = normalizedPrices.reduce((a, b) => a + b, 0) / normalizedPrices.length;
+                  const minPriceIndex = normalizedPrices.indexOf(minPrice);
+                  const maxPriceIndex = normalizedPrices.indexOf(maxPrice);
+                  const minPriceEntry = filteredHistoryPrices[minPriceIndex];
+                  const maxPriceEntry = filteredHistoryPrices[maxPriceIndex];
+                  return (
+                    <>
+                      <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800/35 backdrop-blur-sm">
+                        <div className="px-2 py-2.5 text-center sm:px-3">
+                          <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Mín</p>
+                          <p className="mt-0.5 text-base font-semibold leading-none text-green-400 sm:text-lg">
+                            {formatPrice(minPrice)}
+                          </p>
+                        </div>
+                        <div className="border-x border-slate-700/90 px-2 py-2.5 text-center sm:px-3">
+                          <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Media</p>
+                          <p className="mt-0.5 text-base font-semibold leading-none text-sky-400 sm:text-lg">
+                            {formatPrice(avgPrice)}
+                          </p>
+                        </div>
+                        <div className="px-2 py-2.5 text-center sm:px-3">
+                          <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Máx</p>
+                          <p className="mt-0.5 text-base font-semibold leading-none text-red-400 sm:text-lg">
+                            {formatPrice(maxPrice)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5 text-[11px] text-slate-400 sm:grid-cols-2">
+                        <div className="truncate rounded-lg border border-green-500/20 bg-green-500/10 px-2.5 py-1.5">
+                          <span className="font-medium text-green-300">Mejor:</span>{' '}
+                          <span className="text-slate-300">{minPriceEntry.supermarket}</span>{' '}
+                          <span className="text-slate-500">· {formatDate(minPriceEntry.date)}</span>
+                        </div>
+                        <div className="truncate rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5">
+                          <span className="font-medium text-red-300">Peor:</span>{' '}
+                          <span className="text-slate-300">{maxPriceEntry.supermarket}</span>{' '}
+                          <span className="text-slate-500">· {formatDate(maxPriceEntry.date)}</span>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Tabla de historial */}
             {!loadingHistory && !historyError && filteredHistoryPrices.length > 0 && (
               <>
-                <div className="mb-5 space-y-2.5">
-                  {(() => {
-                    const normalizedPrices = filteredHistoryPrices.map(p => 
-                      calculateNormalizedPrice(p.total_price, p.quantity, p.unit)
-                    );
-                    const minPrice = Math.min(...normalizedPrices);
-                    const maxPrice = Math.max(...normalizedPrices);
-                    const avgPrice = normalizedPrices.reduce((a, b) => a + b, 0) / normalizedPrices.length;
-
-                    // Encontrar los registros con precio mínimo y máximo
-                    const minPriceIndex = normalizedPrices.indexOf(minPrice);
-                    const maxPriceIndex = normalizedPrices.indexOf(maxPrice);
-                    const minPriceEntry = filteredHistoryPrices[minPriceIndex];
-                    const maxPriceEntry = filteredHistoryPrices[maxPriceIndex];
-
-                    return (
-                      <>
-                        <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800/35 backdrop-blur-sm">
-                          <div className="px-2 py-2.5 text-center sm:px-3">
-                            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Mín</p>
-                            <p className="mt-0.5 text-base font-semibold leading-none text-green-400 sm:text-lg">
-                              {formatPrice(minPrice)}
-                            </p>
-                          </div>
-                          <div className="border-x border-slate-700/90 px-2 py-2.5 text-center sm:px-3">
-                            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Media</p>
-                            <p className="mt-0.5 text-base font-semibold leading-none text-sky-400 sm:text-lg">
-                              {formatPrice(avgPrice)}
-                            </p>
-                          </div>
-                          <div className="px-2 py-2.5 text-center sm:px-3">
-                            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Máx</p>
-                            <p className="mt-0.5 text-base font-semibold leading-none text-red-400 sm:text-lg">
-                              {formatPrice(maxPrice)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-1.5 text-[11px] text-slate-400 sm:grid-cols-2">
-                          <div className="truncate rounded-lg border border-green-500/20 bg-green-500/10 px-2.5 py-1.5">
-                            <span className="font-medium text-green-300">Mejor:</span>{' '}
-                            <span className="text-slate-300">
-                              {historyView.type === 'product' ? minPriceEntry.supermarket : minPriceEntry.product_name}
-                            </span>{' '}
-                            <span className="text-slate-500">· {formatDate(minPriceEntry.date)}</span>
-                          </div>
-                          <div className="truncate rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5">
-                            <span className="font-medium text-red-300">Peor:</span>{' '}
-                            <span className="text-slate-300">
-                              {historyView.type === 'product' ? maxPriceEntry.supermarket : maxPriceEntry.product_name}
-                            </span>{' '}
-                            <span className="text-slate-500">· {formatDate(maxPriceEntry.date)}</span>
-                          </div>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-
-                {/* Tabla de historial */}
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
@@ -714,7 +749,7 @@ export default function PriceTable({
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredHistoryPrices.map((price) => {
+                      {historyTablePrices.map((price) => {
                         const normalizedPrice = calculateNormalizedPrice(
                           price.total_price,
                           price.quantity,
@@ -758,10 +793,15 @@ export default function PriceTable({
                 {/* Información adicional */}
                 <div className="mt-6 rounded-lg border border-slate-700 bg-slate-800/20 p-4">
                   <p className="text-sm text-slate-400">
-                    <span className="font-medium text-slate-300">{filteredHistoryPrices.length}</span> {filteredHistoryPrices.length === 1 ? 'registro encontrado' : 'registros encontrados'}
+                    <span className="font-medium text-slate-300">{historyTablePrices.length}</span> {historyTablePrices.length === 1 ? 'registro encontrado' : 'registros encontrados'}
                     {historyView.type === 'product' && timeFilter !== 'all' && (
                       <span className="ml-2 text-slate-500">
                         (de {historyPrices.length} {historyPrices.length === 1 ? 'total' : 'totales'})
+                      </span>
+                    )}
+                    {historyView.type === 'supermarket' && supermarketHistorySearchTerm.trim() !== '' && (
+                      <span className="ml-2 text-slate-500">
+                        (de {filteredHistoryPrices.length} {filteredHistoryPrices.length === 1 ? 'total' : 'totales'})
                       </span>
                     )}
                   </p>
