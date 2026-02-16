@@ -80,7 +80,6 @@ export default function PriceTable({
     setHistoryView(null);
     setHistoryPrices([]);
     setHistoryError(null);
-    setTimeFilter('all');
     setSupermarketHistorySearchTerm('');
   };
 
@@ -154,7 +153,6 @@ export default function PriceTable({
     setHistoryView(null);
     setHistoryPrices([]);
     setHistoryError(null);
-    setTimeFilter('all');
     setSupermarketHistorySearchTerm('');
   };
 
