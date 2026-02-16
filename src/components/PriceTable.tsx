@@ -43,7 +43,7 @@ export default function PriceTable({
   searchTerm = '',
 }: PriceTableProps) {
   const [priceToDelete, setPriceToDelete] = useState<string | null>(null);
-  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
+  const [detailPrice, setDetailPrice] = useState<PriceEntry | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   
@@ -54,18 +54,20 @@ export default function PriceTable({
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('all');
 
-  // Derivar precio seleccionado desde ID (rerender-derived-state-no-effect)
-  const selectedPrice = useMemo(
-    () => (selectedPriceId ? prices.find((p) => p.id === selectedPriceId) ?? null : null),
-    [prices, selectedPriceId]
-  );
-
   const handleRowClick = (price: PriceEntry) => {
-    setSelectedPriceId(price.id);
+    setDetailPrice(price);
   };
 
   const handleCloseDetail = () => {
-    setSelectedPriceId(null);
+    setDetailPrice(null);
+  };
+
+  const handleHistoryRowClick = (price: PriceEntry) => {
+    setDetailPrice(price);
+    setHistoryView(null);
+    setHistoryPrices([]);
+    setHistoryError(null);
+    setTimeFilter('all');
   };
 
   const handleDeleteClick = (id: string) => {
@@ -76,7 +78,7 @@ export default function PriceTable({
     if (priceToDelete) {
       onDelete(priceToDelete);
       setPriceToDelete(null);
-      setSelectedPriceId(null);
+      setDetailPrice(null);
     }
   };
 
@@ -89,6 +91,7 @@ export default function PriceTable({
   };
 
   const handleViewProductHistory = async (productName: string) => {
+    setDetailPrice(null);
     setLoadingHistory(true);
     setHistoryError(null);
     setHistoryView({ type: 'product', value: productName });
@@ -105,6 +108,7 @@ export default function PriceTable({
   };
 
   const handleViewSupermarketHistory = async (supermarket: string) => {
+    setDetailPrice(null);
     setLoadingHistory(true);
     setHistoryError(null);
     setHistoryView({ type: 'supermarket', value: supermarket });
@@ -331,7 +335,7 @@ export default function PriceTable({
       </div>
 
       {/* Modal de detalle */}
-      {selectedPrice && (
+      {detailPrice && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           onClick={handleCloseDetail}
@@ -360,7 +364,7 @@ export default function PriceTable({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewProductHistory(selectedPrice.product_name);
+                  handleViewProductHistory(detailPrice.product_name);
                 }}
                 className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
               >
@@ -371,7 +375,7 @@ export default function PriceTable({
                       <p className="text-xs font-medium text-slate-400">Producto</p>
                     </div>
                     <p className="text-base font-semibold text-slate-100 group-hover:text-sky-400 transition-colors">
-                      {selectedPrice.product_name}
+                      {detailPrice.product_name}
                     </p>
                     <p className="text-xs text-sky-400/60 group-hover:text-sky-400 mt-1 transition-colors">
                       Ver historial completo →
@@ -391,8 +395,8 @@ export default function PriceTable({
               <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
                 <p className="text-xs font-medium text-slate-400 mb-1">Marca</p>
                 <p className="text-base font-semibold text-slate-100">
-                  {selectedPrice.brand && selectedPrice.brand.trim() !== ''
-                    ? selectedPrice.brand
+                  {detailPrice.brand && detailPrice.brand.trim() !== ''
+                    ? detailPrice.brand
                     : '—'}
                 </p>
               </div>
@@ -403,12 +407,12 @@ export default function PriceTable({
                 <p className="text-2xl font-bold text-sky-400">
                   {formatPrice(
                     calculateNormalizedPrice(
-                      selectedPrice.total_price,
-                      selectedPrice.quantity,
-                      selectedPrice.unit
+                      detailPrice.total_price,
+                      detailPrice.quantity,
+                      detailPrice.unit
                     )
                   )}
-                  <span className="text-base font-normal text-slate-400 ml-1">/{selectedPrice.unit}</span>
+                  <span className="text-base font-normal text-slate-400 ml-1">/{detailPrice.unit}</span>
                 </p>
               </div>
 
@@ -417,7 +421,7 @@ export default function PriceTable({
                 <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
                   <p className="text-xs font-medium text-slate-400 mb-1">Precio pagado</p>
                   <p className="text-base font-semibold text-slate-100">
-                    {formatPrice(selectedPrice.total_price)}
+                    {formatPrice(detailPrice.total_price)}
                   </p>
                 </div>
 
@@ -425,7 +429,7 @@ export default function PriceTable({
                 <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
                   <p className="text-xs font-medium text-slate-400 mb-1">Cantidad</p>
                   <p className="text-base font-semibold text-slate-100">
-                    {selectedPrice.quantity} g/ml
+                    {detailPrice.quantity} g/ml
                   </p>
                 </div>
               </div>
@@ -434,7 +438,7 @@ export default function PriceTable({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewSupermarketHistory(selectedPrice.supermarket);
+                  handleViewSupermarketHistory(detailPrice.supermarket);
                 }}
                 className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
               >
@@ -445,7 +449,7 @@ export default function PriceTable({
                       <p className="text-xs font-medium text-slate-400">Supermercado</p>
                     </div>
                     <p className="text-base font-semibold text-slate-100 group-hover:text-sky-400 transition-colors">
-                      {selectedPrice.supermarket}
+                      {detailPrice.supermarket}
                     </p>
                     <p className="text-xs text-sky-400/60 group-hover:text-sky-400 mt-1 transition-colors">
                       Ver todos los productos →
@@ -464,20 +468,20 @@ export default function PriceTable({
               {/* Fecha */}
               <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
                 <p className="text-xs font-medium text-slate-400 mb-1">Fecha de compra</p>
-                <p className="text-base font-semibold text-slate-100">{formatDate(selectedPrice.date)}</p>
+                <p className="text-base font-semibold text-slate-100">{formatDate(detailPrice.date)}</p>
               </div>
             </div>
 
             {/* Acciones */}
             <div className="mt-6 flex gap-3">
               <button
-                onClick={() => handleEditClick(selectedPrice)}
+                onClick={() => handleEditClick(detailPrice)}
                 className="flex-1 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
                 Editar
               </button>
               <button
-                onClick={() => handleDeleteClick(selectedPrice.id)}
+                onClick={() => handleDeleteClick(detailPrice.id)}
                 className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 Eliminar
@@ -708,7 +712,8 @@ export default function PriceTable({
                         return (
                           <tr
                             key={price.id}
-                            className="border-b border-slate-800 transition-colors hover:bg-slate-800/40"
+                            onClick={() => handleHistoryRowClick(price)}
+                            className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
                           >
                             {historyView.type === 'supermarket' && (
                               <td className="px-2 py-3 text-sm text-slate-100">
