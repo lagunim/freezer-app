@@ -52,7 +52,7 @@ export default function PriceTable({
   const [historyPrices, setHistoryPrices] = useState<PriceEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
-  const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('all');
+  const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('6months');
   const [priceBeforeHistory, setPriceBeforeHistory] = useState<PriceEntry | null>(null);
   const [supermarketHistorySearchTerm, setSupermarketHistorySearchTerm] = useState('');
 
