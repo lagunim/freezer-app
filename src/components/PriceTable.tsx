@@ -165,8 +165,35 @@ export default function PriceTable({
     }
   };
 
+  // Por cada producto (mismo nombre), mostrar solo el precio más bajo del último año;
+  // si no hay precios en el último año, el precio histórico más bajo.
+  const pricesToShow = useMemo(() => {
+    const now = new Date();
+    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+    const byProduct = new Map<string, PriceEntry[]>();
+    for (const p of prices) {
+      const list = byProduct.get(p.product_name) ?? [];
+      list.push(p);
+      byProduct.set(p.product_name, list);
+    }
+
+    const result: PriceEntry[] = [];
+    for (const [, entries] of byProduct) {
+      const inLastYear = entries.filter((e) => new Date(e.date) >= oneYearAgo);
+      const pool = inLastYear.length > 0 ? inLastYear : entries;
+      const best = pool.reduce((min, curr) => {
+        const currNorm = calculateNormalizedPrice(curr.total_price, curr.quantity, curr.unit);
+        const minNorm = calculateNormalizedPrice(min.total_price, min.quantity, min.unit);
+        return currNorm < minNorm ? curr : min;
+      }, pool[0]);
+      result.push(best);
+    }
+    return result;
+  }, [prices]);
+
   const sortedPrices = useMemo(() => {
-    return prices.toSorted((a, b) => {
+    return pricesToShow.toSorted((a, b) => {
       let aValue: string | number;
       let bValue: string | number;
 
@@ -191,7 +218,7 @@ export default function PriceTable({
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [prices, sortField, sortDirection]);
+  }, [pricesToShow, sortField, sortDirection]);
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
