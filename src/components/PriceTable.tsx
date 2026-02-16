@@ -56,6 +56,17 @@ export default function PriceTable({
   const [priceBeforeHistory, setPriceBeforeHistory] = useState<PriceEntry | null>(null);
   const [supermarketHistorySearchTerm, setSupermarketHistorySearchTerm] = useState('');
 
+  // Sincronizar detailPrice cuando se actualiza un precio en el array prices
+  useEffect(() => {
+    if (detailPrice) {
+      const updatedPrice = prices.find((p) => p.id === detailPrice.id);
+      if (updatedPrice) {
+        setDetailPrice(updatedPrice);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prices]);
+
   const handleRowClick = (price: PriceEntry) => {
     setDetailPrice(price);
   };

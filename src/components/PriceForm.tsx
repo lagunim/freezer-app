@@ -164,6 +164,8 @@ export default function PriceForm({
     try {
       if (isEdit) {
         await onSubmit(input);
+        // Cerrar el modal después de actualizar exitosamente
+        onCancel?.();
       } else {
         await onSubmit(input, { addToDespensa });
       }
