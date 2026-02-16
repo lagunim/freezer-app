@@ -53,6 +53,7 @@ export default function PriceTable({
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState<'6months' | '1year' | 'all'>('all');
+  const [priceBeforeHistory, setPriceBeforeHistory] = useState<PriceEntry | null>(null);
 
   const handleRowClick = (price: PriceEntry) => {
     setDetailPrice(price);
@@ -90,7 +91,8 @@ export default function PriceTable({
     onEdit(price);
   };
 
-  const handleViewProductHistory = async (productName: string) => {
+  const handleViewProductHistory = async (productName: string, priceFromDetail?: PriceEntry | null) => {
+    setPriceBeforeHistory(priceFromDetail ?? null);
     setDetailPrice(null);
     setLoadingHistory(true);
     setHistoryError(null);
@@ -107,7 +109,8 @@ export default function PriceTable({
     }
   };
 
-  const handleViewSupermarketHistory = async (supermarket: string) => {
+  const handleViewSupermarketHistory = async (supermarket: string, priceFromDetail?: PriceEntry | null) => {
+    setPriceBeforeHistory(priceFromDetail ?? null);
     setDetailPrice(null);
     setLoadingHistory(true);
     setHistoryError(null);
@@ -131,10 +134,12 @@ export default function PriceTable({
   };
 
   const handleBackToDetails = () => {
+    if (priceBeforeHistory) setDetailPrice(priceBeforeHistory);
+    setPriceBeforeHistory(null);
     setHistoryView(null);
     setHistoryPrices([]);
     setHistoryError(null);
-    setTimeFilter('all'); // Reset filter when going back
+    setTimeFilter('all');
   };
 
   // Filtrar precios según el rango temporal seleccionado
@@ -364,7 +369,7 @@ export default function PriceTable({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewProductHistory(detailPrice.product_name);
+                  handleViewProductHistory(detailPrice.product_name, detailPrice);
                 }}
                 className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
               >
@@ -438,7 +443,7 @@ export default function PriceTable({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewSupermarketHistory(detailPrice.supermarket);
+                  handleViewSupermarketHistory(detailPrice.supermarket, detailPrice);
                 }}
                 className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
               >
@@ -507,14 +512,20 @@ export default function PriceTable({
                 <button
                   onClick={handleBackToDetails}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                  aria-label="Volver"
+                  aria-label="Volver a detalles"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
                 <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <span>Detalles</span>
+                  <button
+                    type="button"
+                    onClick={handleBackToDetails}
+                    className="text-slate-400 transition-colors hover:text-slate-100 focus:outline-none focus:underline"
+                  >
+                    Detalles
+                  </button>
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
@@ -524,9 +535,9 @@ export default function PriceTable({
                 </div>
               </div>
               <button
-                onClick={handleCloseHistory}
+                onClick={handleBackToDetails}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                aria-label="Cerrar"
+                aria-label="Cerrar y volver a detalles"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
