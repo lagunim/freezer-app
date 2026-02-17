@@ -498,53 +498,61 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory('Alimentación')}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
               selectedCategories.includes('Alimentación')
                 ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
                 : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
-            <span className="text-lg md:text-2xl">🍎</span>
-            <span className="leading-tight">Comida</span>
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <img src="/groceries-icon.png" alt="Comida" className="w-full h-full object-contain" />
+            </span>
+            <span className="leading-tight shrink-0">Comida</span>
           </button>
 
           <button
             type="button"
             onClick={() => toggleCategory('Limpieza')}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
               selectedCategories.includes('Limpieza')
                 ? 'border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
                 : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
-            <span className="text-lg md:text-2xl">🧹</span>
-            <span className="leading-tight">Limpieza</span>
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <img src="/cleaning-icon.png" alt="Limpieza" className="w-full h-full object-contain" />
+            </span>
+            <span className="leading-tight shrink-0">Limpieza</span>
           </button>
 
           <button
             type="button"
-            onClick={() => toggleCategory('Mascotas')}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-              selectedCategories.includes('Mascotas')
+            onClick={() => toggleCategory('Higiene')}
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
+              selectedCategories.includes('Higiene')
                 ? 'border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
                 : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
-            <span className="text-lg md:text-2xl">🐾</span>
-            <span className="leading-tight">Mascotas</span>
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <img src="/higiene-icon.png" alt="Higiene" className="w-full h-full object-contain" />
+            </span>
+            <span className="leading-tight shrink-0">Higiene</span>
           </button>
 
           <button
             type="button"
             onClick={() => setShowShoppingCart(!showShoppingCart)}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[10px] md:text-xs font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
               showShoppingCart
                 ? 'border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
                 : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-105 active:scale-95'
             }`}
           >
-            <span className="text-lg md:text-2xl">🛒</span>
-            <span className="leading-tight">Cesta</span>
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <img src="/cart-icon.png" alt="Cesta" className="w-full h-full object-contain" />
+            </span>
+            <span className="leading-tight shrink-0">Cesta</span>
           </button>
         </div>
       </div>

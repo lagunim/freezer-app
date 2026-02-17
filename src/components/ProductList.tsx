@@ -30,21 +30,21 @@ const getCategoryInfo = (category: ProductCategory) => {
   switch (category) {
     case 'Alimentación':
       return {
-        emoji: '🍎',
+        iconSrc: '/groceries-icon.png',
         bgColor: 'bg-emerald-500/10',
         borderColor: 'border-emerald-400/40',
         glowColor: 'shadow-[0_0_20px_rgba(16,185,129,0.3)]'
       };
     case 'Limpieza':
       return {
-        emoji: '🧹',
+        iconSrc: '/cleaning-icon.png',
         bgColor: 'bg-cyan-500/10',
         borderColor: 'border-cyan-400/40',
         glowColor: 'shadow-[0_0_20px_rgba(34,211,238,0.3)]'
       };
-    case 'Mascotas':
+    case 'Higiene':
       return {
-        emoji: '🐾',
+        iconSrc: '/higiene-icon.png',
         bgColor: 'bg-amber-500/10',
         borderColor: 'border-amber-400/40',
         glowColor: 'shadow-[0_0_20px_rgba(251,191,36,0.3)]'
@@ -203,15 +203,21 @@ export default function ProductList({
                           e.stopPropagation();
                           onToggleSelection?.(product.id);
                         }}
-                        className={`flex-shrink-0 rounded-xl border backdrop-blur-xl p-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] w-[52px] h-[52px] ${
+                        className={`flex-shrink-0 rounded-xl border backdrop-blur-xl p-0 flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] w-[52px] h-[52px] overflow-hidden ${
                           selectedProductIds.has(product.id)
                             ? 'bg-sky-500/40 border-sky-400 shadow-[0_0_25px_rgba(56,189,248,0.6)] scale-110'
                             : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor} hover:scale-110 active:scale-95`
                         }`}
                       >
-                        <span className={selectedProductIds.has(product.id) ? 'text-5xl font-bold' : 'text-3xl'}>
-                          {selectedProductIds.has(product.id) ? '✓' : getCategoryInfo(product.category).emoji}
-                        </span>
+                        {selectedProductIds.has(product.id) ? (
+                          <span className="text-5xl font-bold">✓</span>
+                        ) : (
+                          <img
+                            src={getCategoryInfo(product.category).iconSrc}
+                            alt=""
+                            className="min-w-0 min-h-0 w-full h-full object-contain"
+                          />
+                        )}
                       </button>
 
                       {/* Información del producto */}
@@ -314,15 +320,21 @@ export default function ProductList({
                         e.stopPropagation();
                         onToggleSelection?.(product.id);
                       }}
-                      className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-4 flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] w-[104px] h-[104px] ${
+                      className={`flex-shrink-0 rounded-2xl border-2 backdrop-blur-xl p-0 flex items-center justify-center cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] w-[104px] h-[104px] overflow-hidden ${
                         selectedProductIds.has(product.id)
                           ? 'bg-sky-500/40 border-sky-400 shadow-[0_0_30px_rgba(56,189,248,0.7)] scale-110'
                           : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} ${getCategoryInfo(product.category).glowColor} hover:scale-110 active:scale-95`
                       }`}
                     >
-                      <span className={selectedProductIds.has(product.id) ? 'text-8xl font-bold' : 'text-6xl'}>
-                        {selectedProductIds.has(product.id) ? '✓' : getCategoryInfo(product.category).emoji}
-                      </span>
+                      {selectedProductIds.has(product.id) ? (
+                        <span className="text-8xl font-bold">✓</span>
+                      ) : (
+                        <img
+                          src={getCategoryInfo(product.category).iconSrc}
+                          alt=""
+                          className="min-w-0 min-h-0 w-full h-full object-contain"
+                        />
+                      )}
                     </button>
 
                     {/* Información del producto */}

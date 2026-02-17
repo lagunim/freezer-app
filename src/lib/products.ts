@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 
-export type ProductCategory = 'Limpieza' | 'Alimentación' | 'Mascotas';
+export type ProductCategory = 'Limpieza' | 'Alimentación' | 'Higiene';
 
 export interface Product {
   id: string;

@@ -206,7 +206,7 @@ export default function ProductForm({
           >
             <option value="Alimentación">🍎 Alimentación</option>
             <option value="Limpieza">🧹 Limpieza</option>
-            <option value="Mascotas">🐾 Mascotas</option>
+            <option value="Higiene">🧴 Higiene</option>
           </select>
         </div>
 
