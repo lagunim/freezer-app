@@ -487,7 +487,11 @@ export default function FreezerApp() {
   }
 
   return (
-    <section>
+    <motion.section
+      initial={{ opacity: 0, x: "100%" }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, type: "spring", ease: "easeInOut" }}
+    >
       {/* Header */}
       <header className="flex items-center justify-between p-2 mb-2 sm:mb-3 md:mb-4">
         <div className="flex items-center">
@@ -509,7 +513,7 @@ export default function FreezerApp() {
         </div>
         <button
           onClick={handleLogout}
-          className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+          className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-slate-100 shadow-sm transition-colors duration-200 hover:bg-slate-700 hover:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
           aria-label="Cerrar sesión"
           title="Cerrar sesión"
         >
@@ -530,7 +534,7 @@ export default function FreezerApp() {
       </header>
 
       {/* Barra de búsqueda y filtros */}
-      <div className="sticky top-0 z-50 space-y-2 md:space-y-3 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
+      <div className="sticky top-0 z-50 space-y-2 md:space-y-3 pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 bg-slate-900/95 border-b border-slate-800">
         <div>
           <label htmlFor="product-search" className="sr-only">
             Buscar por nombre
@@ -560,7 +564,7 @@ export default function FreezerApp() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por nombre…"
-              className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
+              className="block w-full rounded-xl border border-slate-600 bg-slate-800 py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-none"
             />
           </div>
         </div>
@@ -570,10 +574,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory("Alimentación")}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
               selectedCategories.includes("Alimentación")
-                ? "border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
-                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-105 active:scale-95"
+                ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -589,10 +593,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory("Limpieza")}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
               selectedCategories.includes("Limpieza")
-                ? "border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
-                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-105 active:scale-95"
+                ? "border-cyan-500 bg-cyan-600 text-white shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -608,10 +612,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => toggleCategory("Higiene")}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
               selectedCategories.includes("Higiene")
-                ? "border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
-                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95"
+                ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -627,10 +631,10 @@ export default function FreezerApp() {
           <button
             type="button"
             onClick={() => setShowShoppingCart(!showShoppingCart)}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
               showShoppingCart
-                ? "border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
-                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-105 active:scale-95"
+                ? "border-purple-500 bg-purple-600 text-white shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -690,7 +694,7 @@ export default function FreezerApp() {
           setProductsError(null);
           setIsFormOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl font-light text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 hover:rotate-90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
+        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md transition-transform duration-200 hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
         aria-label="Añadir nuevo producto"
       >
         +
@@ -716,7 +720,7 @@ export default function FreezerApp() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, type: "spring" }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-new-product-title"
@@ -728,7 +732,7 @@ export default function FreezerApp() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, type: "spring" }}
-              className="w-full max-w-sm max-h-[85vh] overflow-y-auto  rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <h2
@@ -748,6 +752,6 @@ export default function FreezerApp() {
           </motion.div>
         )}
       </AnimatePresence>
-    </section>
+    </motion.section>
   );
 }

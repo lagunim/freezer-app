@@ -378,7 +378,13 @@ export default function PriceHunterApp() {
   }
 
   return (
-    <section>
+    <motion.section
+      layoutId="Price-Hunter-App"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0 }}
+      transition={{ duration: 1, type: "spring" }}
+    >
       {/* Header */}
       <header className="mb-2 flex items-center justify-between p-2 sm:mb-3 md:mb-4">
         <div className="flex items-center">
@@ -481,14 +487,14 @@ export default function PriceHunterApp() {
       </div>
 
       {/* Floating Add Button */}
-        <motion.button
-          layoutId="new-price-form"
-          onClick={openForm}
-          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
-          aria-label="Añadir precio"
-        >
-          +
-        </motion.button>
+      <motion.button
+        layoutId="new-price-form"
+        onClick={openForm}
+        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
+        aria-label="Añadir precio"
+      >
+        +
+      </motion.button>
 
       {/* Price Form Modal */}
       <AnimatePresence>
@@ -513,6 +519,6 @@ export default function PriceHunterApp() {
           { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
         ]}
       />
-    </section>
+    </motion.section>
   );
 }

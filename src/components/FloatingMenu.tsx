@@ -17,7 +17,8 @@ export default function FloatingMenu({ items }: FloatingMenuProps) {
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-20 sm:bottom-8 sm:left-8">
+    <div className="fixed bottom-6 left-6 z-20 sm:bottom-8 sm:left-8"
+    >
       <a
         href={targetApp.href}
         className="group flex min-h-[44px] items-center gap-2.5 rounded-full border border-white/10 bg-slate-700/40 px-3.5 py-2.5 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:gap-3 sm:px-4"
