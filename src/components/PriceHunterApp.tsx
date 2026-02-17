@@ -484,7 +484,7 @@ export default function PriceHunterApp() {
         <motion.button
           layoutId="new-price-form"
           onClick={openForm}
-          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
+          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
           aria-label="Añadir precio"
         >
           +
