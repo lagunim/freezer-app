@@ -782,7 +782,7 @@ export default function PriceTable({
                         setSupermarketHistorySearchTerm(e.target.value)
                       }
                       placeholder="Buscar por producto…"
-                      className="block w-full rounded-xl border border-slate-700 bg-slate-800/50 py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      className="block w-full rounded-xl border border-slate-700 bg-slate-800/50 py-2.5 pl-11 pr-4 text-base text-slate-100 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                     />
                   </div>
                 </div>
