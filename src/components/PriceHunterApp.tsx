@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabaseClient';
-import FriezaIcon from '@/public/Frieza-icon.png';
-import LoginForm from '@/components/auth/LoginForm';
-import RegisterForm from '@/components/auth/RegisterForm';
-import PriceForm from '@/components/PriceForm';
-import PriceTable from '@/components/PriceTable';
-import FloatingMenu from '@/components/FloatingMenu';
-import type { PriceEntry, PriceInput, Unit } from '@/lib/priceHunter';
+import { useEffect, useMemo, useState } from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
+import FriezaIcon from "@/public/Frieza-icon.png";
+import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegisterForm";
+import PriceForm from "@/components/PriceForm";
+import PriceTable from "@/components/PriceTable";
+import FloatingMenu from "@/components/FloatingMenu";
+import type { PriceEntry, PriceInput, Unit } from "@/lib/priceHunter";
 import {
   createPrice,
   deletePrice,
@@ -16,20 +16,17 @@ import {
   fetchUniqueProductNames,
   fetchUniqueBrands,
   fetchUniqueSupermarkets,
-} from '@/lib/priceHunter';
-import {
-  createProduct,
-  updateProduct,
-  fetchProducts,
-} from '@/lib/products';
-import type { ProductInput } from '@/lib/products';
+} from "@/lib/priceHunter";
+import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
+import type { ProductInput } from "@/lib/products";
+import { motion, AnimatePresence } from "framer-motion";
 
-type AuthView = 'login' | 'register';
+type AuthView = "login" | "register";
 
 export default function PriceHunterApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [authView, setAuthView] = useState<AuthView>('login');
+  const [authView, setAuthView] = useState<AuthView>("login");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +38,10 @@ export default function PriceHunterApp() {
   const [editingPrice, setEditingPrice] = useState<PriceEntry | null>(null);
   const [productSuggestions, setProductSuggestions] = useState<string[]>([]);
   const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
-  const [supermarketSuggestions, setSupermarketSuggestions] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [supermarketSuggestions, setSupermarketSuggestions] = useState<
+    string[]
+  >([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -97,20 +96,21 @@ export default function PriceHunterApp() {
       setPricesLoading(true);
       setPricesError(null);
       try {
-        const [pricesData, suggestions, brands, supermarkets] = await Promise.all([
-          fetchPrices(),
-          fetchUniqueProductNames(),
-          fetchUniqueBrands(),
-          fetchUniqueSupermarkets(),
-        ]);
+        const [pricesData, suggestions, brands, supermarkets] =
+          await Promise.all([
+            fetchPrices(),
+            fetchUniqueProductNames(),
+            fetchUniqueBrands(),
+            fetchUniqueSupermarkets(),
+          ]);
         setPrices(pricesData);
         setProductSuggestions(suggestions);
         setBrandSuggestions(brands);
         setSupermarketSuggestions(supermarkets);
       } catch (err) {
-        console.error('Error al cargar precios desde Supabase:', err);
+        console.error("Error al cargar precios desde Supabase:", err);
         setPricesError(
-          'No se han podido cargar los precios. Prueba a recargar o revisa la configuración de Supabase.'
+          "No se han podido cargar los precios. Prueba a recargar o revisa la configuración de Supabase.",
         );
       } finally {
         setPricesLoading(false);
@@ -125,7 +125,7 @@ export default function PriceHunterApp() {
     setMessage(null);
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
-      setError('No se ha podido cerrar sesión. Inténtalo de nuevo.');
+      setError("No se ha podido cerrar sesión. Inténtalo de nuevo.");
     }
   };
 
@@ -141,20 +141,20 @@ export default function PriceHunterApp() {
 
   function mapUnitToQuantityUnit(unit: Unit): string {
     switch (unit) {
-      case '1Kg':
-        return 'g';
-      case '1L':
-        return 'ml';
-      case 'Docena':
-        return 'uds';
+      case "1Kg":
+        return "g";
+      case "1L":
+        return "ml";
+      case "Docena":
+        return "uds";
       default:
-        return 'g';
+        return "g";
     }
   }
 
   const handleCreatePrice = async (
     input: PriceInput,
-    options?: { addToDespensa?: boolean }
+    options?: { addToDespensa?: boolean },
   ) => {
     if (!user) return;
 
@@ -163,7 +163,7 @@ export default function PriceHunterApp() {
     try {
       const created = await createPrice(user.id, input);
       setPrices((prev) => [created, ...prev]);
-      setMessage('Precio añadido correctamente.');
+      setMessage("Precio añadido correctamente.");
       closeForm();
       // Actualizar sugerencias
       const [suggestions, brands, supermarkets] = await Promise.all([
@@ -182,7 +182,7 @@ export default function PriceHunterApp() {
         try {
           const products = await fetchProducts();
           const existing = products.find(
-            (p) => p.name.trim().toLowerCase() === productNameNormalized
+            (p) => p.name.trim().toLowerCase() === productNameNormalized,
           );
           if (existing) {
             await updateProduct(existing.id, {
@@ -199,7 +199,7 @@ export default function PriceHunterApp() {
               name: input.product_name.trim(),
               quantity: newQty,
               quantity_unit: quantityUnit,
-              category: 'Alimentación',
+              category: "Alimentación",
               added_at: input.date,
               in_shopping_list: false,
               shopping_quantity: null,
@@ -207,15 +207,18 @@ export default function PriceHunterApp() {
             await createProduct(user.id, productInput);
           }
         } catch (despensaErr) {
-          console.error('Error al añadir/actualizar en la despensa:', despensaErr);
+          console.error(
+            "Error al añadir/actualizar en la despensa:",
+            despensaErr,
+          );
           setMessage(
-            'Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.'
+            "Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.",
           );
         }
       }
     } catch (err) {
-      console.error('Error al crear precio en Supabase:', err);
-      setPricesError('No se ha podido crear el precio.');
+      console.error("Error al crear precio en Supabase:", err);
+      setPricesError("No se ha podido crear el precio.");
     } finally {
       setSavingPrice(false);
     }
@@ -229,9 +232,9 @@ export default function PriceHunterApp() {
     try {
       const updated = await updatePrice(editingPrice.id, input);
       setPrices((prev) =>
-        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
       );
-      setMessage('Precio actualizado correctamente.');
+      setMessage("Precio actualizado correctamente.");
       closeForm();
       // Actualizar sugerencias
       const [suggestions, brands, supermarkets] = await Promise.all([
@@ -243,8 +246,8 @@ export default function PriceHunterApp() {
       setBrandSuggestions(brands);
       setSupermarketSuggestions(supermarkets);
     } catch (err) {
-      console.error('Error al actualizar precio en Supabase:', err);
-      setPricesError('No se ha podido actualizar el precio.');
+      console.error("Error al actualizar precio en Supabase:", err);
+      setPricesError("No se ha podido actualizar el precio.");
     } finally {
       setSavingPrice(false);
     }
@@ -255,7 +258,7 @@ export default function PriceHunterApp() {
     try {
       await deletePrice(id);
       setPrices((prev) => prev.filter((p) => p.id !== id));
-      setMessage('Precio eliminado correctamente.');
+      setMessage("Precio eliminado correctamente.");
       // Actualizar sugerencias
       const [suggestions, brands, supermarkets] = await Promise.all([
         fetchUniqueProductNames(),
@@ -266,8 +269,8 @@ export default function PriceHunterApp() {
       setBrandSuggestions(brands);
       setSupermarketSuggestions(supermarkets);
     } catch (err) {
-      console.error('Error al borrar precio en Supabase:', err);
-      setPricesError('No se ha podido borrar el precio.');
+      console.error("Error al borrar precio en Supabase:", err);
+      setPricesError("No se ha podido borrar el precio.");
     }
   };
 
@@ -284,7 +287,7 @@ export default function PriceHunterApp() {
     }
 
     return prices.filter((price) =>
-      price.product_name.toLowerCase().includes(term)
+      price.product_name.toLowerCase().includes(term),
     );
   }, [prices, searchTerm]);
 
@@ -324,16 +327,14 @@ export default function PriceHunterApp() {
         {/* Auth Form */}
         <div className="w-full max-w-md">
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
-            {authView === 'login' ? (
-              <LoginForm
-                onAuthError={(msg: string) => setError(msg)}
-              />
+            {authView === "login" ? (
+              <LoginForm onAuthError={(msg: string) => setError(msg)} />
             ) : (
               <RegisterForm
                 onAuthError={(msg: string) => setError(msg)}
                 onRegistered={(msg: string) => {
                   setMessage(msg);
-                  setAuthView('login');
+                  setAuthView("login");
                 }}
               />
             )}
@@ -342,13 +343,13 @@ export default function PriceHunterApp() {
             <div className="mt-4 text-center">
               <button
                 onClick={() =>
-                  setAuthView(authView === 'login' ? 'register' : 'login')
+                  setAuthView(authView === "login" ? "register" : "login")
                 }
                 className="text-sm text-sky-400 hover:underline"
               >
-                {authView === 'login'
-                  ? '¿No tienes cuenta? Regístrate'
-                  : '¿Ya tienes cuenta? Inicia sesión'}
+                {authView === "login"
+                  ? "¿No tienes cuenta? Regístrate"
+                  : "¿Ya tienes cuenta? Inicia sesión"}
               </button>
             </div>
           </div>
@@ -369,7 +370,7 @@ export default function PriceHunterApp() {
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
-            { id: 'freezer-app', label: 'Freezer App', href: '/', icon: '❄️' }
+            { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
           ]}
         />
       </section>
@@ -392,7 +393,7 @@ export default function PriceHunterApp() {
                 <span>Price Hunter</span>
               </h1>
               <p className="text-left text-xs text-slate-400 sm:text-sm">
-                {user.email ?? 'usuario sin email'}
+                {user.email ?? "usuario sin email"}
               </p>
             </div>
           </div>
@@ -403,8 +404,18 @@ export default function PriceHunterApp() {
           aria-label="Cerrar sesión"
           title="Cerrar sesión"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
           </svg>
         </button>
       </header>
@@ -416,9 +427,22 @@ export default function PriceHunterApp() {
             Buscar por producto
           </label>
           <div className="relative">
-            <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <div
+              className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
+              aria-hidden
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
@@ -457,33 +481,36 @@ export default function PriceHunterApp() {
       </div>
 
       {/* Floating Add Button */}
-      <button
-        onClick={openForm}
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
-        aria-label="Añadir precio"
-      >
-        +
-      </button>
+        <motion.button
+          layoutId="new-price-form"
+          onClick={openForm}
+          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
+          aria-label="Añadir precio"
+        >
+          +
+        </motion.button>
 
       {/* Price Form Modal */}
-      {isFormOpen && (
-        <PriceForm
-          key={editingPrice?.id ?? 'create'}
-          mode={editingPrice ? 'edit' : 'create'}
-          initialPrice={editingPrice}
-          loading={savingPrice}
-          productSuggestions={productSuggestions}
-          brandSuggestions={brandSuggestions}
-          supermarketSuggestions={supermarketSuggestions}
-          onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
-          onCancel={closeForm}
-        />
-      )}
+      <AnimatePresence>
+        {isFormOpen && (
+          <PriceForm
+            key={editingPrice?.id ?? "create"}
+            mode={editingPrice ? "edit" : "create"}
+            initialPrice={editingPrice}
+            loading={savingPrice}
+            productSuggestions={productSuggestions}
+            brandSuggestions={brandSuggestions}
+            supermarketSuggestions={supermarketSuggestions}
+            onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
+            onCancel={closeForm}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Menú flotante de aplicaciones */}
       <FloatingMenu
         items={[
-          { id: 'freezer-app', label: 'Freezer App', href: '/', icon: '❄️' }
+          { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
         ]}
       />
     </section>

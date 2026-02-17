@@ -1,26 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabaseClient';
-import FriezaIcon from '@/public/Frieza-icon.png';
-import LoginForm from '@/components/auth/LoginForm';
-import RegisterForm from '@/components/auth/RegisterForm';
-import ProductForm from '@/components/ProductForm';
-import ProductList from '@/components/ProductList';
-import FloatingMenu from '@/components/FloatingMenu';
-import type { Product, ProductCategory } from '@/lib/products';
+import { useEffect, useMemo, useState } from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
+import FriezaIcon from "@/public/Frieza-icon.png";
+import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegisterForm";
+import ProductForm from "@/components/ProductForm";
+import ProductList from "@/components/ProductList";
+import FloatingMenu from "@/components/FloatingMenu";
+import type { Product, ProductCategory } from "@/lib/products";
 import {
   createProduct,
   deleteProduct,
   fetchProducts,
   updateProduct,
-} from '@/lib/products';
+} from "@/lib/products";
+import { AnimatePresence, motion } from "framer-motion";
 
-type AuthView = 'login' | 'register';
+type AuthView = "login" | "register";
 
 export default function FreezerApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [authView, setAuthView] = useState<AuthView>('login');
+  const [authView, setAuthView] = useState<AuthView>("login");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,12 +30,20 @@ export default function FreezerApp() {
   const [productsError, setProductsError] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<ProductCategory[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<
+    ProductCategory[]
+  >([]);
   const [showShoppingCart, setShowShoppingCart] = useState(false);
-  const [productNotification, setProductNotification] = useState<{ productId: string; message: string; type: 'success' | 'error' } | null>(null);
+  const [productNotification, setProductNotification] = useState<{
+    productId: string;
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
   const [isNotificationExiting, setIsNotificationExiting] = useState(false);
-  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -83,18 +92,18 @@ export default function FreezerApp() {
       setIsNotificationExiting(false);
       return;
     }
-    
+
     // Mostrar la notificación durante 2.5 segundos
     const exitTimer = setTimeout(() => {
       setIsNotificationExiting(true);
     }, 2500);
-    
+
     // Eliminar completamente después de la animación de salida (500ms adicionales)
     const removeTimer = setTimeout(() => {
       setProductNotification(null);
       setIsNotificationExiting(false);
     }, 3000);
-    
+
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(removeTimer);
@@ -116,9 +125,9 @@ export default function FreezerApp() {
         const data = await fetchProducts();
         setProducts(data);
       } catch (err) {
-        console.error('Error al cargar productos desde Supabase:', err);
+        console.error("Error al cargar productos desde Supabase:", err);
         setProductsError(
-          'No se han podido cargar los productos. Prueba a recargar o revisa la configuración de Supabase.'
+          "No se han podido cargar los productos. Prueba a recargar o revisa la configuración de Supabase.",
         );
       } finally {
         setProductsLoading(false);
@@ -133,7 +142,7 @@ export default function FreezerApp() {
     setMessage(null);
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
-      setError('No se ha podido cerrar sesión. Inténtalo de nuevo.');
+      setError("No se ha podido cerrar sesión. Inténtalo de nuevo.");
     }
   };
 
@@ -141,7 +150,9 @@ export default function FreezerApp() {
     setIsFormOpen(false);
   };
 
-  const handleCreateProduct = async (input: Parameters<typeof createProduct>[1]) => {
+  const handleCreateProduct = async (
+    input: Parameters<typeof createProduct>[1],
+  ) => {
     if (!user) return;
 
     setSavingProduct(true);
@@ -149,11 +160,11 @@ export default function FreezerApp() {
     try {
       const created = await createProduct(user.id, input);
       setProducts((prev) => [created, ...prev]);
-      setMessage('Producto añadido al listado.');
+      setMessage("Producto añadido al listado.");
       closeForm();
     } catch (err) {
-      console.error('Error al crear producto en Supabase:', err);
-      setProductsError('No se ha podido crear el producto.');
+      console.error("Error al crear producto en Supabase:", err);
+      setProductsError("No se ha podido crear el producto.");
     } finally {
       setSavingProduct(false);
     }
@@ -161,19 +172,27 @@ export default function FreezerApp() {
 
   const handleUpdateProduct = async (
     product: Product,
-    input: Parameters<typeof updateProduct>[1]
+    input: Parameters<typeof updateProduct>[1],
   ) => {
     setSavingProduct(true);
     setProductsError(null);
     try {
       const updated = await updateProduct(product.id, input);
       setProducts((prev) =>
-        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
       );
-      setProductNotification({ productId: product.id, message: 'Producto actualizado.', type: 'success' });
+      setProductNotification({
+        productId: product.id,
+        message: "Producto actualizado.",
+        type: "success",
+      });
     } catch (err) {
-      console.error('Error al actualizar producto en Supabase:', err);
-      setProductNotification({ productId: product.id, message: 'No se ha podido actualizar el producto.', type: 'error' });
+      console.error("Error al actualizar producto en Supabase:", err);
+      setProductNotification({
+        productId: product.id,
+        message: "No se ha podido actualizar el producto.",
+        type: "error",
+      });
     } finally {
       setSavingProduct(false);
     }
@@ -183,14 +202,22 @@ export default function FreezerApp() {
     setProductsError(null);
     try {
       await deleteProduct(product.id);
-      setProductNotification({ productId: product.id, message: 'Producto eliminado.', type: 'success' });
+      setProductNotification({
+        productId: product.id,
+        message: "Producto eliminado.",
+        type: "success",
+      });
       // Esperar 3 segundos antes de eliminar el producto para que se vea la notificación completa
       setTimeout(() => {
         setProducts((prev) => prev.filter((p) => p.id !== product.id));
       }, 3000);
     } catch (err) {
-      console.error('Error al borrar producto en Supabase:', err);
-      setProductNotification({ productId: product.id, message: 'No se ha podido borrar el producto.', type: 'error' });
+      console.error("Error al borrar producto en Supabase:", err);
+      setProductNotification({
+        productId: product.id,
+        message: "No se ha podido borrar el producto.",
+        type: "error",
+      });
     }
   };
 
@@ -205,19 +232,29 @@ export default function FreezerApp() {
         category: product.category,
         added_at: product.added_at,
         in_shopping_list: !product.in_shopping_list,
-        shopping_quantity: !product.in_shopping_list ? null : product.shopping_quantity,
+        shopping_quantity: !product.in_shopping_list
+          ? null
+          : product.shopping_quantity,
       };
       const updated = await updateProduct(product.id, input);
       setProducts((prev) =>
-        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+        prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
       );
       const message = updated.in_shopping_list
-        ? 'Producto añadido a la cesta.'
-        : 'Producto quitado de la cesta.';
-      setProductNotification({ productId: product.id, message, type: 'success' });
+        ? "Producto añadido a la cesta."
+        : "Producto quitado de la cesta.";
+      setProductNotification({
+        productId: product.id,
+        message,
+        type: "success",
+      });
     } catch (err) {
-      console.error('Error al actualizar producto en Supabase:', err);
-      setProductNotification({ productId: product.id, message: 'No se ha podido actualizar el producto.', type: 'error' });
+      console.error("Error al actualizar producto en Supabase:", err);
+      setProductNotification({
+        productId: product.id,
+        message: "No se ha podido actualizar el producto.",
+        type: "error",
+      });
     } finally {
       setSavingProduct(false);
     }
@@ -243,18 +280,20 @@ export default function FreezerApp() {
     setProductsError(null);
     try {
       // Borrar todos los productos seleccionados en paralelo
-      await Promise.all(productIds.map(id => deleteProduct(id)));
-      
-      setMessage(`${productIds.length} producto${productIds.length > 1 ? 's' : ''} eliminado${productIds.length > 1 ? 's' : ''}.`);
-      
+      await Promise.all(productIds.map((id) => deleteProduct(id)));
+
+      setMessage(
+        `${productIds.length} producto${productIds.length > 1 ? "s" : ""} eliminado${productIds.length > 1 ? "s" : ""}.`,
+      );
+
       // Eliminar los productos del estado
       setProducts((prev) => prev.filter((p) => !productIds.includes(p.id)));
-      
+
       // Limpiar la selección
       handleClearSelection();
     } catch (err) {
-      console.error('Error al borrar productos en Supabase:', err);
-      setProductsError('No se han podido borrar algunos productos.');
+      console.error("Error al borrar productos en Supabase:", err);
+      setProductsError("No se han podido borrar algunos productos.");
     }
   };
 
@@ -266,7 +305,7 @@ export default function FreezerApp() {
   const handleRegistered = (msg: string) => {
     setMessage(msg);
     setError(null);
-    setAuthView('login');
+    setAuthView("login");
   };
 
   const toggleCategory = (category: ProductCategory) => {
@@ -293,15 +332,15 @@ export default function FreezerApp() {
 
     // Filtrar por categorías seleccionadas (si hay alguna seleccionada)
     if (selectedCategories.length > 0) {
-      result = result.filter((product) => 
-        selectedCategories.includes(product.category)
+      result = result.filter((product) =>
+        selectedCategories.includes(product.category),
       );
     }
 
     // Filtrar por término de búsqueda
     if (term) {
       result = result.filter((product) =>
-        product.name.toLowerCase().includes(term)
+        product.name.toLowerCase().includes(term),
       );
     }
 
@@ -342,7 +381,12 @@ export default function FreezerApp() {
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
-            { id: 'price-hunter', label: 'Price Hunter', href: '/price-hunter', icon: '🔍' }
+            {
+              id: "price-hunter",
+              label: "Price Hunter",
+              href: "/price-hunter",
+              icon: "🔍",
+            },
           ]}
         />
       </section>
@@ -376,14 +420,14 @@ export default function FreezerApp() {
             <button
               type="button"
               onClick={() => {
-                setAuthView('login');
+                setAuthView("login");
                 setError(null);
                 setMessage(null);
               }}
               className={`flex-1 rounded-md px-2 py-1 transition ${
-                authView === 'login'
-                  ? 'bg-slate-950 text-slate-50'
-                  : 'text-slate-400 hover:text-slate-100'
+                authView === "login"
+                  ? "bg-slate-950 text-slate-50"
+                  : "text-slate-400 hover:text-slate-100"
               }`}
             >
               Iniciar sesión
@@ -391,25 +435,25 @@ export default function FreezerApp() {
             <button
               type="button"
               onClick={() => {
-                setAuthView('register');
+                setAuthView("register");
                 setError(null);
                 setMessage(null);
               }}
               className={`flex-1 rounded-md px-2 py-1 transition ${
-                authView === 'register'
-                  ? 'bg-slate-950 text-slate-50'
-                  : 'text-slate-400 hover:text-slate-100'
+                authView === "register"
+                  ? "bg-slate-950 text-slate-50"
+                  : "text-slate-400 hover:text-slate-100"
               }`}
             >
               Crear cuenta
             </button>
           </div>
 
-      {error && (
-        <div className="alert-enter mb-3 rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
-          {error}
-        </div>
-      )}
+          {error && (
+            <div className="alert-enter mb-3 rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
+              {error}
+            </div>
+          )}
 
           {message && (
             <div className="alert-enter mb-3 rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
@@ -417,7 +461,7 @@ export default function FreezerApp() {
             </div>
           )}
 
-          {authView === 'login' ? (
+          {authView === "login" ? (
             <LoginForm onAuthError={handleAuthError} />
           ) : (
             <RegisterForm
@@ -430,7 +474,12 @@ export default function FreezerApp() {
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
-            { id: 'price-hunter', label: 'Price Hunter', href: '/price-hunter', icon: '🔍' }
+            {
+              id: "price-hunter",
+              label: "Price Hunter",
+              href: "/price-hunter",
+              icon: "🔍",
+            },
           ]}
         />
       </section>
@@ -453,7 +502,7 @@ export default function FreezerApp() {
                 <span>Freezer App</span>
               </h1>
               <p className="text-xs text-left text-slate-400 sm:text-sm">
-                {user.email ?? 'usuario sin email'}
+                {user.email ?? "usuario sin email"}
               </p>
             </div>
           </div>
@@ -464,8 +513,18 @@ export default function FreezerApp() {
           aria-label="Cerrar sesión"
           title="Cerrar sesión"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
           </svg>
         </button>
       </header>
@@ -477,9 +536,22 @@ export default function FreezerApp() {
             Buscar por nombre
           </label>
           <div className="relative">
-            <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100" aria-hidden>
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <div
+              className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
+              aria-hidden
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
@@ -497,45 +569,57 @@ export default function FreezerApp() {
         <div className="grid grid-cols-4 gap-1.5 md:gap-2">
           <button
             type="button"
-            onClick={() => toggleCategory('Alimentación')}
+            onClick={() => toggleCategory("Alimentación")}
             className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
-              selectedCategories.includes('Alimentación')
-                ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-105 active:scale-95'
+              selectedCategories.includes("Alimentación")
+                ? "border-emerald-400/60 bg-gradient-to-br from-emerald-500/30 via-green-600/20 to-green-700/30 text-white shadow-[0_0_20px_rgba(16,185,129,0.4),0_0_40px_rgba(16,185,129,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
+                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-emerald-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:scale-105 active:scale-95"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img src="/groceries-icon.png" alt="Comida" className="w-full h-full object-contain" />
+              <img
+                src="/groceries-icon.png"
+                alt="Comida"
+                className="w-full h-full object-contain"
+              />
             </span>
-            <span className="leading-tight shrink-0">Comida</span>
+            <span className="leading-tight shrionk-0">Comida</span>
           </button>
 
           <button
             type="button"
-            onClick={() => toggleCategory('Limpieza')}
+            onClick={() => toggleCategory("Limpieza")}
             className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
-              selectedCategories.includes('Limpieza')
-                ? 'border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-105 active:scale-95'
+              selectedCategories.includes("Limpieza")
+                ? "border-cyan-400/60 bg-gradient-to-br from-cyan-500/30 via-cyan-600/20 to-cyan-700/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.4),0_0_40px_rgba(34,211,238,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
+                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-cyan-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] hover:scale-105 active:scale-95"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img src="/cleaning-icon.png" alt="Limpieza" className="w-full h-full object-contain" />
+              <img
+                src="/cleaning-icon.png"
+                alt="Limpieza"
+                className="w-full h-full object-contain"
+              />
             </span>
             <span className="leading-tight shrink-0">Limpieza</span>
           </button>
 
           <button
             type="button"
-            onClick={() => toggleCategory('Higiene')}
+            onClick={() => toggleCategory("Higiene")}
             className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
-              selectedCategories.includes('Higiene')
-                ? 'border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95'
+              selectedCategories.includes("Higiene")
+                ? "border-amber-400/60 bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-orange-700/30 text-white shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(251,191,36,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
+                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-amber-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img src="/higiene-icon.png" alt="Higiene" className="w-full h-full object-contain" />
+              <img
+                src="/higiene-icon.png"
+                alt="Higiene"
+                className="w-full h-full object-contain"
+              />
             </span>
             <span className="leading-tight shrink-0">Higiene</span>
           </button>
@@ -545,12 +629,16 @@ export default function FreezerApp() {
             onClick={() => setShowShoppingCart(!showShoppingCart)}
             className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border-2 px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] min-h-[56px] md:min-h-[64px] ${
               showShoppingCart
-                ? 'border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110'
-                : 'border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-105 active:scale-95'
+                ? "border-purple-400/60 bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-purple-700/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(168,85,247,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-110"
+                : "border-white/20 bg-slate-800/40 text-slate-300 shadow-[0_0_15px_rgba(147,197,253,0.1)] hover:border-purple-400/40 hover:bg-slate-800/60 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:scale-105 active:scale-95"
             }`}
           >
             <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img src="/cart-icon.png" alt="Cesta" className="w-full h-full object-contain" />
+              <img
+                src="/cart-icon.png"
+                alt="Cesta"
+                className="w-full h-full object-contain"
+              />
             </span>
             <span className="leading-tight shrink-0">Cesta</span>
           </button>
@@ -594,7 +682,8 @@ export default function FreezerApp() {
       </div>
 
       {/* FAB Nuevo producto */}
-      <button
+      <motion.button
+        layoutId="new-product-modal"
         type="button"
         onClick={() => {
           setMessage(null);
@@ -605,42 +694,60 @@ export default function FreezerApp() {
         aria-label="Añadir nuevo producto"
       >
         +
-      </button>
+      </motion.button>
 
       {/* Menú flotante de aplicaciones */}
       <FloatingMenu
         items={[
-          { id: 'price-hunter', label: 'Price Hunter', href: '/price-hunter', icon: '🔍' }
+          {
+            id: "price-hunter",
+            label: "Price Hunter",
+            href: "/price-hunter",
+            icon: "🔍",
+          },
         ]}
       />
 
       {/* Modal formulario nuevo producto */}
-      {isFormOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-new-product-title"
-          onClick={closeForm}
-        >
-          <div
-            className="w-full max-w-sm max-h-[85vh] overflow-y-auto animate-[slideInUp_0.3s_ease-out] rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {isFormOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, type: "spring" }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-new-product-title"
+            onClick={closeForm}
           >
-            <h2 id="modal-new-product-title" className="mb-3 text-base font-semibold text-slate-100">
-              Añadir producto
-            </h2>
-            <ProductForm
-              mode="create"
-              initialProduct={null}
-              loading={savingProduct}
-              onSubmit={handleCreateProduct}
-              onCancel={closeForm}
-            />
-          </div>
-        </div>
-      )}
+            <motion.div
+              layoutId="new-product-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="w-full max-w-sm max-h-[85vh] overflow-y-auto  rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2
+                id="modal-new-product-title"
+                className="mb-3 text-base font-semibold text-slate-100"
+              >
+                Añadir producto
+              </h2>
+              <ProductForm
+                mode="create"
+                initialProduct={null}
+                loading={savingProduct}
+                onSubmit={handleCreateProduct}
+                onCancel={closeForm}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
-
