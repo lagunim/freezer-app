@@ -18,11 +18,19 @@ import { AnimatePresence, motion } from "framer-motion";
 
 type AuthView = "login" | "register";
 
+type AuthState = {
+  loading: boolean;
+  session: Session | null;
+  user: User | null;
+};
+
 export default function FreezerApp() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [auth, setAuth] = useState<AuthState>({
+    loading: true,
+    session: null,
+    user: null,
+  });
   const [authView, setAuthView] = useState<AuthView>("login");
-  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,14 +55,14 @@ export default function FreezerApp() {
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
       const {
         data: { session: currentSession },
       } = await supabase.auth.getSession();
-
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setLoading(false);
+      setAuth({
+        loading: false,
+        session: currentSession,
+        user: currentSession?.user ?? null,
+      });
     };
 
     void init();
@@ -62,8 +70,11 @@ export default function FreezerApp() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+      setAuth((prev) => ({
+        ...prev,
+        session: newSession,
+        user: newSession?.user ?? null,
+      }));
     });
 
     return () => {
@@ -73,8 +84,8 @@ export default function FreezerApp() {
 
   // Clear auth error when user successfully logs in
   useEffect(() => {
-    if (user) setError(null);
-  }, [user]);
+    if (auth.user) setError(null);
+  }, [auth.user]);
 
   // Auto-dismiss success/error messages after 5 seconds
   useEffect(() => {
@@ -111,7 +122,7 @@ export default function FreezerApp() {
   }, [productNotification]);
 
   useEffect(() => {
-    if (!user) {
+    if (!auth.user) {
       setProducts([]);
       setIsFormOpen(false);
       setProductsError(null);
@@ -135,7 +146,7 @@ export default function FreezerApp() {
     };
 
     void load();
-  }, [user]);
+  }, [auth.user]);
 
   const handleLogout = async () => {
     setError(null);
@@ -153,12 +164,12 @@ export default function FreezerApp() {
   const handleCreateProduct = async (
     input: Parameters<typeof createProduct>[1],
   ) => {
-    if (!user) return;
+    if (!auth.user) return;
 
     setSavingProduct(true);
     setProductsError(null);
     try {
-      const created = await createProduct(user.id, input);
+      const created = await createProduct(auth.user.id, input);
       setProducts((prev) => [created, ...prev]);
       setMessage("Producto añadido al listado.");
       closeForm();
@@ -352,32 +363,33 @@ export default function FreezerApp() {
     });
   }, [products, searchTerm, selectedCategories, showShoppingCart]);
 
-  if (loading) {
+  if (auth.loading) {
     return (
-      <section>
-        {/* Header */}
-        <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-          <img
-            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-            alt="Freezer App"
-            className="h-20 px-4 rounded-2xl shadow-sm"
-          />
-          <div className="w-64">
-            <div className="space-y-1 text-center">
-              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                <span>Freezer App</span>
-              </h1>
-              <p className="text-xs text-slate-400 sm:text-sm">
-                Cargando sesión de Supabase…
-              </p>
+      <>
+        <section>
+          {/* Header */}
+          <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-20 px-4 rounded-2xl shadow-sm"
+            />
+            <div className="w-64">
+              <div className="space-y-1 text-center">
+                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                  <span>Freezer App</span>
+                </h1>
+                <p className="text-xs text-slate-400 sm:text-sm">
+                  Cargando sesión de Supabase…
+                </p>
+              </div>
             </div>
+          </header>
+
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+            <p>Un momento…</p>
           </div>
-        </header>
-
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
-          <p>Un momento…</p>
-        </div>
-
+        </section>
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
@@ -389,88 +401,89 @@ export default function FreezerApp() {
             },
           ]}
         />
-      </section>
+      </>
     );
   }
 
-  if (!session || !user) {
+  if (!auth.session || !auth.user) {
     return (
-      <section>
-        {/* Header */}
-        <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-          <img
-            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-            alt="Freezer App"
-            className="h-20 px-4 rounded-2xl shadow-sm"
-          />
-          <div className="w-64">
-            <div className="space-y-1 text-center">
-              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                <span>Freezer App</span>
-              </h1>
-              <p className="text-xs text-slate-400 sm:text-sm">
-                Identifícate para gestionar tu congelador.
-              </p>
-            </div>
-          </div>
-        </header>
-
-        <div className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50">
-          <div className="mb-4 flex rounded-lg bg-slate-800/80 p-0.5 text-xs font-medium text-slate-300">
-            <button
-              type="button"
-              onClick={() => {
-                setAuthView("login");
-                setError(null);
-                setMessage(null);
-              }}
-              className={`flex-1 rounded-md px-2 py-1 transition ${
-                authView === "login"
-                  ? "bg-slate-950 text-slate-50"
-                  : "text-slate-400 hover:text-slate-100"
-              }`}
-            >
-              Iniciar sesión
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthView("register");
-                setError(null);
-                setMessage(null);
-              }}
-              className={`flex-1 rounded-md px-2 py-1 transition ${
-                authView === "register"
-                  ? "bg-slate-950 text-slate-50"
-                  : "text-slate-400 hover:text-slate-100"
-              }`}
-            >
-              Crear cuenta
-            </button>
-          </div>
-
-          {error && (
-            <div className="alert-enter mb-3 rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
-              {error}
-            </div>
-          )}
-
-          {message && (
-            <div className="alert-enter mb-3 rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
-              {message}
-            </div>
-          )}
-
-          {authView === "login" ? (
-            <LoginForm onAuthError={handleAuthError} />
-          ) : (
-            <RegisterForm
-              onAuthError={handleAuthError}
-              onRegistered={handleRegistered}
+      <>
+        <section>
+          {/* Header */}
+          <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-20 px-4 rounded-2xl shadow-sm"
             />
-          )}
-        </div>
+            <div className="w-64">
+              <div className="space-y-1 text-center">
+                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                  <span>Freezer App</span>
+                </h1>
+                <p className="text-xs text-slate-400 sm:text-sm">
+                  Identifícate para gestionar tu congelador.
+                </p>
+              </div>
+            </div>
+          </header>
 
+          <div className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50">
+            <div className="mb-4 flex rounded-lg bg-slate-800/80 p-0.5 text-xs font-medium text-slate-300">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthView("login");
+                  setError(null);
+                  setMessage(null);
+                }}
+                className={`flex-1 rounded-md px-2 py-1 transition ${
+                  authView === "login"
+                    ? "bg-slate-950 text-slate-50"
+                    : "text-slate-400 hover:text-slate-100"
+                }`}
+              >
+                Iniciar sesión
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthView("register");
+                  setError(null);
+                  setMessage(null);
+                }}
+                className={`flex-1 rounded-md px-2 py-1 transition ${
+                  authView === "register"
+                    ? "bg-slate-950 text-slate-50"
+                    : "text-slate-400 hover:text-slate-100"
+                }`}
+              >
+                Crear cuenta
+              </button>
+            </div>
+
+            {error && (
+              <div className="alert-enter mb-3 rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
+                {error}
+              </div>
+            )}
+
+            {message && (
+              <div className="alert-enter mb-3 rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
+                {message}
+              </div>
+            )}
+
+            {authView === "login" ? (
+              <LoginForm onAuthError={handleAuthError} />
+            ) : (
+              <RegisterForm
+                onAuthError={handleAuthError}
+                onRegistered={handleRegistered}
+              />
+            )}
+          </div>
+        </section>
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
@@ -482,18 +495,13 @@ export default function FreezerApp() {
             },
           ]}
         />
-      </section>
+      </>
     );
   }
 
   return (
     <>
-      <motion.section
-        initial={{ opacity: 0, x: "-100%" }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: "-100%" }}
-        transition={{ duration: 1, type: "spring", ease: "easeInOut" }}
-      >
+      <section>
         {/* Header */}
         <header className="flex items-center justify-between p-2 mb-2 sm:mb-3 md:mb-4">
           <div className="flex items-center">
@@ -508,7 +516,7 @@ export default function FreezerApp() {
                   <span>Freezer App</span>
                 </h1>
                 <p className="text-xs text-left text-slate-400 sm:text-sm">
-                  {user.email ?? "usuario sin email"}
+                  {auth.user.email ?? "usuario sin email"}
                 </p>
               </div>
             </div>
@@ -740,7 +748,7 @@ export default function FreezerApp() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.section>
+      </section>
 
       {/* Menú flotante de aplicaciones */}
       <FloatingMenu

@@ -23,11 +23,19 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type AuthView = "login" | "register";
 
+type AuthState = {
+  loading: boolean;
+  session: Session | null;
+  user: User | null;
+};
+
 export default function PriceHunterApp() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [auth, setAuth] = useState<AuthState>({
+    loading: true,
+    session: null,
+    user: null,
+  });
   const [authView, setAuthView] = useState<AuthView>("login");
-  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [prices, setPrices] = useState<PriceEntry[]>([]);
@@ -45,14 +53,14 @@ export default function PriceHunterApp() {
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
       const {
         data: { session: currentSession },
       } = await supabase.auth.getSession();
-
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setLoading(false);
+      setAuth({
+        loading: false,
+        session: currentSession,
+        user: currentSession?.user ?? null,
+      });
     };
 
     void init();
@@ -60,8 +68,11 @@ export default function PriceHunterApp() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+      setAuth((prev) => ({
+        ...prev,
+        session: newSession,
+        user: newSession?.user ?? null,
+      }));
     });
 
     return () => {
@@ -71,8 +82,8 @@ export default function PriceHunterApp() {
 
   // Clear auth error when user successfully logs in
   useEffect(() => {
-    if (user) setError(null);
-  }, [user]);
+    if (auth.user) setError(null);
+  }, [auth.user]);
 
   // Auto-dismiss success/error messages after 5 seconds
   useEffect(() => {
@@ -85,7 +96,7 @@ export default function PriceHunterApp() {
   }, [message, error]);
 
   useEffect(() => {
-    if (!user) {
+    if (!auth.user) {
       setPrices([]);
       setIsFormOpen(false);
       setPricesError(null);
@@ -118,7 +129,7 @@ export default function PriceHunterApp() {
     };
 
     void load();
-  }, [user]);
+  }, [auth.user]);
 
   const handleLogout = async () => {
     setError(null);
@@ -156,12 +167,12 @@ export default function PriceHunterApp() {
     input: PriceInput,
     options?: { addToDespensa?: boolean },
   ) => {
-    if (!user) return;
+    if (!auth.user) return;
 
     setSavingPrice(true);
     setPricesError(null);
     try {
-      const created = await createPrice(user.id, input);
+      const created = await createPrice(auth.user.id, input);
       setPrices((prev) => [created, ...prev]);
       setMessage("Precio añadido correctamente.");
       closeForm();
@@ -204,7 +215,7 @@ export default function PriceHunterApp() {
               in_shopping_list: false,
               shopping_quantity: null,
             };
-            await createProduct(user.id, productInput);
+            await createProduct(auth.user.id, productInput);
           }
         } catch (despensaErr) {
           console.error(
@@ -291,82 +302,90 @@ export default function PriceHunterApp() {
     );
   }, [prices, searchTerm]);
 
-  if (loading) {
+  if (auth.loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
-          <p className="text-sm text-slate-400">Cargando...</p>
+      <>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
+            <p className="text-sm text-slate-400">Cargando...</p>
+          </div>
         </div>
-      </div>
+        <FloatingMenu
+          items={[
+            { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
+          ]}
+        />
+      </>
     );
   }
 
-  if (!session || !user) {
+  if (!auth.session || !auth.user) {
     return (
-      <section className="flex min-h-screen flex-col items-center justify-center p-4">
-        {/* Header */}
-        <header className="mb-8 flex items-center justify-center">
-          <img
-            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-            alt="Price Hunter"
-            className="h-20 rounded-2xl px-4 shadow-sm"
-          />
-          <div className="w-64">
-            <div className="space-y-1 text-center">
-              <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                <span>Price Hunter</span>
-              </h1>
-              <p className="text-left text-xs text-slate-400 sm:text-sm">
-                Compara precios y encuentra las mejores ofertas
-              </p>
+      <>
+        <section className="flex min-h-screen flex-col items-center justify-center p-4">
+          {/* Header */}
+          <header className="mb-8 flex items-center justify-center">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Price Hunter"
+              className="h-20 rounded-2xl px-4 shadow-sm"
+            />
+            <div className="w-64">
+              <div className="space-y-1 text-center">
+                <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                  <span>Price Hunter</span>
+                </h1>
+                <p className="text-left text-xs text-slate-400 sm:text-sm">
+                  Compara precios y encuentra las mejores ofertas
+                </p>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Auth Form */}
-        <div className="w-full max-w-md">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
-            {authView === "login" ? (
-              <LoginForm onAuthError={(msg: string) => setError(msg)} />
-            ) : (
-              <RegisterForm
-                onAuthError={(msg: string) => setError(msg)}
-                onRegistered={(msg: string) => {
-                  setMessage(msg);
-                  setAuthView("login");
-                }}
-              />
+          {/* Auth Form */}
+          <div className="w-full max-w-md">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
+              {authView === "login" ? (
+                <LoginForm onAuthError={(msg: string) => setError(msg)} />
+              ) : (
+                <RegisterForm
+                  onAuthError={(msg: string) => setError(msg)}
+                  onRegistered={(msg: string) => {
+                    setMessage(msg);
+                    setAuthView("login");
+                  }}
+                />
+              )}
+
+              {/* Toggle Auth View */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() =>
+                    setAuthView(authView === "login" ? "register" : "login")
+                  }
+                  className="text-sm text-sky-400 hover:underline"
+                >
+                  {authView === "login"
+                    ? "¿No tienes cuenta? Regístrate"
+                    : "¿Ya tienes cuenta? Inicia sesión"}
+                </button>
+              </div>
+            </div>
+
+            {/* Messages */}
+            {message && (
+              <div className="mt-4 rounded-lg border border-green-500/50 bg-green-500/10 p-3">
+                <p className="text-sm text-green-400">{message}</p>
+              </div>
             )}
-
-            {/* Toggle Auth View */}
-            <div className="mt-4 text-center">
-              <button
-                onClick={() =>
-                  setAuthView(authView === "login" ? "register" : "login")
-                }
-                className="text-sm text-sky-400 hover:underline"
-              >
-                {authView === "login"
-                  ? "¿No tienes cuenta? Regístrate"
-                  : "¿Ya tienes cuenta? Inicia sesión"}
-              </button>
-            </div>
+            {error && (
+              <div className="mt-4 rounded-lg border border-red-500/50 bg-red-500/10 p-3">
+                <p className="text-sm text-red-400">{error}</p>
+              </div>
+            )}
           </div>
-
-          {/* Messages */}
-          {message && (
-            <div className="mt-4 rounded-lg border border-green-500/50 bg-green-500/10 p-3">
-              <p className="text-sm text-green-400">{message}</p>
-            </div>
-          )}
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
-        </div>
-
+        </section>
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
@@ -378,7 +397,7 @@ export default function PriceHunterApp() {
             },
           ]}
         />
-      </section>
+      </>
     );
   }
 
@@ -399,7 +418,7 @@ export default function PriceHunterApp() {
                   <span>Price Hunter</span>
                 </h1>
                 <p className="text-left text-xs text-slate-400 sm:text-sm">
-                  {user.email ?? "usuario sin email"}
+                  {auth.user.email ?? "usuario sin email"}
                 </p>
               </div>
             </div>

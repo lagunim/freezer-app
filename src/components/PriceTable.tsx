@@ -398,22 +398,31 @@ export default function PriceTable({
                 price.unit,
               );
               return (
-                <motion.tr
-                  layoutId={`price-product-${price.product_name}`}
-                  key={price.id}
-                  onClick={() => handleRowClick(price)}
-                  className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
-                >
-                  <td className="px-2 py-2 text-sm text-slate-100">
-                    {price.product_name}
-                  </td>
-                  <td className="px-2 py-2 text-sm font-medium text-sky-400 whitespace-nowrap">
-                    {formatPrice(normalizedPrice)}/{price.unit}
-                  </td>
-                  <td className="px-2 py-2 text-sm text-slate-400 whitespace-nowrap">
-                    {formatDate(price.date)}
-                  </td>
-                </motion.tr>
+                <AnimatePresence>
+                  <motion.tr
+                    layoutId={`price-product-${price.product_name}`}
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    // viewport={{ once: true, margin: "-50px" }}
+                    exit={{ opacity: 0, scale: 0 }}
+                    transition={{
+                      duration: 0.2,
+                    }}
+                    key={price.id}
+                    onClick={() => handleRowClick(price)}
+                    className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
+                  >
+                    <td className="px-2 py-2 text-sm text-slate-100">
+                      {price.product_name}
+                    </td>
+                    <td className="px-2 py-2 text-sm font-medium text-sky-400 whitespace-nowrap">
+                      {formatPrice(normalizedPrice)}/{price.unit}
+                    </td>
+                    <td className="px-2 py-2 text-sm text-slate-400 whitespace-nowrap">
+                      {formatDate(price.date)}
+                    </td>
+                  </motion.tr>
+                </AnimatePresence>
               );
             })}
           </tbody>
@@ -641,7 +650,7 @@ export default function PriceTable({
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Modal de historial */}
       <AnimatePresence>
         {historyView && (
