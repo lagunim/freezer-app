@@ -17,7 +17,8 @@ export default function FloatingMenu({ items }: FloatingMenuProps) {
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-20 sm:bottom-8 sm:left-8"
+    <div
+      className="fixed bottom-6 left-6 z-20 sm:bottom-8 sm:left-8"
     >
       <a
         href={targetApp.href}

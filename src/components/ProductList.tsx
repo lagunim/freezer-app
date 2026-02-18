@@ -203,7 +203,6 @@ export default function ProductList({
                         : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
                     }`}
                   >
-
                     {/* Contenido de la tarjeta */}
                     <div className="relative z-10 flex items-center gap-2">
                       {/* Icono de categoría */}
@@ -233,18 +232,17 @@ export default function ProductList({
                       </button>
 
                       {/* Información del producto */}
-                      <motion.div 
-                      layoutId={`product-${product.id}`}
-                      className="flex-1 min-w-0">
-                        
+                      <motion.div
+                        layoutId={`product-${product.id}`}
+                        className="flex-1 min-w-0"
+                      >
                         {/* Nombre */}
                         <h3 className="mb-1 text-sm font-medium text-white line-clamp-2">
                           {product.name}
                         </h3>
 
                         {/* Badge de cantidad y fecha */}
-                        <div 
-                        className="flex items-center justify-between gap-1.5 flex-wrap">
+                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
                           >
@@ -352,7 +350,6 @@ export default function ProductList({
                       : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
                   }`}
                 >
-
                   {/* Contenido de la tarjeta */}
                   <div className="relative z-10 flex items-center gap-4">
                     {/* Icono de categoría */}
@@ -369,7 +366,9 @@ export default function ProductList({
                       }`}
                     >
                       {selectedProductIds.has(product.id) ? (
-                        <span className="text-4xl font-bold leading-none">✓</span>
+                        <span className="text-4xl font-bold leading-none">
+                          ✓
+                        </span>
                       ) : (
                         <img
                           src={getCategoryInfo(product.category).iconSrc}
@@ -510,7 +509,7 @@ export default function ProductList({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: .5,  type: "spring" }}
+                    transition={{ duration: 0.5, type: "spring" }}
                     className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
                     role="dialog"
                     aria-modal="true"
@@ -519,31 +518,30 @@ export default function ProductList({
                   >
                     <motion.div
                       layoutId={`product-${product.id}`}
-                      initial={{ opacity: 0   }}
-                      animate={{ opacity: 1  }}
-                      exit={{ opacity: 0  }}
-                      transition={{ duration: 1,  type: "spring" }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1, type: "spring" }}
                       className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <motion.div>
-
-                      <h3
-                        id="modal-edit-product-title"
-                        className="mb-3 text-base font-semibold text-slate-100"
+                        <h3
+                          id="modal-edit-product-title"
+                          className="mb-3 text-base font-semibold text-slate-100"
                         >
-                        Editar producto
-                      </h3>
-                      <ProductForm
-                        mode="edit"
-                        initialProduct={product}
-                        loading={savingProductId === product.id}
-                        onSubmit={(input) =>
-                          handleUpdateProduct(product, input)
-                        }
-                        onCancel={closeEditModal}
+                          Editar producto
+                        </h3>
+                        <ProductForm
+                          mode="edit"
+                          initialProduct={product}
+                          loading={savingProductId === product.id}
+                          onSubmit={(input) =>
+                            handleUpdateProduct(product, input)
+                          }
+                          onCancel={closeEditModal}
                         />
-                        </motion.div>
+                      </motion.div>
                     </motion.div>
                   </motion.div>
                 )}

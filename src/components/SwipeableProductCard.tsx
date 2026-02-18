@@ -1,5 +1,6 @@
-import { useRef, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import { useRef, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface SwipeableProductCardProps {
   /** Contenido principal de la tarjeta */
@@ -43,24 +44,26 @@ export default function SwipeableProductCard({
 }: SwipeableProductCardProps) {
   const [translateX, setTranslateX] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
+    null,
+  );
   const [isSwiping, setIsSwiping] = useState(false);
   const [showHint, setShowHint] = useState(true);
-  
+
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
   const currentX = useRef(0);
   const isDragging = useRef(false);
   const isHorizontalSwipe = useRef<boolean | null>(null);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Verificar si el usuario ya ha usado el swipe antes
   useEffect(() => {
-    const hasUsedSwipe = localStorage.getItem('freezer-swipe-hint-dismissed');
-    if (hasUsedSwipe === 'true') {
+    const hasUsedSwipe = localStorage.getItem("freezer-swipe-hint-dismissed");
+    if (hasUsedSwipe === "true") {
       setShowHint(false);
     }
   }, []);
@@ -82,12 +85,12 @@ export default function SwipeableProductCard({
   const openSwipeLeft = () => {
     setTranslateX(-MAX_SWIPE_LEFT);
     setIsOpen(true);
-    setSwipeDirection('left');
+    setSwipeDirection("left");
     onOpen(productId);
-    
+
     // Marcar que el usuario ya descubrió la funcionalidad de swipe
     if (showHint) {
-      localStorage.setItem('freezer-swipe-hint-dismissed', 'true');
+      localStorage.setItem("freezer-swipe-hint-dismissed", "true");
       setShowHint(false);
     }
   };
@@ -95,12 +98,12 @@ export default function SwipeableProductCard({
   const openSwipeRight = () => {
     setTranslateX(MAX_SWIPE_RIGHT);
     setIsOpen(true);
-    setSwipeDirection('right');
+    setSwipeDirection("right");
     onOpen(productId);
-    
+
     // Marcar que el usuario ya descubrió la funcionalidad de swipe
     if (showHint) {
-      localStorage.setItem('freezer-swipe-hint-dismissed', 'true');
+      localStorage.setItem("freezer-swipe-hint-dismissed", "true");
       setShowHint(false);
     }
   };
@@ -119,7 +122,7 @@ export default function SwipeableProductCard({
   const handleTouchMove = (e: TouchEvent) => {
     const touch = e.touches[0];
     if (!touch) return;
-    
+
     const deltaX = touch.clientX - touchStartX.current;
     const deltaY = touch.clientY - touchStartY.current;
 
@@ -141,7 +144,7 @@ export default function SwipeableProductCard({
       if (!isHorizontalSwipe.current) {
         return;
       }
-      
+
       // Marcar que hemos iniciado el drag
       isDragging.current = true;
     }
@@ -153,7 +156,7 @@ export default function SwipeableProductCard({
 
     // Prevenir el scroll solo si estamos haciendo swipe horizontal
     e.preventDefault();
-    
+
     isDragging.current = true;
     setIsSwiping(true);
 
@@ -194,7 +197,7 @@ export default function SwipeableProductCard({
       // Swipe hacia la izquierda
       const shouldOpenLeft =
         translateX < -SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-      
+
       if (shouldOpenLeft) {
         openSwipeLeft();
       } else {
@@ -204,7 +207,7 @@ export default function SwipeableProductCard({
       // Swipe hacia la derecha
       const shouldOpenRight =
         translateX > SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-      
+
       if (shouldOpenRight) {
         openSwipeRight();
       } else {
@@ -219,12 +222,12 @@ export default function SwipeableProductCard({
     isHorizontalSwipe.current = null;
   };
 
-  const handleActionClick = (action: 'edit' | 'delete' | 'cart') => {
-    if (action === 'edit') {
+  const handleActionClick = (action: "edit" | "delete" | "cart") => {
+    if (action === "edit") {
       onEdit();
-    } else if (action === 'delete') {
+    } else if (action === "delete") {
       onDelete();
-    } else if (action === 'cart') {
+    } else if (action === "cart") {
       onAddToCart();
     }
     closeSwipe();
@@ -243,16 +246,16 @@ export default function SwipeableProductCard({
     const content = contentRef.current;
     if (!content) return;
 
-    content.addEventListener('touchstart', handleTouchStart, { passive: true });
-    content.addEventListener('touchmove', handleTouchMove, { passive: false });
-    content.addEventListener('touchend', handleTouchEnd, { passive: true });
-    content.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    content.addEventListener("touchstart", handleTouchStart, { passive: true });
+    content.addEventListener("touchmove", handleTouchMove, { passive: false });
+    content.addEventListener("touchend", handleTouchEnd, { passive: true });
+    content.addEventListener("touchcancel", handleTouchEnd, { passive: true });
 
     return () => {
-      content.removeEventListener('touchstart', handleTouchStart);
-      content.removeEventListener('touchmove', handleTouchMove);
-      content.removeEventListener('touchend', handleTouchEnd);
-      content.removeEventListener('touchcancel', handleTouchEnd);
+      content.removeEventListener("touchstart", handleTouchStart);
+      content.removeEventListener("touchmove", handleTouchMove);
+      content.removeEventListener("touchend", handleTouchEnd);
+      content.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, [translateX]);
 
@@ -269,174 +272,183 @@ export default function SwipeableProductCard({
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [isOpen]);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="relative overflow-hidden rounded-3xl"
-    >
-      {/* Capa de acciones izquierda (fondo fijo) */}
-      <div
-        className="absolute right-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
-        style={{ width: `${ACTIONS_WIDTH_LEFT}px` }}
+    <AnimatePresence>
+      <motion.div
+        ref={containerRef}
+        className="relative overflow-hidden rounded-3xl"
+        initial={{ opacity: 0, y: 50, scale: 0.5 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 50, scale: 0.5 }}
+        transition={{ duration: 0.5, type: "spring", ease: "easeInOut" }}
       >
-        {/* Botón Editar */}
-        <button
-          type="button"
-          onClick={() => handleActionClick('edit')}
-          className="relative flex-1 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 active:from-sky-600 active:via-blue-700 active:to-blue-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-sky-400/40 shadow-[0_0_15px_rgba(56,189,248,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(56,189,248,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
-          aria-label="Editar producto"
-          style={{
-            boxShadow: '0 0 15px rgba(56, 189, 248, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)'
-          }}
-        >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-          <svg 
-            className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2.5} 
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
-            />
-          </svg>
-          <span className="text-xs font-bold relative z-10 drop-shadow-md">Editar</span>
-        </button>
-
-        {/* Botón Borrar */}
-        <button
-          type="button"
-          onClick={() => handleActionClick('delete')}
-          className="relative flex-1 bg-gradient-to-br from-red-500 via-red-600 to-red-700 hover:from-red-400 hover:via-red-500 hover:to-red-600 active:from-red-600 active:via-red-700 active:to-red-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
-          aria-label="Borrar producto"
-          style={{
-            boxShadow: '0 0 15px rgba(239, 68, 68, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)'
-          }}
-        >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-          <svg 
-            className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2.5} 
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
-            />
-          </svg>
-          <span className="text-xs font-bold relative z-10 drop-shadow-md">Borrar</span>
-        </button>
-      </div>
-
-      {/* Capa de acciones derecha (fondo fijo) */}
-      <div
-        className="absolute left-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
-        style={{ width: `${ACTIONS_WIDTH_RIGHT}px` }}
-      >
-        {/* Botón Añadir/Quitar de Cesta */}
-        <button
-          type="button"
-          onClick={() => handleActionClick('cart')}
-          className="relative flex-1 bg-gradient-to-br from-emerald-500 via-green-600 to-green-700 hover:from-emerald-400 hover:via-green-500 hover:to-green-600 active:from-emerald-600 active:via-green-700 active:to-green-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
-          aria-label={isInCart ? "Quitar de la cesta" : "Añadir a la cesta"}
-          style={{
-            boxShadow: '0 0 15px rgba(16, 185, 129, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)'
-          }}
-        >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-          <svg 
-            className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            {isInCart ? (
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2.5} 
-                d="M6 18L18 6M6 6l12 12" 
-              />
-            ) : (
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2.5} 
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" 
-              />
-            )}
-          </svg>
-          <span className="text-xs font-bold relative z-10 drop-shadow-md">
-            {isInCart ? 'Quitar' : 'Cesta'}
-          </span>
-        </button>
-      </div>
-
-      {/* Capa de contenido deslizable */}
-      <div
-        ref={contentRef}
-        className={`relative ${isSwiping ? 'select-none' : ''} ${isOpen ? 'cursor-pointer' : ''}`}
-        style={{
-          transform: `translateX(${translateX}px)`,
-          transition: isSwiping ? 'none' : 'transform 300ms ease-out',
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'pan-y',
-        }}
-        onClick={handleContentClick}
-      >
-        {children}
-      </div>
-
-      {/* Indicador visual de swipe - gradiente sutil en el borde derecho */}
-      {!isOpen && (
+        {/* Capa de acciones izquierda (fondo fijo) */}
         <div
-          className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to left, rgba(100, 116, 139, 0.25), rgba(100, 116, 139, 0.08), transparent)',
-          }}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Icono chevron animado (hint visual) - desaparece tras primer uso */}
-      {!isOpen && showHint && (
-        <div
-          className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 animate-chevron-pulse"
-          aria-hidden="true"
+          className="absolute right-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
+          style={{ width: `${ACTIONS_WIDTH_LEFT}px` }}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
+          {/* Botón Editar */}
+          <button
+            type="button"
+            onClick={() => handleActionClick("edit")}
+            className="relative flex-1 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 active:from-sky-600 active:via-blue-700 active:to-blue-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-sky-400/40 shadow-[0_0_15px_rgba(56,189,248,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(56,189,248,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+            aria-label="Editar producto"
+            style={{
+              boxShadow:
+                "0 0 15px rgba(56, 189, 248, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
           >
-            <path
-              d="M12 15L7 10L12 5"
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+            <svg
+              className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg"
+              fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-slate-400"
-            />
-          </svg>
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            <span className="text-xs font-bold relative z-10 drop-shadow-md">
+              Editar
+            </span>
+          </button>
+
+          {/* Botón Borrar */}
+          <button
+            type="button"
+            onClick={() => handleActionClick("delete")}
+            className="relative flex-1 bg-gradient-to-br from-red-500 via-red-600 to-red-700 hover:from-red-400 hover:via-red-500 hover:to-red-600 active:from-red-600 active:via-red-700 active:to-red-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+            aria-label="Borrar producto"
+            style={{
+              boxShadow:
+                "0 0 15px rgba(239, 68, 68, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+            <svg
+              className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            <span className="text-xs font-bold relative z-10 drop-shadow-md">
+              Borrar
+            </span>
+          </button>
         </div>
-      )}
-    </div>
+
+        {/* Capa de acciones derecha (fondo fijo) */}
+        <div
+          className="absolute left-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
+          style={{ width: `${ACTIONS_WIDTH_RIGHT}px` }}
+        >
+          {/* Botón Añadir/Quitar de Cesta */}
+          <button
+            type="button"
+            onClick={() => handleActionClick("cart")}
+            className="relative flex-1 bg-gradient-to-br from-emerald-500 via-green-600 to-green-700 hover:from-emerald-400 hover:via-green-500 hover:to-green-600 active:from-emerald-600 active:via-green-700 active:to-green-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+            aria-label={isInCart ? "Quitar de la cesta" : "Añadir a la cesta"}
+            style={{
+              boxShadow:
+                "0 0 15px rgba(16, 185, 129, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+            <svg
+              className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {isInCart ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              )}
+            </svg>
+            <span className="text-xs font-bold relative z-10 drop-shadow-md">
+              {isInCart ? "Quitar" : "Cesta"}
+            </span>
+          </button>
+        </div>
+
+        {/* Capa de contenido deslizable */}
+        <div
+          ref={contentRef}
+          className={`relative ${isSwiping ? "select-none" : ""} ${isOpen ? "cursor-pointer" : ""}`}
+          style={{
+            transform: `translateX(${translateX}px)`,
+            transition: isSwiping ? "none" : "transform 300ms ease-out",
+            WebkitTapHighlightColor: "transparent",
+            touchAction: "pan-y",
+          }}
+          onClick={handleContentClick}
+        >
+          {children}
+        </div>
+
+        {/* Indicador visual de swipe - gradiente sutil en el borde derecho */}
+        {!isOpen && (
+          <div
+            className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to left, rgba(100, 116, 139, 0.25), rgba(100, 116, 139, 0.08), transparent)",
+            }}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Icono chevron animado (hint visual) - desaparece tras primer uso */}
+        {!isOpen && showHint && (
+          <div
+            className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 animate-chevron-pulse"
+            aria-hidden="true"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M12 15L7 10L12 5"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-slate-400"
+              />
+            </svg>
+          </div>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }

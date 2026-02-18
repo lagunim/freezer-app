@@ -370,7 +370,12 @@ export default function PriceHunterApp() {
         {/* Menú flotante de aplicaciones */}
         <FloatingMenu
           items={[
-            { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
+            {
+              id: "freezer-app",
+              label: "Freezer App",
+              href: "/",
+              icon: "❄️",
+            },
           ]}
         />
       </section>
@@ -378,140 +383,135 @@ export default function PriceHunterApp() {
   }
 
   return (
-    <motion.section
-      layoutId="Price-Hunter-App"
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0 }}
-      transition={{ duration: 1, type: "spring" }}
-    >
-      {/* Header */}
-      <header className="mb-2 flex items-center justify-between p-2 sm:mb-3 md:mb-4">
-        <div className="flex items-center">
-          <img
-            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-            alt="Price Hunter"
-            className="h-20 rounded-2xl px-4 shadow-sm"
-          />
-          <div className="w-64">
-            <div className="space-y-1 text-center">
-              <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                <span>Price Hunter</span>
-              </h1>
-              <p className="text-left text-xs text-slate-400 sm:text-sm">
-                {user.email ?? "usuario sin email"}
-              </p>
+    <>
+      <section>
+        {/* Header */}
+        <header className="mb-2 flex items-center justify-between p-2 sm:mb-3 md:mb-4">
+          <div className="flex items-center">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Price Hunter"
+              className="h-20 rounded-2xl px-4 shadow-sm"
+            />
+            <div className="w-64">
+              <div className="space-y-1 text-center">
+                <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                  <span>Price Hunter</span>
+                </h1>
+                <p className="text-left text-xs text-slate-400 sm:text-sm">
+                  {user.email ?? "usuario sin email"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
-          aria-label="Cerrar sesión"
-          title="Cerrar sesión"
-        >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
+          <button
+            onClick={handleLogout}
+            className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-        </button>
-      </header>
-
-      {/* Barra de búsqueda */}
-      <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
-        <div>
-          <label htmlFor="price-search" className="sr-only">
-            Buscar por producto
-          </label>
-          <div className="relative">
-            <div
-              className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
-              aria-hidden
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+          </button>
+        </header>
+
+        {/* Barra de búsqueda */}
+        <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
+          <div>
+            <label htmlFor="price-search" className="sr-only">
+              Buscar por producto
+            </label>
+            <div className="relative">
+              <div
+                className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
+                aria-hidden
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                id="price-search"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por producto…"
+                className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
+              />
             </div>
-            <input
-              id="price-search"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por producto…"
-              className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
-            />
           </div>
         </div>
-      </div>
 
-      {/* Messages */}
-      {message && (
-        <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-green-500/50 bg-green-500/10 p-3">
-          <p className="text-sm text-green-400">{message}</p>
-        </div>
-      )}
-      {(pricesError || error) && (
-        <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-          <p className="text-sm text-red-400">{pricesError || error}</p>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
-        <PriceTable
-          prices={filteredPrices}
-          loading={pricesLoading}
-          onEdit={handleEdit}
-          onDelete={handleDeletePrice}
-          searchTerm={searchTerm}
-        />
-      </div>
-
-      {/* Floating Add Button */}
-      <motion.button
-        layoutId="new-price-form"
-        onClick={openForm}
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
-        aria-label="Añadir precio"
-      >
-        +
-      </motion.button>
-
-      {/* Price Form Modal */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <PriceForm
-            key={editingPrice?.id ?? "create"}
-            mode={editingPrice ? "edit" : "create"}
-            initialPrice={editingPrice}
-            loading={savingPrice}
-            productSuggestions={productSuggestions}
-            brandSuggestions={brandSuggestions}
-            supermarketSuggestions={supermarketSuggestions}
-            onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
-            onCancel={closeForm}
-          />
+        {/* Messages */}
+        {message && (
+          <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-green-500/50 bg-green-500/10 p-3">
+            <p className="text-sm text-green-400">{message}</p>
+          </div>
         )}
-      </AnimatePresence>
+        {(pricesError || error) && (
+          <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-red-500/50 bg-red-500/10 p-3">
+            <p className="text-sm text-red-400">{pricesError || error}</p>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
+          <PriceTable
+            prices={filteredPrices}
+            loading={pricesLoading}
+            onEdit={handleEdit}
+            onDelete={handleDeletePrice}
+            searchTerm={searchTerm}
+          />
+        </div>
+
+        {/* Floating Add Button */}
+        <button
+          onClick={openForm}
+          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
+          aria-label="Añadir precio"
+        >
+          +
+        </button>
+
+        {/* Price Form Modal */}
+        <AnimatePresence>
+          {isFormOpen && (
+            <PriceForm
+              key={editingPrice?.id ?? "create"}
+              mode={editingPrice ? "edit" : "create"}
+              initialPrice={editingPrice}
+              loading={savingPrice}
+              productSuggestions={productSuggestions}
+              brandSuggestions={brandSuggestions}
+              supermarketSuggestions={supermarketSuggestions}
+              onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
+              onCancel={closeForm}
+            />
+          )}
+        </AnimatePresence>
+      </section>
 
       {/* Menú flotante de aplicaciones */}
       <FloatingMenu
@@ -519,6 +519,6 @@ export default function PriceHunterApp() {
           { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
         ]}
       />
-    </motion.section>
+    </>
   );
 }

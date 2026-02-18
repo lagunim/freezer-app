@@ -487,218 +487,260 @@ export default function FreezerApp() {
   }
 
   return (
-    <motion.section
-      initial={{ opacity: 0, x: "100%" }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, type: "spring", ease: "easeInOut" }}
-    >
-      {/* Header */}
-      <header className="flex items-center justify-between p-2 mb-2 sm:mb-3 md:mb-4">
-        <div className="flex items-center">
-          <img
-            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-            alt="Freezer App"
-            className="h-20 px-4 rounded-2xl shadow-sm"
-          />
-          <div className="w-64">
-            <div className="space-y-1 text-center">
-              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                <span>Freezer App</span>
-              </h1>
-              <p className="text-xs text-left text-slate-400 sm:text-sm">
-                {user.email ?? "usuario sin email"}
-              </p>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-slate-100 shadow-sm transition-colors duration-200 hover:bg-slate-700 hover:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
-          aria-label="Cerrar sesión"
-          title="Cerrar sesión"
-        >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-        </button>
-      </header>
-
-      {/* Barra de búsqueda y filtros */}
-      <div className="sticky top-0 z-50 space-y-2 md:space-y-3 pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 bg-slate-900/95 border-b border-slate-800">
-        <div>
-          <label htmlFor="product-search" className="sr-only">
-            Buscar por nombre
-          </label>
-          <div className="relative">
-            <div
-              className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
-              aria-hidden
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <input
-              id="product-search"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nombre…"
-              className="block w-full rounded-xl border border-slate-600 bg-slate-800 py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-none"
-            />
-          </div>
-        </div>
-
-        {/* Filtros por categoría y cesta */}
-        <div className="grid grid-cols-4 gap-1.5 md:gap-2">
-          <button
-            type="button"
-            onClick={() => toggleCategory("Alimentación")}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
-              selectedCategories.includes("Alimentación")
-                ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
-                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
-            }`}
-          >
-            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img
-                src="/groceries-icon.png"
-                alt="Comida"
-                className="w-full h-full object-contain"
-              />
-            </span>
-            <span className="leading-tight shrionk-0">Comida</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => toggleCategory("Limpieza")}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
-              selectedCategories.includes("Limpieza")
-                ? "border-cyan-500 bg-cyan-600 text-white shadow-sm"
-                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
-            }`}
-          >
-            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img
-                src="/cleaning-icon.png"
-                alt="Limpieza"
-                className="w-full h-full object-contain"
-              />
-            </span>
-            <span className="leading-tight shrink-0">Limpieza</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => toggleCategory("Higiene")}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
-              selectedCategories.includes("Higiene")
-                ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm"
-                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
-            }`}
-          >
-            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img
-                src="/higiene-icon.png"
-                alt="Higiene"
-                className="w-full h-full object-contain"
-              />
-            </span>
-            <span className="leading-tight shrink-0">Higiene</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowShoppingCart(!showShoppingCart)}
-            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors duration-200 min-h-[56px] md:min-h-[64px] ${
-              showShoppingCart
-                ? "border-purple-500 bg-purple-600 text-white shadow-sm"
-                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
-            }`}
-          >
-            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <img
-                src="/cart-icon.png"
-                alt="Cesta"
-                className="w-full h-full object-contain"
-              />
-            </span>
-            <span className="leading-tight shrink-0">Cesta</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Contenido con scroll: mensajes + lista */}
-      <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24 mt-2 sm:mt-3 md:mt-4">
-        {error && (
-          <div className="alert-enter rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
-            {error}
-          </div>
-        )}
-
-        {productsError && (
-          <div className="alert-enter rounded-lg border border-amber-800/80 bg-amber-950/60 px-4 py-3 text-sm text-amber-100 shadow-sm">
-            {productsError}
-          </div>
-        )}
-
-        {message && (
-          <div className="alert-enter rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
-            {message}
-          </div>
-        )}
-
-        <ProductList
-          products={filteredAndSortedProducts}
-          loading={productsLoading}
-          onUpdateProduct={handleUpdateProduct}
-          onDelete={handleDeleteProduct}
-          onToggleShoppingCart={handleToggleShoppingCart}
-          productNotification={productNotification}
-          isNotificationExiting={isNotificationExiting}
-          showShoppingCart={showShoppingCart}
-          selectedProductIds={selectedProductIds}
-          onToggleSelection={handleToggleSelection}
-          onClearSelection={handleClearSelection}
-          onDeleteMultiple={handleDeleteMultiple}
-        />
-      </div>
-
-      {/* FAB Nuevo producto */}
-      <motion.button
-        layoutId="new-product-modal"
-        type="button"
-        onClick={() => {
-          setMessage(null);
-          setProductsError(null);
-          setIsFormOpen(true);
-        }}
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md transition-transform duration-200 hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
-        aria-label="Añadir nuevo producto"
+    <>
+      <motion.section
+        initial={{ opacity: 0, x: "-100%" }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: "-100%" }}
+        transition={{ duration: 1, type: "spring", ease: "easeInOut" }}
       >
-        +
-      </motion.button>
+        {/* Header */}
+        <header className="flex items-center justify-between p-2 mb-2 sm:mb-3 md:mb-4">
+          <div className="flex items-center">
+            <img
+              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+              alt="Freezer App"
+              className="h-20 px-4 rounded-2xl shadow-sm"
+            />
+            <div className="w-64">
+              <div className="space-y-1 text-center">
+                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                  <span>Freezer App</span>
+                </h1>
+                <p className="text-xs text-left text-slate-400 sm:text-sm">
+                  {user.email ?? "usuario sin email"}
+                </p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-slate-100 shadow-sm transition-colors duration-200 hover:bg-slate-700 hover:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+          </button>
+        </header>
+
+        {/* Barra de búsqueda y filtros */}
+        <div className="sticky top-0 z-50 space-y-2 md:space-y-3 pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 bg-slate-900/95 border-b border-slate-800">
+          <div>
+            <label htmlFor="product-search" className="sr-only">
+              Buscar por nombre
+            </label>
+            <div className="relative">
+              <div
+                className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
+                aria-hidden
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                id="product-search"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nombre…"
+                className="block w-full rounded-xl border border-slate-600 bg-slate-800 py-2 pl-12 pr-4 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-none"
+              />
+            </div>
+          </div>
+
+          {/* Filtros por categoría y cesta */}
+          <div className="grid grid-cols-4 gap-1.5 md:gap-2">
+            <button
+              type="button"
+              onClick={() => toggleCategory("Alimentación")}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px]  ${
+                selectedCategories.includes("Alimentación")
+                  ? "border-emerald-500 bg-emerald-600 text-white shadow-sm scale-90"
+                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+                <img
+                  src="/groceries-icon.png"
+                  alt="Comida"
+                  className="w-full h-full object-contain"
+                />
+              </span>
+              <span className="leading-tight shrionk-0">Comida</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => toggleCategory("Limpieza")}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
+                selectedCategories.includes("Limpieza")
+                  ? "border-cyan-500 bg-cyan-600 text-white shadow-sm scale-90"
+                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+                <img
+                  src="/cleaning-icon.png"
+                  alt="Limpieza"
+                  className="w-full h-full object-contain"
+                />
+              </span>
+              <span className="leading-tight shrink-0">Limpieza</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => toggleCategory("Higiene")}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
+                selectedCategories.includes("Higiene")
+                  ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm scale-90"
+                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+                <img
+                  src="/higiene-icon.png"
+                  alt="Higiene"
+                  className="w-full h-full object-contain"
+                />
+              </span>
+              <span className="leading-tight shrink-0">Higiene</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowShoppingCart(!showShoppingCart)}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
+                showShoppingCart
+                  ? "border-purple-500 bg-purple-600 text-white shadow-sm scale-90"
+                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+                <img
+                  src="/cart-icon.png"
+                  alt="Cesta"
+                  className="w-full h-full object-contain"
+                />
+              </span>
+              <span className="leading-tight shrink-0">Cesta</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Contenido con scroll: mensajes + lista */}
+        <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24 mt-2 sm:mt-3 md:mt-4">
+          {error && (
+            <div className="alert-enter rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
+              {error}
+            </div>
+          )}
+
+          {productsError && (
+            <div className="alert-enter rounded-lg border border-amber-800/80 bg-amber-950/60 px-4 py-3 text-sm text-amber-100 shadow-sm">
+              {productsError}
+            </div>
+          )}
+
+          {message && (
+            <div className="alert-enter rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
+              {message}
+            </div>
+          )}
+
+          <ProductList
+            products={filteredAndSortedProducts}
+            loading={productsLoading}
+            onUpdateProduct={handleUpdateProduct}
+            onDelete={handleDeleteProduct}
+            onToggleShoppingCart={handleToggleShoppingCart}
+            productNotification={productNotification}
+            isNotificationExiting={isNotificationExiting}
+            showShoppingCart={showShoppingCart}
+            selectedProductIds={selectedProductIds}
+            onToggleSelection={handleToggleSelection}
+            onClearSelection={handleClearSelection}
+            onDeleteMultiple={handleDeleteMultiple}
+          />
+        </div>
+
+        {/* Floating Action Button (FAB) para añadir nuevo producto */}
+        <button
+          type="button"
+          onClick={() => {
+            setMessage(null);
+            setProductsError(null);
+            setIsFormOpen(true);
+          }}
+          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
+          aria-label="Añadir nuevo producto"
+        >
+          +
+        </button>
+
+        {/* Modal para añadir nuevo producto */}
+        <AnimatePresence>
+          {isFormOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-new-product-title"
+              onClick={closeForm}
+            >
+              <motion.div
+                initial={{ y: "-200%", scale: 0.8 }}
+                animate={{ y: 0, scale: 1 }}
+                exit={{ y: "-200%", scale: 0.8 }}
+                transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
+                className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2
+                  id="modal-new-product-title"
+                  className="mb-3 text-base font-semibold text-slate-100"
+                >
+                  Añadir producto
+                </h2>
+                <ProductForm
+                  mode="create"
+                  initialProduct={null}
+                  loading={savingProduct}
+                  onSubmit={handleCreateProduct}
+                  onCancel={closeForm}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.section>
 
       {/* Menú flotante de aplicaciones */}
       <FloatingMenu
@@ -711,47 +753,6 @@ export default function FreezerApp() {
           },
         ]}
       />
-
-      {/* Modal formulario nuevo producto */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, type: "spring" }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-new-product-title"
-            onClick={closeForm}
-          >
-            <motion.div
-              layoutId="new-product-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5, type: "spring" }}
-                className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2
-                id="modal-new-product-title"
-                className="mb-3 text-base font-semibold text-slate-100"
-              >
-                Añadir producto
-              </h2>
-              <ProductForm
-                mode="create"
-                initialProduct={null}
-                loading={savingProduct}
-                onSubmit={handleCreateProduct}
-                onCancel={closeForm}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.section>
+    </>
   );
 }
