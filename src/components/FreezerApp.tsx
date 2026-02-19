@@ -754,9 +754,9 @@ export default function FreezerApp() {
               onClick={closeForm}
             >
               <motion.div
-                initial={{ y: "-200%", scale: 0.8 }}
+                initial={{ y: "100%", scale: 0.8 }}
                 animate={{ y: 0, scale: 1 }}
-                exit={{ y: "-200%", scale: 0.8 }}
+                exit={{ y: "100%", scale: 0.8 }}
                 transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
                 className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
                 onClick={(e) => e.stopPropagation()}

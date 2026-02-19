@@ -191,7 +191,7 @@ export default function PriceForm({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, type: "spring" }}
+      transition={{ duration: 0.2 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={() => {
         if (!loading) {
@@ -200,11 +200,10 @@ export default function PriceForm({
       }}
     >
       <motion.div
-        layoutId="new-price-form"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5, type: "spring" }}
+        initial={{ y: "100%", scale: 0.8 }}
+        animate={{ y: 0, scale: 1 }}
+        exit={{ y: "100%", scale: 0.8 }}
+        transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
         className="mx-4 w-full max-w-lg  rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
         onClick={(e) => e.stopPropagation()}
       >
