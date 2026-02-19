@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 
 interface SwipeableProductCardProps {
   /** Contenido principal de la tarjeta */
@@ -42,6 +42,7 @@ export default function SwipeableProductCard({
   onAddToCart,
   isInCart,
 }: SwipeableProductCardProps) {
+  const x = useMotionValue(0);
   const [translateX, setTranslateX] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
@@ -66,6 +67,7 @@ export default function SwipeableProductCard({
   }, [openSwipeId, productId, isOpen]);
 
   const closeSwipe = () => {
+    x.set(0);
     setTranslateX(0);
     setIsOpen(false);
     setSwipeDirection(null);
@@ -73,6 +75,7 @@ export default function SwipeableProductCard({
   };
 
   const openSwipeLeft = () => {
+    x.set(-MAX_SWIPE_LEFT);
     setTranslateX(-MAX_SWIPE_LEFT);
     setIsOpen(true);
     setSwipeDirection("left");
@@ -80,6 +83,7 @@ export default function SwipeableProductCard({
   };
 
   const openSwipeRight = () => {
+    x.set(MAX_SWIPE_RIGHT);
     setTranslateX(MAX_SWIPE_RIGHT);
     setIsOpen(true);
     setSwipeDirection("right");
@@ -158,6 +162,8 @@ export default function SwipeableProductCard({
       }
     }
 
+    // Actualizar directamente el motion value sin animación para movimiento instantáneo durante el arrastre
+    x.jump(newX);
     setTranslateX(newX);
   };
 
@@ -382,31 +388,23 @@ export default function SwipeableProductCard({
         </div>
 
         {/* Capa de contenido deslizable */}
-        <div
+        <motion.div
           ref={contentRef}
           className={`relative ${isSwiping ? "select-none" : ""} ${isOpen ? "cursor-pointer" : ""}`}
           style={{
-            transform: `translateX(${translateX}px)`,
-            transition: isSwiping ? "none" : "transform 300ms ease-out",
+            x,
             WebkitTapHighlightColor: "transparent",
             touchAction: "pan-y",
           }}
+          transition={
+            isSwiping
+              ? { duration: 0 }
+              : { type: "spring", stiffness: 400, damping: 35 }
+          }
           onClick={handleContentClick}
         >
           {children}
-        </div>
-
-        {/* Indicador visual de swipe - gradiente sutil en el borde derecho */}
-        {!isOpen && (
-          <div
-            className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(to left, rgba(100, 116, 139, 0.25), rgba(100, 116, 139, 0.08), transparent)",
-            }}
-            aria-hidden="true"
-          />
-        )}
+        </motion.div>
       </motion.div>
     </AnimatePresence>
   );
