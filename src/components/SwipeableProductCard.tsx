@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { AnimatePresence, motion, useMotionValue } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, animate } from "framer-motion";
 
 interface SwipeableProductCardProps {
   /** Contenido principal de la tarjeta */
@@ -31,6 +31,8 @@ const ACTIONS_WIDTH_LEFT = 156; // Ancho del panel de acciones izquierda
 const ACTIONS_WIDTH_RIGHT = 80; // Ancho del panel de acciones derecha
 const DEAD_ZONE = 5; // Zona muerta para ignorar movimientos pequeños (reducido)
 
+const SNAP_SPRING = { type: "spring" as const, stiffness: 320, damping: 28, mass: 0.6 };
+
 export default function SwipeableProductCard({
   children,
   productId,
@@ -59,6 +61,12 @@ export default function SwipeableProductCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const snapTo = (targetX: number) => {
+    // Mantener el estado en sync con el valor final
+    setTranslateX(targetX);
+    animate(x, targetX, SNAP_SPRING);
+  };
+
   // Cerrar si otra tarjeta se abre
   useEffect(() => {
     if (openSwipeId !== null && openSwipeId !== productId && isOpen) {
@@ -67,24 +75,21 @@ export default function SwipeableProductCard({
   }, [openSwipeId, productId, isOpen]);
 
   const closeSwipe = () => {
-    x.set(0);
-    setTranslateX(0);
+    snapTo(0);
     setIsOpen(false);
     setSwipeDirection(null);
     onClose();
   };
 
   const openSwipeLeft = () => {
-    x.set(-MAX_SWIPE_LEFT);
-    setTranslateX(-MAX_SWIPE_LEFT);
+    snapTo(-MAX_SWIPE_LEFT);
     setIsOpen(true);
     setSwipeDirection("left");
     onOpen(productId);
   };
 
   const openSwipeRight = () => {
-    x.set(MAX_SWIPE_RIGHT);
-    setTranslateX(MAX_SWIPE_RIGHT);
+    snapTo(MAX_SWIPE_RIGHT);
     setIsOpen(true);
     setSwipeDirection("right");
     onOpen(productId);
@@ -218,7 +223,8 @@ export default function SwipeableProductCard({
   };
 
   const handleContentClick = (e: React.MouseEvent) => {
-    // Solo cerrar si la tarjeta está abierta y no estamos haciendo swipe
+    // Si está abierta, un tap/click la devuelve al centro.
+    // No se usa ningún estilo de botón; solo una acción rápida de cierre.
     if (isOpen && !isSwiping) {
       e.stopPropagation();
       closeSwipe();
@@ -390,17 +396,12 @@ export default function SwipeableProductCard({
         {/* Capa de contenido deslizable */}
         <motion.div
           ref={contentRef}
-          className={`relative ${isSwiping ? "select-none" : ""} ${isOpen ? "cursor-pointer" : ""}`}
+          className={`relative ${isSwiping ? "select-none" : ""}`}
           style={{
             x,
             WebkitTapHighlightColor: "transparent",
             touchAction: "pan-y",
           }}
-          transition={
-            isSwiping
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 400, damping: 35 }
-          }
           onClick={handleContentClick}
         >
           {children}

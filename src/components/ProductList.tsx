@@ -198,10 +198,10 @@ export default function ProductList({
                     isInCart={product.in_shopping_list}
                   >
                     <div
-                      className={`relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 transition-transform duration-200 ${
+                      className={`relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 ${
                         isConfirmingDelete
                           ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
-                          : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
+                          : "shadow-sm"
                       }`}
                     >
                       {/* Contenido de la tarjeta */}
