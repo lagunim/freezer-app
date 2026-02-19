@@ -284,13 +284,11 @@ export default function ProductList({
                               {product.quantity}{" "}
                               {product.quantity_unit ?? "uds"}
                             </span>
-                            {product.in_shopping_list &&
-                              product.shopping_quantity &&
-                              product.shopping_quantity > 0 && (
-                                <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
-                                  🛒 {product.shopping_quantity} uds
-                                </span>
-                              )}
+                            {product.in_shopping_list && (
+                              <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
+                                En la cesta
+                              </span>
+                            )}
                             <span className="text-[10px] text-slate-300">
                               {formatDate(product.added_at)}
                             </span>
@@ -446,13 +444,11 @@ export default function ProductList({
                           >
                             {product.quantity} {product.quantity_unit ?? "uds"}
                           </span>
-                          {product.in_shopping_list &&
-                            product.shopping_quantity &&
-                            product.shopping_quantity > 0 && (
-                              <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-3 py-1 text-sm font-semibold shadow-lg">
-                                🛒 {product.shopping_quantity} uds
-                              </span>
-                            )}
+                          {product.in_shopping_list && (
+                            <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-3 py-1 text-sm font-semibold shadow-lg">
+                              En la cesta
+                            </span>
+                          )}
                           <span className="text-xs text-slate-400">
                             {formatDate(product.added_at)}
                           </span>
