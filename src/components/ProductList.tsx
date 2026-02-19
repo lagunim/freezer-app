@@ -182,29 +182,178 @@ export default function ProductList({
           const isEditing = editingProductId === product.id;
 
           return (
-            <div key={product.id} className="relative">
-              {/* Tarjeta del producto - con SwipeableProductCard en móvil */}
-              <div className="md:hidden">
-                {/* Versión móvil: con swipe */}
-                <SwipeableProductCard
-                  productId={product.id}
-                  openSwipeId={openSwipeId}
-                  onOpen={setOpenSwipeId}
-                  onClose={() => setOpenSwipeId(null)}
-                  onEdit={() => toggleEditForProduct(product)}
-                  onDelete={() => handleDeleteClick(product)}
-                  onAddToCart={() => onToggleShoppingCart(product)}
-                  isInCart={product.in_shopping_list}
-                >
+            <AnimatePresence>
+              <div key={product.id} className="relative">
+                {/* Tarjeta del producto - con SwipeableProductCard en móvil */}
+                <div className="md:hidden">
+                  {/* Versión móvil: con swipe */}
+                  <SwipeableProductCard
+                    productId={product.id}
+                    openSwipeId={openSwipeId}
+                    onOpen={setOpenSwipeId}
+                    onClose={() => setOpenSwipeId(null)}
+                    onEdit={() => toggleEditForProduct(product)}
+                    onDelete={() => handleDeleteClick(product)}
+                    onAddToCart={() => onToggleShoppingCart(product)}
+                    isInCart={product.in_shopping_list}
+                  >
+                    <div
+                      className={`relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 transition-transform duration-200 ${
+                        isConfirmingDelete
+                          ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
+                          : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
+                      }`}
+                    >
+                      {/* Contenido de la tarjeta */}
+                      <div className="relative z-10 flex items-center gap-2">
+                        {/* Icono de categoría */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSelection?.(product.id);
+                          }}
+                          className={`flex-shrink-0 rounded-xl border p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[52px] h-[52px] overflow-hidden ${
+                            selectedProductIds.has(product.id)
+                              ? "bg-sky-600 border-sky-400 text-white"
+                              : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
+                          }`}
+                        >
+                          {selectedProductIds.has(product.id) ? (
+                            <span className="text-2xl font-bold leading-none">
+                              ✓
+                            </span>
+                          ) : (
+                            <img
+                              src={getCategoryInfo(product.category).iconSrc}
+                              alt=""
+                              className="min-w-0 min-h-0 w-full h-full object-contain"
+                            />
+                          )}
+                        </button>
+
+                        {/* Información del producto */}
+                        <motion.div
+                          layoutId={`product-${product.id}`}
+                          className="flex-1 min-w-0"
+                        >
+                          {/* Nombre */}
+                          <h3 className="mb-1 text-sm font-medium text-white line-clamp-2">
+                            {product.name}
+                          </h3>
+
+                          {/* Badge de cantidad y fecha */}
+                          <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
+                            >
+                              {product.quantity}{" "}
+                              {product.quantity_unit ?? "uds"}
+                            </span>
+                            {product.in_shopping_list &&
+                              product.shopping_quantity &&
+                              product.shopping_quantity > 0 && (
+                                <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
+                                  🛒 {product.shopping_quantity} uds
+                                </span>
+                              )}
+                            <span className="text-[10px] text-slate-300">
+                              {formatDate(product.added_at)}
+                            </span>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </div>
+                  </SwipeableProductCard>
+
+                  {/* Panel de confirmación expandible */}
                   <div
-                    className={`relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 transition-transform duration-200 ${
+                    className={`overflow-hidden rounded-2xl transition-all duration-300 ${
+                      isConfirmingDelete
+                        ? "max-h-[350px] opacity-100 mt-2"
+                        : "max-h-0 opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="rounded-2xl border border-red-500 bg-slate-900 p-3 shadow-md">
+                      <div className="text-center">
+                        <div className="mb-3 flex justify-center">
+                          <div className="rounded-full bg-red-500/20 p-2">
+                            <svg
+                              className="w-6 h-6 text-red-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                        <p className="mb-3 text-base font-bold text-white">
+                          ¿Borrar este producto?
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={handleConfirmDelete}
+                            className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-500 bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-red-500"
+                          >
+                            <svg
+                              className="w-4 h-4 relative z-10"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            <span className="relative z-10">Sí, borrar</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelDelete}
+                            className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm transition-colors duration-200 hover:bg-slate-700"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Versión desktop: con botones visibles */}
+                <div className="hidden md:block">
+                  <div
+                    className={`relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 p-3 transition-transform duration-200 ${
                       isConfirmingDelete
                         ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
                         : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
                     }`}
                   >
                     {/* Contenido de la tarjeta */}
-                    <div className="relative z-10 flex items-center gap-2">
+                    <div className="relative z-10 flex items-center gap-4">
                       {/* Icono de categoría */}
                       <button
                         type="button"
@@ -212,14 +361,14 @@ export default function ProductList({
                           e.stopPropagation();
                           onToggleSelection?.(product.id);
                         }}
-                        className={`flex-shrink-0 rounded-xl border p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[52px] h-[52px] overflow-hidden ${
+                        className={`flex-shrink-0 rounded-2xl border-2 p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[104px] h-[104px] overflow-hidden ${
                           selectedProductIds.has(product.id)
                             ? "bg-sky-600 border-sky-400 text-white"
                             : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
                         }`}
                       >
                         {selectedProductIds.has(product.id) ? (
-                          <span className="text-2xl font-bold leading-none">
+                          <span className="text-4xl font-bold leading-none">
                             ✓
                           </span>
                         ) : (
@@ -232,278 +381,130 @@ export default function ProductList({
                       </button>
 
                       {/* Información del producto */}
-                      <motion.div
-                        layoutId={`product-${product.id}`}
-                        className="flex-1 min-w-0"
-                      >
-                        {/* Nombre */}
-                        <h3 className="mb-1 text-sm font-medium text-white line-clamp-2">
-                          {product.name}
-                        </h3>
+                      <div className="flex-1 min-w-0">
+                        {/* Fila superior: Nombre y botones */}
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <h3 className="flex-1 text-lg font-medium text-white line-clamp-2">
+                            {product.name}
+                          </h3>
+                          <div className="flex shrink-0 flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleEditForProduct(product)}
+                              className="inline-flex items-center justify-center rounded-lg border border-sky-500 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-sm transition-colors duration-200 hover:bg-slate-700"
+                            >
+                              {isEditing ? "Cerrar" : "Editar"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteClick(product)}
+                              className="inline-flex items-center justify-center rounded-lg border border-red-500 bg-red-700 px-3 py-1.5 text-xs font-medium text-red-50 shadow-sm transition-colors duration-200 hover:bg-red-600"
+                            >
+                              Borrar
+                            </button>
+                          </div>
+                        </div>
 
-                        {/* Badge de cantidad y fecha */}
-                        <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                        {/* Fila inferior: Badge de cantidad y fecha */}
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
                           >
                             {product.quantity} {product.quantity_unit ?? "uds"}
                           </span>
                           {product.in_shopping_list &&
                             product.shopping_quantity &&
                             product.shopping_quantity > 0 && (
-                              <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
+                              <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-3 py-1 text-sm font-semibold shadow-lg">
                                 🛒 {product.shopping_quantity} uds
                               </span>
                             )}
-                          <span className="text-[10px] text-slate-300">
+                          <span className="text-xs text-slate-400">
                             {formatDate(product.added_at)}
                           </span>
                         </div>
-                      </motion.div>
+                      </div>
                     </div>
                   </div>
-                </SwipeableProductCard>
 
-                {/* Panel de confirmación expandible */}
-                <div
-                  className={`overflow-hidden rounded-2xl transition-all duration-300 ${
-                    isConfirmingDelete
-                      ? "max-h-[350px] opacity-100 mt-2"
-                      : "max-h-0 opacity-0 pointer-events-none"
-                  }`}
-                >
-                  <div className="rounded-2xl border border-red-500 bg-slate-900 p-3 shadow-md">
-                    <div className="text-center">
-                      <div className="mb-3 flex justify-center">
-                        <div className="rounded-full bg-red-500/20 p-2">
-                          <svg
-                            className="w-6 h-6 text-red-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                            />
-                          </svg>
+                  {/* Panel de confirmación expandible desktop */}
+                  <div
+                    className={`overflow-hidden rounded-3xl transition-all duration-300 ${
+                      isConfirmingDelete
+                        ? "max-h-[300px] opacity-100 mt-3"
+                        : "max-h-0 opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="rounded-3xl border border-red-500 bg-slate-900 p-4 shadow-md">
+                      <div className="text-center">
+                        <div className="mb-3 flex justify-center">
+                          <div className="rounded-full bg-red-500/20 p-2">
+                            <svg
+                              className="w-6 h-6 text-red-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                              />
+                            </svg>
+                          </div>
                         </div>
-                      </div>
-                      <p className="mb-3 text-base font-bold text-white">
-                        ¿Borrar este producto?
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        <button
-                          type="button"
-                          onClick={handleConfirmDelete}
-                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-500 bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-red-500"
-                        >
-                          <svg
-                            className="w-4 h-4 relative z-10"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          <span className="relative z-10">Sí, borrar</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelDelete}
-                          className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm transition-colors duration-200 hover:bg-slate-700"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Versión desktop: con botones visibles */}
-              <div className="hidden md:block">
-                <div
-                  className={`relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 p-3 transition-transform duration-200 ${
-                    isConfirmingDelete
-                      ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
-                      : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
-                  }`}
-                >
-                  {/* Contenido de la tarjeta */}
-                  <div className="relative z-10 flex items-center gap-4">
-                    {/* Icono de categoría */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSelection?.(product.id);
-                      }}
-                      className={`flex-shrink-0 rounded-2xl border-2 p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[104px] h-[104px] overflow-hidden ${
-                        selectedProductIds.has(product.id)
-                          ? "bg-sky-600 border-sky-400 text-white"
-                          : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
-                      }`}
-                    >
-                      {selectedProductIds.has(product.id) ? (
-                        <span className="text-4xl font-bold leading-none">
-                          ✓
-                        </span>
-                      ) : (
-                        <img
-                          src={getCategoryInfo(product.category).iconSrc}
-                          alt=""
-                          className="min-w-0 min-h-0 w-full h-full object-contain"
-                        />
-                      )}
-                    </button>
-
-                    {/* Información del producto */}
-                    <div className="flex-1 min-w-0">
-                      {/* Fila superior: Nombre y botones */}
-                      <div className="mb-2 flex items-start justify-between gap-3">
-                        <h3 className="flex-1 text-lg font-medium text-white line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <div className="flex shrink-0 flex-wrap gap-2">
+                        <p className="mb-4 text-base font-bold text-white drop-shadow-lg">
+                          ¿Borrar este producto?
+                        </p>
+                        <div className="flex justify-center gap-2">
                           <button
                             type="button"
-                            onClick={() => toggleEditForProduct(product)}
-                            className="inline-flex items-center justify-center rounded-lg border border-sky-500 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 shadow-sm transition-colors duration-200 hover:bg-slate-700"
+                            onClick={handleConfirmDelete}
+                            className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-500 bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-red-500"
                           >
-                            {isEditing ? "Cerrar" : "Editar"}
+                            <svg
+                              className="w-4 h-4 relative z-10"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            <span className="relative z-10">Sí, borrar</span>
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteClick(product)}
-                            className="inline-flex items-center justify-center rounded-lg border border-red-500 bg-red-700 px-3 py-1.5 text-xs font-medium text-red-50 shadow-sm transition-colors duration-200 hover:bg-red-600"
+                            onClick={handleCancelDelete}
+                            className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 shadow-sm transition-colors duration-200 hover:bg-slate-700"
                           >
-                            Borrar
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            Cancelar
                           </button>
                         </div>
                       </div>
-
-                      {/* Fila inferior: Badge de cantidad y fecha */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
-                        >
-                          {product.quantity} {product.quantity_unit ?? "uds"}
-                        </span>
-                        {product.in_shopping_list &&
-                          product.shopping_quantity &&
-                          product.shopping_quantity > 0 && (
-                            <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-3 py-1 text-sm font-semibold shadow-lg">
-                              🛒 {product.shopping_quantity} uds
-                            </span>
-                          )}
-                        <span className="text-xs text-slate-400">
-                          {formatDate(product.added_at)}
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Panel de confirmación expandible desktop */}
-                <div
-                  className={`overflow-hidden rounded-3xl transition-all duration-300 ${
-                    isConfirmingDelete
-                      ? "max-h-[300px] opacity-100 mt-3"
-                      : "max-h-0 opacity-0 pointer-events-none"
-                  }`}
-                >
-                  <div className="rounded-3xl border border-red-500 bg-slate-900 p-4 shadow-md">
-                    <div className="text-center">
-                      <div className="mb-3 flex justify-center">
-                        <div className="rounded-full bg-red-500/20 p-2">
-                          <svg
-                            className="w-6 h-6 text-red-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      <p className="mb-4 text-base font-bold text-white drop-shadow-lg">
-                        ¿Borrar este producto?
-                      </p>
-                      <div className="flex justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={handleConfirmDelete}
-                          className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-500 bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-red-500"
-                        >
-                          <svg
-                            className="w-4 h-4 relative z-10"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          <span className="relative z-10">Sí, borrar</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelDelete}
-                          className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 shadow-sm transition-colors duration-200 hover:bg-slate-700"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal de edición */}
-              <AnimatePresence>
+                {/* Modal de edición */}
                 {isEditing && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -545,56 +546,56 @@ export default function ProductList({
                     </motion.div>
                   </motion.div>
                 )}
-              </AnimatePresence>
 
-              {/* Notificación del producto */}
-              {productNotification?.productId === product.id && (
-                <div
-                  className={`mt-3 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition-all duration-300 ease-out ${
-                    isNotificationExiting
-                      ? "opacity-0 scale-95 -translate-y-2"
-                      : "opacity-100 scale-100 translate-y-0"
-                  } ${
-                    productNotification.type === "success"
-                      ? "border-emerald-500 bg-emerald-900 text-emerald-100"
-                      : "border-red-500 bg-red-900 text-red-100"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {productNotification.type === "success" ? (
-                      <svg
-                        className="w-5 h-5 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="w-5 h-5 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    )}
-                    <span>{productNotification.message}</span>
+                {/* Notificación del producto */}
+                {productNotification?.productId === product.id && (
+                  <div
+                    className={`mt-3 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition-all duration-300 ease-out ${
+                      isNotificationExiting
+                        ? "opacity-0 scale-95 -translate-y-2"
+                        : "opacity-100 scale-100 translate-y-0"
+                    } ${
+                      productNotification.type === "success"
+                        ? "border-emerald-500 bg-emerald-900 text-emerald-100"
+                        : "border-red-500 bg-red-900 text-red-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {productNotification.type === "success" ? (
+                        <svg
+                          className="w-5 h-5 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-5 h-5 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      )}
+                      <span>{productNotification.message}</span>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </AnimatePresence>
           );
         })}
       </div>
@@ -611,59 +612,72 @@ export default function ProductList({
       )}
 
       {/* Botones flotantes de selección múltiple */}
-      {selectedProductIds.size > 0 && onClearSelection && onDeleteMultiple && (
-        <div className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 sm:bottom-10 md:bottom-8">
-          <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/95 px-2 py-2 shadow-md">
-            {/* Botón Cancelar */}
-            <button
-              type="button"
-              onClick={onClearSelection}
-              className="flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-white shadow-sm transition-colors duration-200 hover:bg-slate-700 sm:h-14 sm:w-14"
-              aria-label="Cancelar selección"
+      <AnimatePresence>
+        {selectedProductIds.size > 0 &&
+          onClearSelection &&
+          onDeleteMultiple && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, x: "-50%" }}
+              animate={{ opacity: 1, y: 0, x: "-50%" }}
+              exit={{ opacity: 0, y: 20, x: "-50%" }}
+              transition={{
+                duration: 0.5,
+                type: "spring",
+              }}
+              className="fixed bottom-24 left-1/2 z-30 sm:bottom-10 md:bottom-8"
             >
-              <svg
-                className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+              <div className="flex items-center gap-12 rounded-full border border-slate-700 bg-slate-900/95 px-2 py-2 shadow-md">
+                {/* Botón Cancelar */}
+                <button
+                  type="button"
+                  onClick={onClearSelection}
+                  className="flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-white shadow-sm transition-colors duration-200 hover:bg-slate-700 sm:h-14 sm:w-14"
+                  aria-label="Cancelar selección"
+                >
+                  <svg
+                    className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
 
-            {/* Botón Borrar */}
-            <button
-              type="button"
-              onClick={() => setIsDeleteMultipleModalOpen(true)}
-              className="relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-500 bg-red-600 text-white shadow-sm transition-colors duration-200 hover:bg-red-500 sm:h-14 sm:w-14"
-              aria-label="Borrar productos seleccionados"
-            >
-              <svg
-                className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              {/* Badge con cantidad */}
-              <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-[10px] font-bold text-white shadow-lg sm:h-6 sm:w-6 sm:text-xs">
-                {selectedProductIds.size}
+                {/* Botón Borrar */}
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteMultipleModalOpen(true)}
+                  className="relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-500 bg-red-600 text-white shadow-sm transition-colors duration-200 hover:bg-red-500 sm:h-14 sm:w-14"
+                  aria-label="Borrar productos seleccionados"
+                >
+                  <svg
+                    className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  {/* Badge con cantidad */}
+                  <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-[10px] font-bold text-white shadow-lg sm:h-6 sm:w-6 sm:text-xs">
+                    {selectedProductIds.size}
+                  </div>
+                </button>
               </div>
-            </button>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          )}
+      </AnimatePresence>
 
       {/* Modal de confirmación de borrado múltiple */}
       {isDeleteMultipleModalOpen && (

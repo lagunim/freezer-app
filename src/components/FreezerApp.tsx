@@ -586,12 +586,21 @@ export default function FreezerApp() {
               onClick={() => toggleCategory("Alimentación")}
               className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px]  ${
                 selectedCategories.includes("Alimentación")
-                  ? "border-emerald-500 bg-emerald-600 text-white shadow-sm scale-90"
+                  ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
                   : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
               }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <img
+                <motion.img
+                  animate={{
+                    scale: selectedCategories.includes("Alimentación")
+                      ? 0.95
+                      : 1,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeInOut",
+                  }}
                   src="/groceries-icon.png"
                   alt="Comida"
                   className="w-full h-full object-contain"
@@ -605,12 +614,19 @@ export default function FreezerApp() {
               onClick={() => toggleCategory("Limpieza")}
               className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
                 selectedCategories.includes("Limpieza")
-                  ? "border-cyan-500 bg-cyan-600 text-white shadow-sm scale-90"
+                  ? "border-cyan-500 bg-cyan-600 text-white shadow-sm"
                   : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
               }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <img
+                <motion.img
+                  animate={{
+                    scale: selectedCategories.includes("Limpieza") ? 0.95 : 1,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeInOut",
+                  }}
                   src="/cleaning-icon.png"
                   alt="Limpieza"
                   className="w-full h-full object-contain"
@@ -624,12 +640,19 @@ export default function FreezerApp() {
               onClick={() => toggleCategory("Higiene")}
               className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
                 selectedCategories.includes("Higiene")
-                  ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm scale-90"
+                  ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm"
                   : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
               }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <img
+                <motion.img
+                  animate={{
+                    scale: selectedCategories.includes("Higiene") ? 0.95 : 1,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeInOut",
+                  }}
                   src="/higiene-icon.png"
                   alt="Higiene"
                   className="w-full h-full object-contain"
@@ -643,12 +666,19 @@ export default function FreezerApp() {
               onClick={() => setShowShoppingCart(!showShoppingCart)}
               className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
                 showShoppingCart
-                  ? "border-purple-500 bg-purple-600 text-white shadow-sm scale-90"
+                  ? "border-purple-500 bg-purple-600 text-white shadow-sm"
                   : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
               }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <img
+                <motion.img
+                  animate={{
+                    scale: showShoppingCart ? 0.95 : 1,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeInOut",
+                  }}
                   src="/cart-icon.png"
                   alt="Cesta"
                   className="w-full h-full object-contain"

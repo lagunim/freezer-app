@@ -48,8 +48,6 @@ export default function SwipeableProductCard({
     null,
   );
   const [isSwiping, setIsSwiping] = useState(false);
-  const [showHint, setShowHint] = useState(true);
-
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
@@ -59,14 +57,6 @@ export default function SwipeableProductCard({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // Verificar si el usuario ya ha usado el swipe antes
-  useEffect(() => {
-    const hasUsedSwipe = localStorage.getItem("freezer-swipe-hint-dismissed");
-    if (hasUsedSwipe === "true") {
-      setShowHint(false);
-    }
-  }, []);
 
   // Cerrar si otra tarjeta se abre
   useEffect(() => {
@@ -87,12 +77,6 @@ export default function SwipeableProductCard({
     setIsOpen(true);
     setSwipeDirection("left");
     onOpen(productId);
-
-    // Marcar que el usuario ya descubrió la funcionalidad de swipe
-    if (showHint) {
-      localStorage.setItem("freezer-swipe-hint-dismissed", "true");
-      setShowHint(false);
-    }
   };
 
   const openSwipeRight = () => {
@@ -100,12 +84,6 @@ export default function SwipeableProductCard({
     setIsOpen(true);
     setSwipeDirection("right");
     onOpen(productId);
-
-    // Marcar que el usuario ya descubrió la funcionalidad de swipe
-    if (showHint) {
-      localStorage.setItem("freezer-swipe-hint-dismissed", "true");
-      setShowHint(false);
-    }
   };
 
   const handleTouchStart = (e: TouchEvent) => {
@@ -428,25 +406,6 @@ export default function SwipeableProductCard({
             }}
             aria-hidden="true"
           />
-        )}
-
-        {/* Icono chevron animado (hint visual) - desaparece tras primer uso */}
-        {!isOpen && showHint && (
-          <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 animate-chevron-pulse"
-            aria-hidden="true"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M12 15L7 10L12 5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-slate-400"
-              />
-            </svg>
-          </div>
         )}
       </motion.div>
     </AnimatePresence>
