@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import type { Product, ProductInput, ProductCategory } from "@/lib/products";
 import ProductForm from "@/components/ProductForm";
 import SwipeableProductCard from "@/components/SwipeableProductCard";
@@ -67,7 +67,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export default function ProductList({
+function ProductList({
   products,
   loading = false,
   onUpdateProduct,
@@ -229,6 +229,10 @@ export default function ProductList({
                           ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
                           : "shadow-sm"
                       }`}
+                      style={{
+                        contentVisibility: "auto",
+                        containIntrinsicSize: "160px",
+                      }}
                     >
                       {/* Contenido de la tarjeta */}
                       <div className="relative z-10 flex items-center gap-2">
@@ -375,6 +379,10 @@ export default function ProductList({
                         ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
                         : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
                     }`}
+                    style={{
+                      contentVisibility: "auto",
+                      containIntrinsicSize: "180px",
+                    }}
                   >
                     {/* Contenido de la tarjeta */}
                     <div className="relative z-10 flex items-center gap-4">
@@ -786,3 +794,5 @@ export default function ProductList({
     </div>
   );
 }
+
+export default memo(ProductList);

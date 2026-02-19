@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import type { PriceEntry, PriceInput } from "@/lib/priceHunter";
 import {
   calculateNormalizedPrice,
@@ -14,6 +14,8 @@ export interface PriceTableProps {
   onDelete: (id: string) => void;
   searchTerm?: string;
 }
+
+export default memo(PriceTable);
 
 type SortField = "product_name" | "price" | "date";
 type SortDirection = "asc" | "desc";
@@ -40,7 +42,7 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-export default function PriceTable({
+function PriceTable({
   prices,
   loading = false,
   onEdit,
@@ -411,6 +413,10 @@ export default function PriceTable({
                     key={price.id}
                     onClick={() => handleRowClick(price)}
                     className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
+                    style={{
+                      contentVisibility: "auto",
+                      containIntrinsicSize: "44px",
+                    }}
                   >
                     <td className="px-2 py-2 text-sm text-slate-100">
                       {price.product_name}
