@@ -204,7 +204,7 @@ export default function PriceForm({
         animate={{ y: 0, scale: 1 }}
         exit={{ y: "100%", scale: 0.8 }}
         transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
-        className="mx-4 w-full max-w-lg  rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+        className="mx-4 w-full max-w-lg min-w-0 rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6">
@@ -405,7 +405,7 @@ export default function PriceForm({
           </div>
 
           {/* Fecha */}
-          <div>
+          <div className="min-w-0">
             <label
               htmlFor="date"
               className="mb-2 block text-sm font-medium text-slate-300"
@@ -417,7 +417,7 @@ export default function PriceForm({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+              className="min-w-0 w-full max-w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
               required
             />
           </div>
