@@ -107,9 +107,35 @@ export default function RegisterForm({ onAuthError, onRegistered }: RegisterForm
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex w-full items-center justify-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? 'Creando cuenta…' : 'Crear cuenta'}
+        {loading ? (
+          <>
+            <span
+              className="h-4 w-4 animate-spin rounded-full border-2 border-white/80 border-t-transparent"
+              aria-hidden
+            />
+            Creando cuenta…
+          </>
+        ) : (
+          <>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2.5"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Crear cuenta
+          </>
+        )}
       </button>
     </form>
   );

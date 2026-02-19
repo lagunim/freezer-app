@@ -74,9 +74,45 @@ export default function LoginForm({ onAuthError }: LoginFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex w-full items-center justify-center rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
+        {loading ? (
+          <>
+            <span
+              className="h-4 w-4 animate-spin rounded-full border-2 border-white/80 border-t-transparent"
+              aria-hidden
+            />
+            Iniciando sesión…
+          </>
+        ) : (
+          <>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2.5"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 3h4a2 2 0 012 2v4"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 14l11-11"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 10v9a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h9"
+              />
+            </svg>
+            Iniciar sesión
+          </>
+        )}
       </button>
     </form>
   );
