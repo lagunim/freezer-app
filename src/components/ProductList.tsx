@@ -13,12 +13,6 @@ export interface ProductListProps {
   ) => Promise<void> | void;
   onDelete: (product: Product) => void;
   onToggleShoppingCart: (product: Product) => void;
-  productNotification?: {
-    productId: string;
-    message: string;
-    type: "success" | "error";
-  } | null;
-  isNotificationExiting?: boolean;
   showShoppingCart?: boolean;
   selectedProductIds?: Set<string>;
   onToggleSelection?: (productId: string) => void;
@@ -79,8 +73,6 @@ export default function ProductList({
   onUpdateProduct,
   onDelete,
   onToggleShoppingCart,
-  productNotification,
-  isNotificationExiting = false,
   showShoppingCart = false,
   selectedProductIds = EMPTY_SELECTION,
   onToggleSelection,
@@ -577,53 +569,6 @@ export default function ProductList({
                   </motion.div>
                 )}
 
-                {/* Notificación del producto */}
-                {productNotification?.productId === product.id && (
-                  <div
-                    className={`mt-3 rounded-lg border px-4 py-3 text-sm font-medium shadow-sm transition-all duration-300 ease-out ${
-                      isNotificationExiting
-                        ? "opacity-0 scale-95 -translate-y-2"
-                        : "opacity-100 scale-100 translate-y-0"
-                    } ${
-                      productNotification.type === "success"
-                        ? "border-emerald-500 bg-emerald-900 text-emerald-100"
-                        : "border-red-500 bg-red-900 text-red-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {productNotification.type === "success" ? (
-                        <svg
-                          className="w-5 h-5 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-5 h-5 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      )}
-                      <span>{productNotification.message}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             </AnimatePresence>
           );

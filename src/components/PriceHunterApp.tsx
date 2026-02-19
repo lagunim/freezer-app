@@ -20,6 +20,7 @@ import {
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
 import { motion, AnimatePresence } from "framer-motion";
+import { Toaster, sileo } from "sileo";
 
 type AuthView = "login" | "register";
 
@@ -120,9 +121,10 @@ export default function PriceHunterApp() {
         setSupermarketSuggestions(supermarkets);
       } catch (err) {
         console.error("Error al cargar precios desde Supabase:", err);
-        setPricesError(
-          "No se han podido cargar los precios. Prueba a recargar o revisa la configuración de Supabase.",
-        );
+        const msg =
+          "No se han podido cargar los precios. Prueba a recargar o revisa la configuración de Supabase.";
+        sileo.error({ title: "Error al cargar precios", description: msg });
+        setPricesError(msg);
       } finally {
         setPricesLoading(false);
       }
@@ -136,7 +138,9 @@ export default function PriceHunterApp() {
     setMessage(null);
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
-      setError("No se ha podido cerrar sesión. Inténtalo de nuevo.");
+      const msg = "No se ha podido cerrar sesión. Inténtalo de nuevo.";
+      sileo.error({ title: "Cerrar sesión", description: msg });
+      setError(msg);
     }
   };
 
@@ -174,6 +178,7 @@ export default function PriceHunterApp() {
     try {
       const created = await createPrice(auth.user.id, input);
       setPrices((prev) => [created, ...prev]);
+      sileo.success({ title: "Precio añadido correctamente." });
       setMessage("Precio añadido correctamente.");
       closeForm();
       // Actualizar sugerencias
@@ -222,14 +227,17 @@ export default function PriceHunterApp() {
             "Error al añadir/actualizar en la despensa:",
             despensaErr,
           );
-          setMessage(
-            "Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.",
-          );
+          const msg =
+            "Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.";
+          sileo.warning({ title: msg });
+          setMessage(msg);
         }
       }
     } catch (err) {
       console.error("Error al crear precio en Supabase:", err);
-      setPricesError("No se ha podido crear el precio.");
+      const msg = "No se ha podido crear el precio.";
+      sileo.error({ title: msg });
+      setPricesError(msg);
     } finally {
       setSavingPrice(false);
     }
@@ -245,6 +253,7 @@ export default function PriceHunterApp() {
       setPrices((prev) =>
         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
       );
+      sileo.success({ title: "Precio actualizado correctamente." });
       setMessage("Precio actualizado correctamente.");
       closeForm();
       // Actualizar sugerencias
@@ -258,7 +267,9 @@ export default function PriceHunterApp() {
       setSupermarketSuggestions(supermarkets);
     } catch (err) {
       console.error("Error al actualizar precio en Supabase:", err);
-      setPricesError("No se ha podido actualizar el precio.");
+      const msg = "No se ha podido actualizar el precio.";
+      sileo.error({ title: msg });
+      setPricesError(msg);
     } finally {
       setSavingPrice(false);
     }
@@ -269,6 +280,7 @@ export default function PriceHunterApp() {
     try {
       await deletePrice(id);
       setPrices((prev) => prev.filter((p) => p.id !== id));
+      sileo.success({ title: "Precio eliminado correctamente." });
       setMessage("Precio eliminado correctamente.");
       // Actualizar sugerencias
       const [suggestions, brands, supermarkets] = await Promise.all([
@@ -281,7 +293,9 @@ export default function PriceHunterApp() {
       setSupermarketSuggestions(supermarkets);
     } catch (err) {
       console.error("Error al borrar precio en Supabase:", err);
-      setPricesError("No se ha podido borrar el precio.");
+      const msg = "No se ha podido borrar el precio.";
+      sileo.error({ title: msg });
+      setPricesError(msg);
     }
   };
 
@@ -347,11 +361,20 @@ export default function PriceHunterApp() {
           <div className="w-full max-w-md">
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
               {authView === "login" ? (
-                <LoginForm onAuthError={(msg: string) => setError(msg)} />
+                <LoginForm
+                  onAuthError={(msg: string) => {
+                    sileo.error({ title: msg });
+                    setError(msg);
+                  }}
+                />
               ) : (
                 <RegisterForm
-                  onAuthError={(msg: string) => setError(msg)}
+                  onAuthError={(msg: string) => {
+                    sileo.error({ title: msg });
+                    setError(msg);
+                  }}
                   onRegistered={(msg: string) => {
+                    sileo.success({ title: msg });
                     setMessage(msg);
                     setAuthView("login");
                   }}
@@ -373,17 +396,7 @@ export default function PriceHunterApp() {
               </div>
             </div>
 
-            {/* Messages */}
-            {message && (
-              <div className="mt-4 rounded-lg border border-green-500/50 bg-green-500/10 p-3">
-                <p className="text-sm text-green-400">{message}</p>
-              </div>
-            )}
-            {error && (
-              <div className="mt-4 rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-                <p className="text-sm text-red-400">{error}</p>
-              </div>
-            )}
+            {/* Notificaciones via Sileo */}
           </div>
         </section>
         {/* Menú flotante de aplicaciones */}
@@ -482,18 +495,6 @@ export default function PriceHunterApp() {
           </div>
         </div>
 
-        {/* Messages */}
-        {message && (
-          <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-green-500/50 bg-green-500/10 p-3">
-            <p className="text-sm text-green-400">{message}</p>
-          </div>
-        )}
-        {(pricesError || error) && (
-          <div className="mb-4 animate-[slideInUp_0.3s_ease-out] rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-            <p className="text-sm text-red-400">{pricesError || error}</p>
-          </div>
-        )}
-
         {/* Main Content */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
           <PriceTable
@@ -538,6 +539,7 @@ export default function PriceHunterApp() {
           { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
         ]}
       />
+      <Toaster position="top-right" />
     </>
   );
 }

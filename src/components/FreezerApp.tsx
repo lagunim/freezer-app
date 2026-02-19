@@ -15,6 +15,7 @@ import {
   updateProduct,
 } from "@/lib/products";
 import { AnimatePresence, motion } from "framer-motion";
+import { Toaster, sileo } from "sileo";
 
 type AuthView = "login" | "register";
 
@@ -43,12 +44,7 @@ export default function FreezerApp() {
     ProductCategory[]
   >([]);
   const [showShoppingCart, setShowShoppingCart] = useState(false);
-  const [productNotification, setProductNotification] = useState<{
-    productId: string;
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-  const [isNotificationExiting, setIsNotificationExiting] = useState(false);
+  // Notificaciones ahora via Sileo (toast)
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
     new Set(),
   );
@@ -97,30 +93,6 @@ export default function FreezerApp() {
     return () => clearTimeout(t);
   }, [message, error]);
 
-  // Auto-dismiss product notifications after 3 seconds
-  useEffect(() => {
-    if (!productNotification) {
-      setIsNotificationExiting(false);
-      return;
-    }
-
-    // Mostrar la notificación durante 2.5 segundos
-    const exitTimer = setTimeout(() => {
-      setIsNotificationExiting(true);
-    }, 2500);
-
-    // Eliminar completamente después de la animación de salida (500ms adicionales)
-    const removeTimer = setTimeout(() => {
-      setProductNotification(null);
-      setIsNotificationExiting(false);
-    }, 3000);
-
-    return () => {
-      clearTimeout(exitTimer);
-      clearTimeout(removeTimer);
-    };
-  }, [productNotification]);
-
   useEffect(() => {
     if (!auth.user) {
       setProducts([]);
@@ -137,9 +109,10 @@ export default function FreezerApp() {
         setProducts(data);
       } catch (err) {
         console.error("Error al cargar productos desde Supabase:", err);
-        setProductsError(
-          "No se han podido cargar los productos. Prueba a recargar o revisa la configuración de Supabase.",
-        );
+        const msg =
+          "No se han podido cargar los productos. Prueba a recargar o revisa la configuración de Supabase.";
+        sileo.error({ title: "Error al cargar productos", description: msg });
+        setProductsError(msg);
       } finally {
         setProductsLoading(false);
       }
@@ -153,7 +126,9 @@ export default function FreezerApp() {
     setMessage(null);
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
-      setError("No se ha podido cerrar sesión. Inténtalo de nuevo.");
+      const msg = "No se ha podido cerrar sesión. Inténtalo de nuevo.";
+      sileo.error({ title: "Cerrar sesión", description: msg });
+      setError(msg);
     }
   };
 
@@ -171,11 +146,14 @@ export default function FreezerApp() {
     try {
       const created = await createProduct(auth.user.id, input);
       setProducts((prev) => [created, ...prev]);
+      sileo.success({ title: "Producto añadido al listado." });
       setMessage("Producto añadido al listado.");
       closeForm();
     } catch (err) {
       console.error("Error al crear producto en Supabase:", err);
-      setProductsError("No se ha podido crear el producto.");
+      const msg = "No se ha podido crear el producto.";
+      sileo.error({ title: msg });
+      setProductsError(msg);
     } finally {
       setSavingProduct(false);
     }
@@ -192,18 +170,12 @@ export default function FreezerApp() {
       setProducts((prev) =>
         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
       );
-      setProductNotification({
-        productId: product.id,
-        message: "Producto actualizado.",
-        type: "success",
-      });
+      sileo.success({ title: "Producto actualizado." });
     } catch (err) {
       console.error("Error al actualizar producto en Supabase:", err);
-      setProductNotification({
-        productId: product.id,
-        message: "No se ha podido actualizar el producto.",
-        type: "error",
-      });
+      const msg = "No se ha podido actualizar el producto.";
+      sileo.error({ title: msg });
+      setProductsError(msg);
     } finally {
       setSavingProduct(false);
     }
@@ -213,22 +185,16 @@ export default function FreezerApp() {
     setProductsError(null);
     try {
       await deleteProduct(product.id);
-      setProductNotification({
-        productId: product.id,
-        message: "Producto eliminado.",
-        type: "success",
-      });
+      sileo.success({ title: "Producto eliminado." });
       // Esperar 3 segundos antes de eliminar el producto para que se vea la notificación completa
       setTimeout(() => {
         setProducts((prev) => prev.filter((p) => p.id !== product.id));
       }, 3000);
     } catch (err) {
       console.error("Error al borrar producto en Supabase:", err);
-      setProductNotification({
-        productId: product.id,
-        message: "No se ha podido borrar el producto.",
-        type: "error",
-      });
+      const msg = "No se ha podido borrar el producto.";
+      sileo.error({ title: msg });
+      setProductsError(msg);
     }
   };
 
@@ -254,18 +220,12 @@ export default function FreezerApp() {
       const message = updated.in_shopping_list
         ? "Producto añadido a la cesta."
         : "Producto quitado de la cesta.";
-      setProductNotification({
-        productId: product.id,
-        message,
-        type: "success",
-      });
+      sileo.success({ title: message });
     } catch (err) {
       console.error("Error al actualizar producto en Supabase:", err);
-      setProductNotification({
-        productId: product.id,
-        message: "No se ha podido actualizar el producto.",
-        type: "error",
-      });
+      const msg = "No se ha podido actualizar el producto.";
+      sileo.error({ title: msg });
+      setProductsError(msg);
     } finally {
       setSavingProduct(false);
     }
@@ -296,6 +256,9 @@ export default function FreezerApp() {
       setMessage(
         `${productIds.length} producto${productIds.length > 1 ? "s" : ""} eliminado${productIds.length > 1 ? "s" : ""}.`,
       );
+      sileo.success({
+        title: `${productIds.length} producto${productIds.length > 1 ? "s" : ""} eliminado${productIds.length > 1 ? "s" : ""}.`,
+      });
 
       // Eliminar los productos del estado
       setProducts((prev) => prev.filter((p) => !productIds.includes(p.id)));
@@ -304,16 +267,20 @@ export default function FreezerApp() {
       handleClearSelection();
     } catch (err) {
       console.error("Error al borrar productos en Supabase:", err);
-      setProductsError("No se han podido borrar algunos productos.");
+      const msg = "No se han podido borrar algunos productos.";
+      sileo.error({ title: msg });
+      setProductsError(msg);
     }
   };
 
   const handleAuthError = (msg: string) => {
+    sileo.error({ title: msg });
     setError(msg);
     setMessage(null);
   };
 
   const handleRegistered = (msg: string) => {
+    sileo.success({ title: msg });
     setMessage(msg);
     setError(null);
     setAuthView("login");
@@ -461,18 +428,6 @@ export default function FreezerApp() {
                 Crear cuenta
               </button>
             </div>
-
-            {error && (
-              <div className="alert-enter mb-3 rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
-                {error}
-              </div>
-            )}
-
-            {message && (
-              <div className="alert-enter mb-3 rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
-                {message}
-              </div>
-            )}
 
             {authView === "login" ? (
               <LoginForm onAuthError={handleAuthError} />
@@ -691,32 +646,12 @@ export default function FreezerApp() {
 
         {/* Contenido con scroll: mensajes + lista */}
         <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24 mt-2 sm:mt-3 md:mt-4">
-          {error && (
-            <div className="alert-enter rounded-lg border border-red-800/80 bg-red-950/70 px-4 py-3 text-sm text-red-100 shadow-sm">
-              {error}
-            </div>
-          )}
-
-          {productsError && (
-            <div className="alert-enter rounded-lg border border-amber-800/80 bg-amber-950/60 px-4 py-3 text-sm text-amber-100 shadow-sm">
-              {productsError}
-            </div>
-          )}
-
-          {message && (
-            <div className="alert-enter rounded-lg border border-emerald-800/80 bg-emerald-950/60 px-4 py-3 text-sm text-emerald-100 shadow-sm">
-              {message}
-            </div>
-          )}
-
           <ProductList
             products={filteredAndSortedProducts}
             loading={productsLoading}
             onUpdateProduct={handleUpdateProduct}
             onDelete={handleDeleteProduct}
             onToggleShoppingCart={handleToggleShoppingCart}
-            productNotification={productNotification}
-            isNotificationExiting={isNotificationExiting}
             showShoppingCart={showShoppingCart}
             selectedProductIds={selectedProductIds}
             onToggleSelection={handleToggleSelection}
@@ -791,6 +726,7 @@ export default function FreezerApp() {
           },
         ]}
       />
+      <Toaster position="top-center" />
     </>
   );
 }
