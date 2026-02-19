@@ -137,31 +137,6 @@ export default function ProductList({
     }
   };
 
-  // Variants para la animación de la lista de productos (contenedor)
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1,
-      },
-    },
-  };
-
-  // Variants para cada producto individual
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.4,
-        ease: [0.4, 0, 0.2, 1] as const,
-      },
-    },
-  };
-
   if (!loading && products.length === 0) {
     return (
       <div className="min-w-0 rounded-2xl border border-dashed border-slate-700 bg-slate-900 p-6 text-center shadow-sm">
@@ -201,22 +176,14 @@ export default function ProductList({
   return (
     <div className="min-w-0">
       {/* Grid de tarjetas */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3"
-      >
+      <div className="grid grid-cols-1 gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => {
           const isConfirmingDelete = productToDelete?.id === product.id;
           const isEditing = editingProductId === product.id;
 
           return (
-            <AnimatePresence key={product.id}>
-              <motion.div
-                variants={itemVariants}
-                className="relative"
-              >
+            <AnimatePresence>
+              <div key={product.id} className="relative">
                 {/* Tarjeta del producto - con SwipeableProductCard en móvil */}
                 <div className="md:hidden">
                   {/* Versión móvil: con swipe */}
@@ -283,9 +250,11 @@ export default function ProductList({
                               {product.quantity}{" "}
                               {product.quantity_unit ?? "uds"}
                             </span>
-                            {product.in_shopping_list && (
+                            {product.in_shopping_list &&
+                              product.shopping_quantity &&
+                              product.shopping_quantity > 0 && (
                                 <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
-                                  En la cesta
+                                  🛒 {product.shopping_quantity} uds
                                 </span>
                               )}
                             <span className="text-[10px] text-slate-300">
@@ -443,9 +412,11 @@ export default function ProductList({
                           >
                             {product.quantity} {product.quantity_unit ?? "uds"}
                           </span>
-                          {product.in_shopping_list && (
+                          {product.in_shopping_list &&
+                            product.shopping_quantity &&
+                            product.shopping_quantity > 0 && (
                               <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-3 py-1 text-sm font-semibold shadow-lg">
-                                En la cesta
+                                🛒 {product.shopping_quantity} uds
                               </span>
                             )}
                           <span className="text-xs text-slate-400">
@@ -623,11 +594,11 @@ export default function ProductList({
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             </AnimatePresence>
           );
         })}
-      </motion.div>
+      </div>
 
       {/* Indicador de carga */}
       {loading && products.length > 0 && (
