@@ -200,9 +200,9 @@ export default function PriceForm({
       }}
     >
       <motion.div
-        initial={{ y: "100%", scale: 0.8 }}
-        animate={{ y: 0, scale: 1 }}
-        exit={{ y: "100%", scale: 0.8 }}
+        initial={{ scaleY: 0, originY: 0.5 }}
+        animate={{ scaleY: 1, originY: 0.5 }}
+        exit={{ scaleY: 0, originY: 0.5 }}
         transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
         className="mx-4 w-full max-w-lg min-w-0 rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
         onClick={(e) => e.stopPropagation()}
