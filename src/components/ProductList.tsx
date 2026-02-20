@@ -269,17 +269,19 @@ function ProductList({
 
                           {/* Badge de cantidad y fecha */}
                           <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
-                            >
-                              {product.quantity}{" "}
-                              {product.quantity_unit ?? "uds"}
-                            </span>
-                            {product.in_shopping_list && (
-                              <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
-                                En la cesta
+                            <div className="flex gap-2">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg ${getBadgeColor(product.quantity)}`}
+                              >
+                                {product.quantity}{" "}
+                                {product.quantity_unit ?? "uds"}
                               </span>
-                            )}
+                              {product.in_shopping_list && (
+                                <span className="inline-flex items-center rounded-full bg-purple-500 text-white px-2 py-0.5 text-[10px] font-semibold shadow-lg">
+                                  En la cesta
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[10px] text-slate-300">
                               {formatDate(product.added_at)}
                             </span>
@@ -371,7 +373,6 @@ function ProductList({
                       </div>
                     </div>
                   </div>
-
                 </div>
 
                 {/* Modal de edición */}
@@ -416,7 +417,6 @@ function ProductList({
                     </motion.div>
                   </motion.div>
                 )}
-
               </div>
             </AnimatePresence>
           );
