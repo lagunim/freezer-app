@@ -16,6 +16,8 @@ function getOfferLabel(price: PriceEntry): string {
   switch (price.offer_type) {
     case "2x1":
       return "2x1 Segunda unidad gratis";
+    case "3x2":
+      return "3x2 Tercera unidad gratis";
     case "50_second":
       return "50% descuento en segunda unidad";
     case "custom":

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 export type Unit = '1Kg' | '1L' | 'Docena' | 'Unidad';
 
 /** Tipo de oferta predefinida o personalizada */
-export type OfferType = '2x1' | '50_second' | 'custom' | null;
+export type OfferType = '2x1' | '3x2' | '50_second' | 'custom' | null;
 
 export interface PriceEntry {
   id: string;
@@ -17,7 +17,7 @@ export interface PriceEntry {
   date: string;
   created_at?: string;
   updated_at?: string | null;
-  /** Tipo de oferta: 2x1, 50_second, custom o null */
+  /** Tipo de oferta: 2x1, 3x2, 50_second, custom o null */
   offer_type?: OfferType | null;
   /** Nombre de la oferta (solo si offer_type = custom) */
   offer_name?: string | null;

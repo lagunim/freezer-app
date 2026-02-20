@@ -41,6 +41,7 @@ const AVAILABLE_UNITS: Unit[] = ["1Kg", "1L", "Docena", "Unidad"];
 const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
   { value: "", label: "— Sin oferta —" },
   { value: "2x1", label: "2x1 Segunda unidad gratis" },
+  { value: "3x2", label: "3x2 Tercera unidad gratis" },
   { value: "50_second", label: "50% descuento en segunda unidad" },
   { value: "custom", label: "Personalizado" },
 ];
