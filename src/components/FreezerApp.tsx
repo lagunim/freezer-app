@@ -209,9 +209,6 @@ export default function FreezerApp() {
         category: product.category,
         added_at: product.added_at,
         in_shopping_list: !product.in_shopping_list,
-        shopping_quantity: !product.in_shopping_list
-          ? null
-          : product.shopping_quantity,
       };
       const updated = await updateProduct(product.id, input);
       setProducts((prev) =>

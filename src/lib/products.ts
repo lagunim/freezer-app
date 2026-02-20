@@ -22,10 +22,6 @@ export interface Product {
    * Indica si el producto está en la lista de la compra.
    */
   in_shopping_list: boolean;
-  /**
-   * Cantidad opcional a comprar (solo para productos en lista de compra).
-   */
-  shopping_quantity?: number | null;
 }
 
 export interface ProductInput {
@@ -47,10 +43,6 @@ export interface ProductInput {
    * Indica si el producto está en la lista de la compra.
    */
   in_shopping_list: boolean;
-  /**
-   * Cantidad opcional a comprar (solo para productos en lista de compra).
-   */
-  shopping_quantity?: number | null;
 }
 
 export async function fetchProducts(): Promise<Product[]> {
@@ -78,7 +70,6 @@ export async function createProduct(
     category: input.category,
     added_at: input.added_at,
     in_shopping_list: input.in_shopping_list,
-    shopping_quantity: input.shopping_quantity,
   };
 
   const { data, error } = await supabase
@@ -107,7 +98,6 @@ export async function updateProduct(
       category: input.category,
       added_at: input.added_at,
       in_shopping_list: input.in_shopping_list,
-      shopping_quantity: input.shopping_quantity,
     })
     .eq('id', id)
     .select('*')

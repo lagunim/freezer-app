@@ -208,7 +208,6 @@ export default function PriceHunterApp() {
               category: existing.category,
               added_at: existing.added_at,
               in_shopping_list: existing.in_shopping_list,
-              shopping_quantity: existing.shopping_quantity ?? null,
             });
           } else {
             const productInput: ProductInput = {
@@ -218,7 +217,6 @@ export default function PriceHunterApp() {
               category: "Alimentación",
               added_at: input.date,
               in_shopping_list: false,
-              shopping_quantity: null,
             };
             await createProduct(auth.user.id, productInput);
           }

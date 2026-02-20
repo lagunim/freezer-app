@@ -54,8 +54,8 @@ export default function ProductForm({
     initialProduct?.category ?? 'Alimentación'
   );
   const [addedAt, setAddedAt] = useState(initialDate);
-  const [shoppingQuantity, setShoppingQuantity] = useState(
-    initialProduct?.shopping_quantity != null ? String(initialProduct.shopping_quantity) : ''
+  const [addToBasket, setAddToBasket] = useState(
+    initialProduct?.in_shopping_list ?? false
   );
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -67,9 +67,7 @@ export default function ProductForm({
     setQuantityUnit(initialProduct?.quantity_unit ?? 'uds');
     setCategory(initialProduct?.category ?? 'Alimentación');
     setAddedAt(toDateInputValue(initialProduct?.added_at));
-    setShoppingQuantity(
-      initialProduct?.shopping_quantity != null ? String(initialProduct.shopping_quantity) : ''
-    );
+    setAddToBasket(initialProduct?.in_shopping_list ?? false);
     setLocalError(null);
   }, [initialProduct]);
 
@@ -106,19 +104,6 @@ export default function ProductForm({
     });
   };
 
-  const changeShoppingQuantityBy = (delta: number) => {
-    setShoppingQuantity((previous) => {
-      const current = parseQuantity(previous);
-      const next = current + delta;
-
-      if (next < 0) {
-        return '0';
-      }
-
-      return String(next);
-    });
-  };
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLocalError(null);
@@ -140,22 +125,6 @@ export default function ProductForm({
       return;
     }
 
-    // Validar y procesar cantidad de compra
-    let shoppingQty: number | null = null;
-    let shouldBeInShoppingList = false;
-    
-    if (shoppingQuantity.trim() !== '') {
-      shoppingQty = Number.parseInt(shoppingQuantity, 10);
-      if (Number.isNaN(shoppingQty) || shoppingQty < 0) {
-        setLocalError('La cantidad a comprar debe ser un número mayor o igual que 0.');
-        return;
-      }
-      // Si hay cantidad a comprar, el producto debe estar en la lista
-      if (shoppingQty > 0) {
-        shouldBeInShoppingList = true;
-      }
-    }
-
     const input: ProductInput = {
       name: trimmedName,
       quantity: qtyNumber,
@@ -163,8 +132,7 @@ export default function ProductForm({
       category: category,
       // Normalizamos a inicio de día; el backend lo guardará como timestamptz
       added_at: new Date(addedAt).toISOString(),
-      in_shopping_list: shouldBeInShoppingList,
-      shopping_quantity: shoppingQty,
+      in_shopping_list: addToBasket,
     };
 
     await onSubmit(input);
@@ -190,63 +158,40 @@ export default function ProductForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <label
-            htmlFor="product-category"
-            className="text-xs font-semibold text-slate-200"
-          >
-            Categoría
-          </label>
-          <select
-            id="product-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as ProductCategory)}
-            className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
-          >
-            <option value="Alimentación">🍎 Alimentación</option>
-            <option value="Limpieza">🧹 Limpieza</option>
-            <option value="Higiene">🧴 Higiene</option>
-          </select>
-        </div>
+      <div className="space-y-1">
+        <label
+          htmlFor="product-category"
+          className="text-xs font-semibold text-slate-200"
+        >
+          Categoría
+        </label>
+        <select
+          id="product-category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as ProductCategory)}
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+        >
+          <option value="Alimentación">🍎 Alimentación</option>
+          <option value="Limpieza">🧹 Limpieza</option>
+          <option value="Higiene">🧴 Higiene</option>
+        </select>
+      </div>
 
-        <div className="space-y-1">
-          <label
-            htmlFor="shopping-quantity"
-            className="text-xs font-semibold text-slate-200"
-          >
-            Cantidad a comprar
-          </label>
-          <div className="flex items-center rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1)] focus-within:border-purple-400/50 transition-all">
-            <button
-              type="button"
-              aria-label="Restar cantidad a comprar"
-              onClick={() => changeShoppingQuantityBy(-1)}
-              disabled={loading || parseQuantity(shoppingQuantity) <= 0}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              -
-            </button>
-            <input
-              id="shopping-quantity"
-              type="number"
-              min={0}
-              value={shoppingQuantity}
-              onChange={(e) => setShoppingQuantity(e.target.value)}
-              className="w-full bg-transparent px-2 py-2 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
-              placeholder="0"
-            />
-            <button
-              type="button"
-              aria-label="Sumar cantidad a comprar"
-              onClick={() => changeShoppingQuantityBy(1)}
-              disabled={loading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              +
-            </button>
-          </div>
-        </div>
+      <div className="space-y-1">
+        <label
+          htmlFor="product-added-at"
+          className="text-xs font-semibold text-slate-200"
+        >
+          Fecha de alta
+        </label>
+        <input
+          id="product-added-at"
+          type="date"
+          required
+          value={addedAt}
+          onChange={(e) => setAddedAt(e.target.value)}
+          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -313,19 +258,24 @@ export default function ProductForm({
 
       <div className="space-y-1">
         <label
-          htmlFor="product-added-at"
+          htmlFor="add-to-basket"
           className="text-xs font-semibold text-slate-200"
         >
-          Fecha de alta
+          Añadir a la cesta
         </label>
-        <input
-          id="product-added-at"
-          type="date"
-          required
-          value={addedAt}
-          onChange={(e) => setAddedAt(e.target.value)}
-          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
-        />
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            id="add-to-basket"
+            type="checkbox"
+            checked={addToBasket}
+            onChange={(e) => setAddToBasket(e.target.checked)}
+            disabled={loading}
+            className="h-4 w-4 rounded border-white/30 bg-slate-800/40 text-sky-500 focus:ring-sky-400/50 focus:ring-offset-0"
+          />
+          <span className="text-sm text-slate-200">
+            Incluir en la lista de la compra
+          </span>
+        </label>
       </div>
 
       {localError && (
