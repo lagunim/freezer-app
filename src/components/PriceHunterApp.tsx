@@ -537,7 +537,19 @@ export default function PriceHunterApp() {
           { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
         ]}
       />
-      <Toaster position="top-center" />
+      <Toaster
+        position="top-center"
+        options={{
+          fill: "#1e293b",
+          roundness: 16,
+          styles: {
+            title: "text-slate-100!",
+            description: "text-slate-400!",
+            badge: "bg-white/10!",
+            button: "bg-white/10! hover:bg-white/15!",
+          },
+        }}
+      />
     </>
   );
 }
