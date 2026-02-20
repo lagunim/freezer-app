@@ -202,15 +202,15 @@ export default function ProductForm({
           >
             Cantidad
           </label>
-          <div className="flex items-center rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1)] focus-within:border-sky-400/50 transition-all">
+          <div className="flex h-10 items-stretch rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl shadow-[0_0_15px_rgba(147,197,253,0.1)] focus-within:border-sky-400/50 transition-all overflow-hidden">
             <button
               type="button"
               aria-label="Restar cantidad"
               onClick={() => changeQuantityBy(-1)}
               disabled={loading || parseQuantity(quantity) <= 0}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-l-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-10 min-w-[44px] flex-shrink-0 items-center justify-center rounded-l-lg bg-slate-700/50 text-xl font-bold text-slate-100 transition-all duration-200 hover:bg-slate-600/60 active:bg-slate-500/70 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 touch-manipulation"
             >
-              -
+              −
             </button>
             <input
               id="product-quantity"
@@ -219,7 +219,7 @@ export default function ProductForm({
               required
               value={quantity}
               onChange={handleQuantityChange}
-              className="w-full bg-transparent px-2 py-2 text-base text-center font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent px-2 py-2 text-center text-base font-semibold text-slate-100 placeholder:text-slate-500 focus:outline-none touch-manipulation"
               placeholder="0"
             />
             <button
@@ -227,7 +227,7 @@ export default function ProductForm({
               aria-label="Sumar cantidad"
               onClick={() => changeQuantityBy(1)}
               disabled={loading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-r-lg text-lg font-bold text-slate-200 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/10 hover:scale-110 active:bg-white/20 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-10 min-w-[44px] flex-shrink-0 items-center justify-center rounded-r-lg bg-slate-700/50 text-xl font-bold text-slate-100 transition-all duration-200 hover:bg-slate-600/60 active:bg-slate-500/70 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 touch-manipulation"
             >
               +
             </button>
