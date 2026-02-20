@@ -60,6 +60,26 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
+/**
+ * Obtiene la etiqueta de unidad para mostrar la cantidad según el tipo de unidad
+ * @param unit - Unidad de normalización del precio
+ * @returns Etiqueta de unidad para mostrar (ej: "g/ml", "Unidades")
+ */
+function getQuantityUnitLabel(unit: string): string {
+  switch (unit) {
+    case "Docena":
+      return "Unidades";
+    case "1Kg":
+    case "100g":
+      return "g";
+    case "1L":
+    case "100ml":
+      return "ml";
+    default:
+      return "g/ml";
+  }
+}
+
 function PriceTable({
   prices,
   loading = false,
@@ -617,7 +637,7 @@ function PriceTable({
                       Cantidad
                     </p>
                     <p className="text-base font-semibold text-slate-100">
-                      {detailPrice.quantity} g/ml
+                      {detailPrice.quantity} {getQuantityUnitLabel(detailPrice.unit)}
                     </p>
                   </div>
                 </div>
@@ -1183,7 +1203,7 @@ function PriceTable({
                                   {formatPrice(price.total_price)}
                                 </td>
                                 <td className="px-2 py-3 text-sm text-slate-300 whitespace-nowrap">
-                                  {price.quantity} g/ml
+                                  {price.quantity} {getQuantityUnitLabel(price.unit)}
                                 </td>
                                 <td className="px-2 py-3 text-sm text-slate-400 whitespace-nowrap">
                                   {formatDate(price.date)}
