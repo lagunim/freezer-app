@@ -185,11 +185,8 @@ export default function FreezerApp() {
     setProductsError(null);
     try {
       await deleteProduct(product.id);
+      setProducts((prev) => prev.filter((p) => p.id !== product.id));
       sileo.success({ title: "Producto eliminado." });
-      // Esperar 3 segundos antes de eliminar el producto para que se vea la notificación completa
-      setTimeout(() => {
-        setProducts((prev) => prev.filter((p) => p.id !== product.id));
-      }, 3000);
     } catch (err) {
       console.error("Error al borrar producto en Supabase:", err);
       const msg = "No se ha podido borrar el producto.";

@@ -204,7 +204,6 @@ function ProductList({
       {/* Grid de tarjetas */}
       <div className="grid grid-cols-1 gap-2 md:gap-3 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => {
-          const isConfirmingDelete = productToDelete?.id === product.id;
           const isEditing = editingProductId === product.id;
 
           return (
@@ -224,11 +223,7 @@ function ProductList({
                     isInCart={product.in_shopping_list}
                   >
                     <div
-                      className={`relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 ${
-                        isConfirmingDelete
-                          ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
-                          : "shadow-sm"
-                      }`}
+                      className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-sm"
                       style={{
                         contentVisibility: "auto",
                         containIntrinsicSize: "160px",
@@ -293,92 +288,12 @@ function ProductList({
                       </div>
                     </div>
                   </SwipeableProductCard>
-
-                  {/* Panel de confirmación expandible */}
-                  <div
-                    className={`overflow-hidden rounded-2xl transition-all duration-300 ${
-                      isConfirmingDelete
-                        ? "max-h-[350px] opacity-100 mt-2"
-                        : "max-h-0 opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    <div className="rounded-2xl border border-red-500 bg-slate-900 p-3 shadow-md">
-                      <div className="text-center">
-                        <div className="mb-3 flex justify-center">
-                          <div className="rounded-full bg-red-500/20 p-2">
-                            <svg
-                              className="w-6 h-6 text-red-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                        <p className="mb-3 text-base font-bold text-white">
-                          ¿Borrar este producto?
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-500 bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-red-500"
-                          >
-                            <svg
-                              className="w-4 h-4 relative z-10"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                            <span className="relative z-10">Sí, borrar</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleCancelDelete}
-                            className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm transition-colors duration-200 hover:bg-slate-700"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Versión desktop: con botones visibles */}
                 <div className="hidden md:block">
                   <div
-                    className={`relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 p-3 transition-transform duration-200 ${
-                      isConfirmingDelete
-                        ? "ring-1 ring-red-500 shadow-md scale-[1.01]"
-                        : "shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
-                    }`}
+                    className="relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 p-3 transition-transform duration-200 shadow-sm hover:shadow-md hover:border-sky-500 hover:-translate-y-0.5"
                     style={{
                       contentVisibility: "auto",
                       containIntrinsicSize: "180px",
@@ -457,81 +372,6 @@ function ProductList({
                     </div>
                   </div>
 
-                  {/* Panel de confirmación expandible desktop */}
-                  <div
-                    className={`overflow-hidden rounded-3xl transition-all duration-300 ${
-                      isConfirmingDelete
-                        ? "max-h-[300px] opacity-100 mt-3"
-                        : "max-h-0 opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    <div className="rounded-3xl border border-red-500 bg-slate-900 p-4 shadow-md">
-                      <div className="text-center">
-                        <div className="mb-3 flex justify-center">
-                          <div className="rounded-full bg-red-500/20 p-2">
-                            <svg
-                              className="w-6 h-6 text-red-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                        <p className="mb-4 text-base font-bold text-white drop-shadow-lg">
-                          ¿Borrar este producto?
-                        </p>
-                        <div className="flex justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="relative flex items-center justify-center gap-1.5 rounded-lg border border-red-500 bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors duration-200 hover:bg-red-500"
-                          >
-                            <svg
-                              className="w-4 h-4 relative z-10"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                            <span className="relative z-10">Sí, borrar</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleCancelDelete}
-                            className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 shadow-sm transition-colors duration-200 hover:bg-slate-700"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Modal de edición */}
@@ -704,6 +544,52 @@ function ProductList({
             </motion.div>
           )}
       </AnimatePresence>
+
+      {/* Modal de confirmación de eliminación de un producto (estilo Price Hunter) */}
+      {productToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={handleCancelDelete}
+        >
+          <div
+            className="mx-4 w-full max-w-md animate-[slideInUp_0.3s_ease-out] rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-100">
+                  Confirmar eliminación
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Esta acción no se puede deshacer
+                </p>
+              </div>
+            </div>
+
+            <p className="mb-6 text-sm text-slate-300">
+              ¿Estás seguro de que quieres eliminar este producto?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación de borrado múltiple */}
       {isDeleteMultipleModalOpen && (
