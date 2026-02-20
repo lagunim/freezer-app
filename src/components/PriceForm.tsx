@@ -594,15 +594,28 @@ export default function PriceForm({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-slate-900/95 backdrop-blur-sm"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60"
               onClick={() => setShowCustomOfferModal(false)}
             >
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
+                initial={{ scaleY: 0, scaleX: 0.7, opacity: 0 }}
+                animate={{ scaleY: 1, scaleX: 1, opacity: 1 }}
+                exit={{ 
+                  scaleY: 0, 
+                  scaleX: 0.6, 
+                  opacity: 0,
+                  filter: "brightness(0.2) contrast(1.2)"
+                }}
+                transition={{ 
+                  scaleY: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                  scaleX: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                  opacity: { duration: 0.2, ease: "easeIn" },
+                  filter: { duration: 0.15, ease: "easeIn" }
+                }}
                 onClick={(e) => e.stopPropagation()}
-                className="mx-4 w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-xl"
+                className="mx-4 w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                style={{ transformOrigin: "center center" }}
               >
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-slate-100">
