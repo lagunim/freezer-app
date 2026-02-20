@@ -52,18 +52,26 @@ export function calculateNormalizedPrice(
 ): number {
   if (quantity <= 0) return 0;
 
-  const pricePerUnit = totalPrice / quantity;
-
   switch (unit) {
     case '1Kg':
-    case '1L':
+    case '1L': {
+      const pricePerUnit = totalPrice / quantity;
       return pricePerUnit * 1000;
-    case 'Docena':
-      return pricePerUnit * 12;
+    }
+    case 'Docena': {
+      // Cuando la unidad es Docena, quantity representa unidades individuales
+      // El precio normalizado es: totalPrice / (quantity / 12)
+      // Ejemplo: 6€ / (24 unidades / 12) = 6€ / 2 docenas = 3€/docena
+      const docenas = quantity / 12;
+      if (docenas <= 0) return 0;
+      return totalPrice / docenas;
+    }
     // Compatibilidad con datos antiguos (100g, 100ml)
     case '100g':
-    case '100ml':
+    case '100ml': {
+      const pricePerUnit = totalPrice / quantity;
       return pricePerUnit * 100;
+    }
     default:
       return 0;
   }

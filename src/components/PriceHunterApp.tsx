@@ -192,6 +192,8 @@ export default function PriceHunterApp() {
       setSupermarketSuggestions(supermarkets);
 
       if (options?.addToDespensa) {
+        // Cuando la unidad es "Docena", quantity representa unidades individuales
+        // Por lo tanto, añadimos directamente esa cantidad como "uds" a la despensa
         const newQty = Math.max(1, Math.round(input.quantity));
         const quantityUnit = mapUnitToQuantityUnit(input.unit);
         const productNameNormalized = input.product_name.trim().toLowerCase();
