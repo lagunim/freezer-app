@@ -36,7 +36,7 @@ function toDateInputValue(iso?: string): string {
   return `${year}-${month}-${day}`;
 }
 
-const AVAILABLE_UNITS: Unit[] = ["1Kg", "1L", "Docena"];
+const AVAILABLE_UNITS: Unit[] = ["1Kg", "1L", "Docena", "Unidad"];
 
 const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
   { value: "", label: "— Sin oferta —" },

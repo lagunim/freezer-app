@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 
-export type Unit = '1Kg' | '1L' | 'Docena';
+export type Unit = '1Kg' | '1L' | 'Docena' | 'Unidad';
 
 /** Tipo de oferta predefinida o personalizada */
 export type OfferType = '2x1' | '50_second' | 'custom' | null;
@@ -65,6 +65,12 @@ export function calculateNormalizedPrice(
       const docenas = quantity / 12;
       if (docenas <= 0) return 0;
       return totalPrice / docenas;
+    }
+    case 'Unidad': {
+      // Cuando la unidad es Unidad, quantity representa unidades individuales
+      // El precio normalizado es: totalPrice / quantity
+      // Ejemplo: 3€ / 2 unidades = 1.5€/unidad
+      return totalPrice / quantity;
     }
     // Compatibilidad con datos antiguos (100g, 100ml)
     case '100g':

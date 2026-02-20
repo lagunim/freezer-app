@@ -162,6 +162,8 @@ export default function PriceHunterApp() {
         return "ml";
       case "Docena":
         return "uds";
+      case "Unidad":
+        return "uds";
       default:
         return "g";
     }

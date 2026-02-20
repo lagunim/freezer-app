@@ -69,6 +69,8 @@ function getQuantityUnitLabel(unit: string): string {
   switch (unit) {
     case "Docena":
       return "Unidades";
+    case "Unidad":
+      return "Unidades";
     case "1Kg":
     case "100g":
       return "g";
