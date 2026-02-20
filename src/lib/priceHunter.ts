@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabaseClient';
 
 export type Unit = '1Kg' | '1L' | 'Docena';
 
+/** Tipo de oferta predefinida o personalizada */
+export type OfferType = '2x1' | '50_second' | 'custom' | null;
+
 export interface PriceEntry {
   id: string;
   user_id: string;
@@ -14,6 +17,12 @@ export interface PriceEntry {
   date: string;
   created_at?: string;
   updated_at?: string | null;
+  /** Tipo de oferta: 2x1, 50_second, custom o null */
+  offer_type?: OfferType | null;
+  /** Nombre de la oferta (solo si offer_type = custom) */
+  offer_name?: string | null;
+  /** Descripción de la oferta (solo si offer_type = custom) */
+  offer_description?: string | null;
 }
 
 export interface PriceInput {
@@ -24,6 +33,9 @@ export interface PriceInput {
   unit: Unit;
   supermarket: string;
   date: string;
+  offer_type?: OfferType | null;
+  offer_name?: string | null;
+  offer_description?: string | null;
 }
 
 /**
@@ -83,6 +95,9 @@ export async function createPrice(
     unit: input.unit,
     supermarket: input.supermarket,
     date: input.date,
+    offer_type: input.offer_type ?? null,
+    offer_name: input.offer_name?.trim() || null,
+    offer_description: input.offer_description?.trim() || null,
   };
 
   const { data, error } = await supabase
@@ -112,6 +127,9 @@ export async function updatePrice(
       unit: input.unit,
       supermarket: input.supermarket,
       date: input.date,
+      offer_type: input.offer_type ?? null,
+      offer_name: input.offer_name?.trim() || null,
+      offer_description: input.offer_description?.trim() || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

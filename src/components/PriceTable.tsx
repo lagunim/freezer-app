@@ -7,6 +7,24 @@ import {
 } from "@/lib/priceHunter";
 import { motion, AnimatePresence } from "framer-motion";
 
+function hasOffer(price: PriceEntry): boolean {
+  return !!price.offer_type;
+}
+
+function getOfferLabel(price: PriceEntry): string {
+  if (!price.offer_type) return "";
+  switch (price.offer_type) {
+    case "2x1":
+      return "2x1 Segunda unidad gratis";
+    case "50_second":
+      return "50% descuento en segunda unidad";
+    case "custom":
+      return price.offer_name?.trim() || "Oferta personalizada";
+    default:
+      return "";
+  }
+}
+
 export interface PriceTableProps {
   prices: PriceEntry[];
   loading?: boolean;
@@ -412,16 +430,40 @@ function PriceTable({
                     }}
                     key={price.id}
                     onClick={() => handleRowClick(price)}
-                    className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
+                    className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${
+                      hasOffer(price) ? "bg-amber-500/5" : ""
+                    }`}
                     style={{
                       contentVisibility: "auto",
                       containIntrinsicSize: "44px",
                     }}
                   >
-                    <td className="px-2 py-2 text-sm text-slate-100">
-                      {price.product_name}
+                    <td className="px-2 py-2 text-sm">
+                      <span
+                        className={
+                          hasOffer(price)
+                            ? "text-amber-200/95 font-medium"
+                            : "text-slate-100"
+                        }
+                      >
+                        {price.product_name}
+                      </span>
+                      {hasOffer(price) && (
+                        <span
+                          className="ml-1.5 inline-flex items-center justify-center rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
+                          title={getOfferLabel(price)}
+                        >
+                          🏷
+                        </span>
+                      )}
                     </td>
-                    <td className="px-2 py-2 text-sm font-medium text-sky-400 whitespace-nowrap">
+                    <td
+                      className={`px-2 py-2 text-sm font-medium whitespace-nowrap ${
+                        hasOffer(price)
+                          ? "text-amber-300/90"
+                          : "text-sky-400"
+                      }`}
+                    >
                       {formatPrice(normalizedPrice)}/{price.unit}
                     </td>
                     <td className="px-2 py-2 text-sm text-slate-400 whitespace-nowrap">
@@ -635,6 +677,29 @@ function PriceTable({
                     {formatDate(detailPrice.date)}
                   </p>
                 </div>
+
+                {/* Oferta (solo si tiene) */}
+                {hasOffer(detailPrice) && (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-amber-400/90" aria-hidden>
+                        🏷
+                      </span>
+                      <p className="text-xs font-medium text-amber-300/90">
+                        Oferta
+                      </p>
+                    </div>
+                    <p className="text-base font-semibold text-amber-100/95">
+                      {getOfferLabel(detailPrice)}
+                    </p>
+                    {detailPrice.offer_type === "custom" &&
+                      detailPrice.offer_description?.trim() && (
+                        <p className="mt-2 text-sm text-slate-300">
+                          {detailPrice.offer_description}
+                        </p>
+                      )}
+                  </div>
+                )}
               </div>
 
               {/* Acciones */}
@@ -1059,19 +1124,59 @@ function PriceTable({
                               <tr
                                 key={price.id}
                                 onClick={() => handleHistoryRowClick(price)}
-                                className="border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer"
+                                className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${
+                                  hasOffer(price) ? "bg-amber-500/5" : ""
+                                }`}
                               >
                                 {historyView.type === "supermarket" && (
-                                  <td className="px-2 py-3 text-sm text-slate-100">
-                                    {price.product_name}
+                                  <td className="px-2 py-3 text-sm">
+                                    <span
+                                      className={
+                                        hasOffer(price)
+                                          ? "text-amber-200/95 font-medium"
+                                          : "text-slate-100"
+                                      }
+                                    >
+                                      {price.product_name}
+                                    </span>
+                                    {hasOffer(price) && (
+                                      <span
+                                        className="ml-1.5 inline-flex rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
+                                        title={getOfferLabel(price)}
+                                      >
+                                        🏷
+                                      </span>
+                                    )}
                                   </td>
                                 )}
                                 {historyView.type === "product" && (
-                                  <td className="px-2 py-3 text-sm text-slate-100">
-                                    {price.supermarket}
+                                  <td className="px-2 py-3 text-sm">
+                                    <span
+                                      className={
+                                        hasOffer(price)
+                                          ? "text-amber-200/95 font-medium"
+                                          : "text-slate-100"
+                                      }
+                                    >
+                                      {price.supermarket}
+                                    </span>
+                                    {hasOffer(price) && (
+                                      <span
+                                        className="ml-1.5 inline-flex rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
+                                        title={getOfferLabel(price)}
+                                      >
+                                        🏷
+                                      </span>
+                                    )}
                                   </td>
                                 )}
-                                <td className="px-2 py-3 text-sm font-medium text-sky-400 whitespace-nowrap">
+                                <td
+                                  className={`px-2 py-3 text-sm font-medium whitespace-nowrap ${
+                                    hasOffer(price)
+                                      ? "text-amber-300/90"
+                                      : "text-sky-400"
+                                  }`}
+                                >
                                   {formatPrice(normalizedPrice)}/{price.unit}
                                 </td>
                                 <td className="px-2 py-3 text-sm text-slate-300 whitespace-nowrap">

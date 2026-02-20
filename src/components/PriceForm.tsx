@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import type { PriceEntry, PriceInput, Unit } from "@/lib/priceHunter";
-import { motion } from "framer-motion";
+import type { PriceEntry, PriceInput, Unit, OfferType } from "@/lib/priceHunter";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PriceFormProps {
   mode: "create" | "edit";
@@ -38,6 +38,13 @@ function toDateInputValue(iso?: string): string {
 
 const AVAILABLE_UNITS: Unit[] = ["1Kg", "1L", "Docena"];
 
+const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
+  { value: "", label: "— Sin oferta —" },
+  { value: "2x1", label: "2x1 Segunda unidad gratis" },
+  { value: "50_second", label: "50% descuento en segunda unidad" },
+  { value: "custom", label: "Personalizado" },
+];
+
 export default function PriceForm({
   mode,
   initialPrice,
@@ -65,6 +72,16 @@ export default function PriceForm({
     initialPrice?.supermarket ?? "",
   );
   const [date, setDate] = useState(toDateInputValue(initialPrice?.date));
+  const [offerType, setOfferType] = useState<"" | OfferType>(
+    initialPrice?.offer_type ?? "",
+  );
+  const [customOfferName, setCustomOfferName] = useState(
+    initialPrice?.offer_name ?? "",
+  );
+  const [customOfferDescription, setCustomOfferDescription] = useState(
+    initialPrice?.offer_description ?? "",
+  );
+  const [showCustomOfferModal, setShowCustomOfferModal] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showSuggestionsBrand, setShowSuggestionsBrand] = useState(false);
@@ -169,6 +186,13 @@ export default function PriceForm({
       unit: unit,
       supermarket: trimmedSupermarket,
       date: new Date(date).toISOString(),
+      offer_type: offerType === "" ? null : offerType,
+      offer_name:
+        offerType === "custom" ? customOfferName.trim() || null : null,
+      offer_description:
+        offerType === "custom"
+          ? customOfferDescription.trim() || null
+          : null,
     };
 
     try {
@@ -204,7 +228,7 @@ export default function PriceForm({
         animate={{ scaleY: 1, originY: 0.5 }}
         exit={{ scaleY: 0, originY: 0.5 }}
         transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
-        className="mx-4 w-full max-w-lg min-w-0 rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+        className="relative mx-4 w-full max-w-lg min-w-0 rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6">
@@ -422,6 +446,41 @@ export default function PriceForm({
             />
           </div>
 
+          {/* Oferta */}
+          <div className="min-w-0">
+            <label
+              htmlFor="offer"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              Oferta
+            </label>
+            <select
+              id="offer"
+              value={offerType}
+              onChange={(e) => {
+                const v = e.target.value as "" | OfferType;
+                setOfferType(v);
+                if (v === "custom") setShowCustomOfferModal(true);
+              }}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+            >
+              {OFFER_OPTIONS.map((opt) => (
+                <option key={opt.value || "none"} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {offerType === "custom" && (
+              <button
+                type="button"
+                onClick={() => setShowCustomOfferModal(true)}
+                className="mt-2 text-sm text-sky-400 hover:text-sky-300 transition-colors"
+              >
+                Editar nombre y descripción →
+              </button>
+            )}
+          </div>
+
           {/* Añadir a la despensa (solo en creación) */}
           {!isEdit && (
             <div className="flex items-center gap-3">
@@ -527,6 +586,98 @@ export default function PriceForm({
             </button>
           </div>
         </form>
+
+        {/* Modal oferta personalizada (sobre el modal de precio) */}
+        <AnimatePresence>
+          {showCustomOfferModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-slate-900/95 backdrop-blur-sm"
+              onClick={() => setShowCustomOfferModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="mx-4 w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-xl"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-100">
+                    Oferta personalizada
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomOfferModal(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                    aria-label="Cerrar"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="custom-offer-name"
+                      className="mb-1.5 block text-sm font-medium text-slate-300"
+                    >
+                      Nombre
+                    </label>
+                    <input
+                      id="custom-offer-name"
+                      type="text"
+                      value={customOfferName}
+                      onChange={(e) => setCustomOfferName(e.target.value)}
+                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-base text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      placeholder="Ej: 3x2 en yogures"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="custom-offer-description"
+                      className="mb-1.5 block text-sm font-medium text-slate-300"
+                    >
+                      Descripción
+                    </label>
+                    <textarea
+                      id="custom-offer-description"
+                      value={customOfferDescription}
+                      onChange={(e) =>
+                        setCustomOfferDescription(e.target.value)
+                      }
+                      rows={3}
+                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-base text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"
+                      placeholder="Ej: Lleva 3 y paga 2 en línea de yogures naturales"
+                    />
+                  </div>
+                </div>
+                <div className="mt-5 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomOfferModal(false)}
+                    className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  >
+                    Listo
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
   );
