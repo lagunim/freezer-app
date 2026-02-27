@@ -25,7 +25,13 @@ type AuthState = {
   user: User | null;
 };
 
-export default function FreezerApp() {
+export interface FreezerAppProps {
+  onSwitchToPriceHunter?: () => void;
+}
+
+export default function FreezerApp({
+  onSwitchToPriceHunter,
+}: FreezerAppProps = {}) {
   const [auth, setAuth] = useState<AuthState>({
     loading: true,
     session: null,
@@ -47,6 +53,25 @@ export default function FreezerApp() {
   // Notificaciones ahora via Sileo (toast)
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
     new Set(),
+  );
+
+  const floatingMenuItems = useMemo(
+    () => [
+      onSwitchToPriceHunter
+        ? {
+            id: "price-hunter",
+            label: "Price Hunter",
+            icon: "🔍" as const,
+            onClick: onSwitchToPriceHunter,
+          }
+        : {
+            id: "price-hunter",
+            label: "Price Hunter",
+            href: "/price-hunter",
+            icon: "🔍" as const,
+          },
+    ],
+    [onSwitchToPriceHunter],
   );
 
   useEffect(() => {
@@ -352,16 +377,7 @@ export default function FreezerApp() {
           </div>
         </section>
         {/* Menú flotante de aplicaciones */}
-        <FloatingMenu
-          items={[
-            {
-              id: "price-hunter",
-              label: "Price Hunter",
-              href: "/price-hunter",
-              icon: "🔍",
-            },
-          ]}
-        />
+        <FloatingMenu items={floatingMenuItems} />
       </>
     );
   }
@@ -434,16 +450,7 @@ export default function FreezerApp() {
           </div>
         </section>
         {/* Menú flotante de aplicaciones */}
-        <FloatingMenu
-          items={[
-            {
-              id: "price-hunter",
-              label: "Price Hunter",
-              href: "/price-hunter",
-              icon: "🔍",
-            },
-          ]}
-        />
+        <FloatingMenu items={floatingMenuItems} />
       </>
     );
   }
@@ -732,16 +739,7 @@ export default function FreezerApp() {
       </section>
 
       {/* Menú flotante de aplicaciones */}
-      <FloatingMenu
-        items={[
-          {
-            id: "price-hunter",
-            label: "Price Hunter",
-            href: "/price-hunter",
-            icon: "🔍",
-          },
-        ]}
-      />
+      <FloatingMenu items={floatingMenuItems} />
       <Toaster
         position="top-center"
         options={{

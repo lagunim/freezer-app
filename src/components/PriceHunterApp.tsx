@@ -30,7 +30,13 @@ type AuthState = {
   user: User | null;
 };
 
-export default function PriceHunterApp() {
+export interface PriceHunterAppProps {
+  onSwitchToFreezer?: () => void;
+}
+
+export default function PriceHunterApp({
+  onSwitchToFreezer,
+}: PriceHunterAppProps = {}) {
   const [auth, setAuth] = useState<AuthState>({
     loading: true,
     session: null,
@@ -51,6 +57,25 @@ export default function PriceHunterApp() {
     string[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const floatingMenuItems = useMemo(
+    () => [
+      onSwitchToFreezer
+        ? {
+            id: "freezer-app",
+            label: "Freezer App",
+            icon: "❄️" as const,
+            onClick: onSwitchToFreezer,
+          }
+        : {
+            id: "freezer-app",
+            label: "Freezer App",
+            href: "/",
+            icon: "❄️" as const,
+          },
+    ],
+    [onSwitchToFreezer],
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -327,11 +352,7 @@ export default function PriceHunterApp() {
             <p className="text-sm text-slate-400">Cargando...</p>
           </div>
         </div>
-        <FloatingMenu
-          items={[
-            { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
-          ]}
-        />
+        <FloatingMenu items={floatingMenuItems} />
       </>
     );
   }
@@ -402,16 +423,7 @@ export default function PriceHunterApp() {
           </div>
         </section>
         {/* Menú flotante de aplicaciones */}
-        <FloatingMenu
-          items={[
-            {
-              id: "freezer-app",
-              label: "Freezer App",
-              href: "/",
-              icon: "❄️",
-            },
-          ]}
-        />
+        <FloatingMenu items={floatingMenuItems} />
       </>
     );
   }
@@ -558,11 +570,7 @@ export default function PriceHunterApp() {
       </section>
 
       {/* Menú flotante de aplicaciones */}
-      <FloatingMenu
-        items={[
-          { id: "freezer-app", label: "Freezer App", href: "/", icon: "❄️" },
-        ]}
-      />
+      <FloatingMenu items={floatingMenuItems} />
       <Toaster
         position="top-center"
         options={{

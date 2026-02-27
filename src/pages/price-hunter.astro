@@ -1,8 +1,12 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import PriceHunterApp from '@/components/PriceHunterApp';
+import Layout from "@/layouts/Layout.astro";
 ---
 
 <Layout>
-  <PriceHunterApp client:load />
+  <div class="flex min-h-screen items-center justify-center text-slate-400">
+    <p>Redirigiendo a Price Hunter…</p>
+  </div>
+  <script>
+    window.location.replace("/?view=price-hunter");
+  </script>
 </Layout>
