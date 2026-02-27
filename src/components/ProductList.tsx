@@ -207,8 +207,8 @@ function ProductList({
           const isEditing = editingProductId === product.id;
 
           return (
-            <AnimatePresence>
-              <div key={product.id} className="relative">
+            <AnimatePresence key={product.id}>
+              <div className="relative">
                 {/* Tarjeta del producto - con SwipeableProductCard en móvil */}
                 <div className="md:hidden">
                   {/* Versión móvil: con swipe */}
@@ -375,28 +375,29 @@ function ProductList({
                   </div>
                 </div>
 
-                {/* Modal de edición */}
-                {isEditing && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5, type: "spring" }}
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="modal-edit-product-title"
-                    onClick={closeEditModal}
-                  >
+                {/* Modal de edición (misma animación CRT que Añadir producto) */}
+                <AnimatePresence>
+                  {isEditing && (
                     <motion.div
-                      layoutId={`product-${product.id}`}
+                      key={`edit-modal-${product.id}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 1, type: "spring" }}
-                      className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
-                      onClick={(e) => e.stopPropagation()}
+                      transition={{ duration: 0.2 }}
+                      className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
+                      role="dialog"
+                      aria-modal="true"
+                      aria-labelledby="modal-edit-product-title"
+                      onClick={closeEditModal}
                     >
+                      <motion.div
+                        initial={{ scaleY: 0, originY: 0.5 }}
+                        animate={{ scaleY: 1, originY: 0.5 }}
+                        exit={{ scaleY: 0, originY: 0.5 }}
+                        transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
+                        className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                       <motion.div>
                         <h3
                           id="modal-edit-product-title"
@@ -415,8 +416,9 @@ function ProductList({
                         />
                       </motion.div>
                     </motion.div>
-                  </motion.div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </AnimatePresence>
           );

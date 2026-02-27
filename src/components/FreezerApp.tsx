@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import FriezaIcon from "@/public/Frieza-icon.png";
@@ -54,22 +54,23 @@ export default function FreezerApp({
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
     new Set(),
   );
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const floatingMenuItems = useMemo(
     () => [
       onSwitchToPriceHunter
         ? {
-            id: "price-hunter",
-            label: "Price Hunter",
-            icon: "🔍" as const,
-            onClick: onSwitchToPriceHunter,
-          }
+          id: "price-hunter",
+          label: "Price Hunter",
+          icon: "🔍" as const,
+          onClick: onSwitchToPriceHunter,
+        }
         : {
-            id: "price-hunter",
-            label: "Price Hunter",
-            href: "/price-hunter",
-            icon: "🔍" as const,
-          },
+          id: "price-hunter",
+          label: "Price Hunter",
+          href: "/price-hunter",
+          icon: "🔍" as const,
+        },
     ],
     [onSwitchToPriceHunter],
   );
@@ -414,11 +415,10 @@ export default function FreezerApp({
                   setError(null);
                   setMessage(null);
                 }}
-                className={`flex-1 rounded-md px-2 py-1 transition ${
-                  authView === "login"
-                    ? "bg-slate-950 text-slate-50"
-                    : "text-slate-400 hover:text-slate-100"
-                }`}
+                className={`flex-1 rounded-md px-2 py-1 transition ${authView === "login"
+                  ? "bg-slate-950 text-slate-50"
+                  : "text-slate-400 hover:text-slate-100"
+                  }`}
               >
                 Iniciar sesión
               </button>
@@ -429,11 +429,10 @@ export default function FreezerApp({
                   setError(null);
                   setMessage(null);
                 }}
-                className={`flex-1 rounded-md px-2 py-1 transition ${
-                  authView === "register"
-                    ? "bg-slate-950 text-slate-50"
-                    : "text-slate-400 hover:text-slate-100"
-                }`}
+                className={`flex-1 rounded-md px-2 py-1 transition ${authView === "register"
+                  ? "bg-slate-950 text-slate-50"
+                  : "text-slate-400 hover:text-slate-100"
+                  }`}
               >
                 Crear cuenta
               </button>
@@ -499,19 +498,22 @@ export default function FreezerApp({
           </button>
         </header>
 
-        {/* Barra de búsqueda y filtros */}
+        {/* Barra de búsqueda + filtros por categoría y cesta (anclados arriba) */}
         <div className="sticky top-0 z-50 space-y-2 md:space-y-3 pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 bg-slate-900/95 border-b border-slate-800">
-          <div>
-            <label htmlFor="product-search" className="sr-only">
+          {/* Barra de búsqueda siempre visible, anclada sobre las categorías */}
+          <div className="relative w-full">
+            <label htmlFor="product-search-fixed" className="sr-only">
               Buscar por nombre
             </label>
-            <div className="relative">
-              <div
-                className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
-                aria-hidden
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors rounded-full p-0.5"
+                aria-label="Limpiar búsqueda"
               >
                 <svg
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -520,41 +522,22 @@ export default function FreezerApp({
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-              </div>
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded-full p-1"
-                  aria-label="Limpiar búsqueda"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              )}
-              <input
-                id="product-search"
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por nombre…"
-                className="block w-full rounded-xl border border-slate-600 bg-slate-800 py-2 pl-12 pr-10 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-none"
-              />
-            </div>
+              </button>
+            )}
+            <input
+              ref={searchInputRef}
+              id="product-search-fixed"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nombre…"
+              inputMode="search"
+              enterKeyHint="search"
+              className="block w-full rounded-xl border border-white/10 bg-slate-700/40 backdrop-blur-xl py-2 pl-3 pr-8 text-[16px] sm:text-base text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2.5"
+            />
           </div>
 
           {/* Filtros por categoría y cesta */}
@@ -562,11 +545,10 @@ export default function FreezerApp({
             <button
               type="button"
               onClick={() => toggleCategory("Alimentación")}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px]  ${
-                selectedCategories.includes("Alimentación")
-                  ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
-                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
-              }`}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px]  ${selectedCategories.includes("Alimentación")
+                ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
+                }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
                 <motion.img
@@ -590,11 +572,10 @@ export default function FreezerApp({
             <button
               type="button"
               onClick={() => toggleCategory("Limpieza")}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
-                selectedCategories.includes("Limpieza")
-                  ? "border-cyan-500 bg-cyan-600 text-white shadow-sm"
-                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
-              }`}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${selectedCategories.includes("Limpieza")
+                ? "border-cyan-500 bg-cyan-600 text-white shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
+                }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
                 <motion.img
@@ -616,11 +597,10 @@ export default function FreezerApp({
             <button
               type="button"
               onClick={() => toggleCategory("Higiene")}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
-                selectedCategories.includes("Higiene")
-                  ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm"
-                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
-              }`}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${selectedCategories.includes("Higiene")
+                ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
+                }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
                 <motion.img
@@ -642,11 +622,10 @@ export default function FreezerApp({
             <button
               type="button"
               onClick={() => setShowShoppingCart(!showShoppingCart)}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
-                showShoppingCart
-                  ? "border-purple-500 bg-purple-600 text-white shadow-sm"
-                  : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
-              }`}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${showShoppingCart
+                ? "border-purple-500 bg-purple-600 text-white shadow-sm"
+                : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
+                }`}
             >
               <span className="flex-1 min-h-0 w-full flex items-center justify-center">
                 <motion.img
@@ -683,19 +662,85 @@ export default function FreezerApp({
           />
         </div>
 
-        {/* Floating Action Button (FAB) para añadir nuevo producto */}
-        <button
-          type="button"
-          onClick={() => {
-            setMessage(null);
-            setProductsError(null);
-            setIsFormOpen(true);
-          }}
-          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16 sm:text-3xl"
-          aria-label="Añadir nuevo producto"
+        {/* Contenedor FAB Añadir (inferior derecha) */}
+        <div
+          className="fixed right-6 z-20 flex flex-col items-end gap-2 sm:right-8"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
         >
-          +
-        </button>
+          {/* FAB Añadir nuevo producto */}
+          <button
+            type="button"
+            onClick={() => {
+              setMessage(null);
+              setProductsError(null);
+              setIsFormOpen(true);
+            }}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 sm:text-3xl"
+            aria-label="Añadir nuevo producto"
+          >
+            +
+          </button>
+        </div>
+
+        {/* FAB Price Hunter (inferior izquierda) */}
+        <div
+          className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        >
+          <button
+            type="button"
+            onClick={
+              onSwitchToPriceHunter
+                ? onSwitchToPriceHunter
+                : () => {
+                    window.location.href = "/price-hunter";
+                  }
+            }
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+            aria-label="Ir a Price Hunter"
+            title="Price Hunter"
+          >
+            🎯
+          </button>
+        </div>
+        {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
+        <div
+          className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              if (searchInputRef.current) {
+                searchInputRef.current.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                // Pequeño timeout para asegurar que el scroll ha empezado antes del foco en móviles
+                window.setTimeout(() => {
+                  searchInputRef.current?.focus();
+                  searchInputRef.current?.select();
+                }, 150);
+              }
+            }}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
+            aria-label="Buscar productos"
+          >
+            <svg
+              className="h-6 w-6 sm:h-7 sm:w-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Modal para añadir nuevo producto */}
         <AnimatePresence>
@@ -738,8 +783,6 @@ export default function FreezerApp({
         </AnimatePresence>
       </section>
 
-      {/* Menú flotante de aplicaciones */}
-      <FloatingMenu items={floatingMenuItems} />
       <Toaster
         position="top-center"
         options={{

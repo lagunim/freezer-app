@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import FriezaIcon from "@/public/Frieza-icon.png";
@@ -57,22 +57,25 @@ export default function PriceHunterApp({
     string[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
 
   const floatingMenuItems = useMemo(
     () => [
       onSwitchToFreezer
         ? {
-            id: "freezer-app",
-            label: "Freezer App",
-            icon: "❄️" as const,
-            onClick: onSwitchToFreezer,
-          }
+          id: "freezer-app",
+          label: "Freezer App",
+          icon: "❄️" as const,
+          onClick: onSwitchToFreezer,
+          roundOnly: true,
+        }
         : {
-            id: "freezer-app",
-            label: "Freezer App",
-            href: "/",
-            icon: "❄️" as const,
-          },
+          id: "freezer-app",
+          label: "Freezer App",
+          href: "/",
+          icon: "❄️" as const,
+          roundOnly: true,
+        },
     ],
     [onSwitchToFreezer],
   );
@@ -520,12 +523,15 @@ export default function PriceHunterApp({
                 </button>
               )}
               <input
+                ref={priceSearchInputRef}
                 id="price-search"
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por producto…"
-                className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-10 text-base md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)]"
+                inputMode="search"
+                enterKeyHint="search"
+                className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-10 text-[16px] md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)] sm:text-base"
               />
             </div>
           </div>
@@ -542,7 +548,7 @@ export default function PriceHunterApp({
           />
         </div>
 
-        {/* Floating Add Button */}
+        {/* Floating Add Button (inferior derecha) */}
         <button
           onClick={openForm}
           className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
@@ -550,6 +556,66 @@ export default function PriceHunterApp({
         >
           +
         </button>
+
+        {/* FAB Freezer App (inferior izquierda) */}
+        <div
+          className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        >
+          <button
+            type="button"
+            onClick={
+              onSwitchToFreezer
+                ? onSwitchToFreezer
+                : () => {
+                    window.location.href = "/";
+                  }
+            }
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+            aria-label="Ir a Freezer App"
+            title="Freezer App"
+          >
+            ❄️
+          </button>
+        </div>
+
+        {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
+        <div
+          className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              if (priceSearchInputRef.current) {
+                priceSearchInputRef.current.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                window.setTimeout(() => {
+                  priceSearchInputRef.current?.focus();
+                  priceSearchInputRef.current?.select();
+                }, 150);
+              }
+            }}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
+            aria-label="Buscar precios"
+          >
+            <svg
+              className="h-6 w-6 sm:h-7 sm:w-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Price Form Modal */}
         <AnimatePresence>
@@ -569,8 +635,6 @@ export default function PriceHunterApp({
         </AnimatePresence>
       </section>
 
-      {/* Menú flotante de aplicaciones */}
-      <FloatingMenu items={floatingMenuItems} />
       <Toaster
         position="top-center"
         options={{

@@ -442,7 +442,7 @@ function PriceTable({
                 price.unit,
               );
               return (
-                <AnimatePresence>
+                <AnimatePresence key={price.id}>
                   <motion.tr
                     layoutId={`price-product-${price.product_name}`}
                     initial={{ opacity: 0, scale: 0 }}
@@ -452,7 +452,6 @@ function PriceTable({
                     transition={{
                       duration: 0.2,
                     }}
-                    key={price.id}
                     onClick={() => handleRowClick(price)}
                     className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${
                       hasOffer(price) ? "bg-amber-500/5" : ""
