@@ -63,53 +63,51 @@ export default function FloatingMenu({
   );
 
   return (
-    <div className="fixed left-0 top-0 z-20 h-[100svh] w-full pointer-events-none">
-      <div
-        className="absolute left-6 pointer-events-auto sm:left-8"
-        style={{ bottom: bottomValue }}
-      >
-        {roundOnly ? (
-          isButton ? (
-            <button
-              type="button"
-              onClick={targetApp.onClick}
-              className={roundFabClass}
-              aria-label={`Ir a ${targetApp.label}`}
-              title={targetApp.label}
-            >
-              {iconContent}
-            </button>
-          ) : (
-            <a
-              href={targetApp.href ?? "#"}
-              className={roundFabClass}
-              aria-label={`Ir a ${targetApp.label}`}
-              title={targetApp.label}
-            >
-              {iconContent}
-            </a>
-          )
-        ) : isButton ? (
+    <div
+      className="fixed left-6 z-20 pointer-events-auto sm:left-8"
+      style={{ bottom: bottomValue }}
+    >
+      {roundOnly ? (
+        isButton ? (
           <button
             type="button"
             onClick={targetApp.onClick}
-            className={linkClass}
+            className={roundFabClass}
             aria-label={`Ir a ${targetApp.label}`}
-            title={`Ir a ${targetApp.label}`}
+            title={targetApp.label}
           >
-            {content}
+            {iconContent}
           </button>
         ) : (
           <a
             href={targetApp.href ?? "#"}
-            className={linkClass}
+            className={roundFabClass}
             aria-label={`Ir a ${targetApp.label}`}
-            title={`Ir a ${targetApp.label}`}
+            title={targetApp.label}
           >
-            {content}
+            {iconContent}
           </a>
-        )}
-      </div>
+        )
+      ) : isButton ? (
+        <button
+          type="button"
+          onClick={targetApp.onClick}
+          className={linkClass}
+          aria-label={`Ir a ${targetApp.label}`}
+          title={`Ir a ${targetApp.label}`}
+        >
+          {content}
+        </button>
+      ) : (
+        <a
+          href={targetApp.href ?? "#"}
+          className={linkClass}
+          aria-label={`Ir a ${targetApp.label}`}
+          title={`Ir a ${targetApp.label}`}
+        >
+          {content}
+        </a>
+      )}
     </div>
   );
 }
