@@ -442,16 +442,23 @@ function ProductList({
           onClearSelection &&
           onDeleteMultiple && (
             <motion.div
-              initial={{ opacity: 0, y: 20, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 20, x: "-50%" }}
-              transition={{
-                duration: 0.5,
-                type: "spring",
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="fixed bottom-24 left-1/2 z-30 sm:bottom-10 md:bottom-8"
             >
-              <div className="flex items-center gap-12 rounded-full border border-slate-700 bg-slate-900/95 px-2 py-2 shadow-md">
+              <motion.div
+                initial={{ scaleY: 0, originY: 0.5 }}
+                animate={{ scaleY: 1, originY: 0.5 }}
+                exit={{ scaleY: 0, originY: 0.5 }}
+                transition={{
+                  duration: 0.8,
+                  type: "spring",
+                  ease: "easeIn",
+                }}
+                className="flex items-center gap-12 rounded-full border border-slate-700 bg-slate-900/95 px-2 py-2 shadow-md"
+              >
                 {/* Botón Cancelar */}
                 <button
                   type="button"
@@ -542,7 +549,7 @@ function ProductList({
                     {selectedProductIds.size}
                   </div>
                 </button>
-              </div>
+              </motion.div>
             </motion.div>
           )}
       </AnimatePresence>

@@ -64,12 +64,14 @@ export default function FreezerApp({
           label: "Price Hunter",
           icon: "🔍" as const,
           onClick: onSwitchToPriceHunter,
+          roundOnly: true,
         }
         : {
           id: "price-hunter",
           label: "Price Hunter",
           href: "/price-hunter",
           icon: "🔍" as const,
+          roundOnly: true,
         },
     ],
     [onSwitchToPriceHunter],
