@@ -587,16 +587,20 @@ export default function PriceHunterApp({
           <button
             type="button"
             onClick={() => {
-              if (priceSearchInputRef.current) {
-                priceSearchInputRef.current.scrollIntoView({
+              const input = priceSearchInputRef.current;
+              if (!input) return;
+
+              // Foco síncrono para que el teclado se abra en móviles
+              input.focus();
+              input.select();
+
+              // Desplazar suavemente el campo a la vista sin perder el foco
+              window.requestAnimationFrame(() => {
+                input.scrollIntoView({
                   behavior: "smooth",
                   block: "center",
                 });
-                window.setTimeout(() => {
-                  priceSearchInputRef.current?.focus();
-                  priceSearchInputRef.current?.select();
-                }, 150);
-              }
+              });
             }}
             className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
             aria-label="Buscar precios"
