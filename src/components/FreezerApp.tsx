@@ -499,21 +499,19 @@ export default function FreezerApp({
         </header>
 
         {/* Barra de búsqueda + filtros por categoría y cesta (anclados arriba) */}
-        <div className="sticky top-0 z-50 space-y-2 md:space-y-3 pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 bg-slate-900/95 border-b border-slate-800">
-          {/* Barra de búsqueda siempre visible, anclada sobre las categorías */}
-          <div className="relative w-full">
+        <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl space-y-2 md:space-y-3">
+          {/* Barra de búsqueda siempre visible, anclada sobre las categorías (mismo estilo que Price Hunter) */}
+          <div>
             <label htmlFor="product-search-fixed" className="sr-only">
               Buscar por nombre
             </label>
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors rounded-full p-0.5"
-                aria-label="Limpiar búsqueda"
+            <div className="relative">
+              <div
+                className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
+                aria-hidden
               >
                 <svg
-                  className="h-4 w-4"
+                  className="h-5 w-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -522,22 +520,44 @@ export default function FreezerApp({
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-              </button>
-            )}
-            <input
-              ref={searchInputRef}
-              id="product-search-fixed"
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nombre…"
-              inputMode="search"
-              enterKeyHint="search"
-              className="block w-full rounded-xl border border-white/10 bg-slate-700/40 backdrop-blur-xl py-2 pl-3 pr-8 text-[16px] sm:text-base text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:py-2.5"
-            />
+              </div>
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded-full p-1"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+              <input
+                ref={searchInputRef}
+                id="product-search-fixed"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nombre…"
+                inputMode="search"
+                enterKeyHint="search"
+                className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-10 text-[16px] md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)] sm:text-base"
+              />
+            </div>
           </div>
 
           {/* Filtros por categoría y cesta */}
