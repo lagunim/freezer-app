@@ -214,7 +214,9 @@ export default function ProductForm({
             </button>
             <input
               id="product-quantity"
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={0}
               required
               value={quantity}
