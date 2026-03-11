@@ -238,11 +238,10 @@ function ProductList({
                             e.stopPropagation();
                             onToggleSelection?.(product.id);
                           }}
-                          className={`flex-shrink-0 rounded-xl border p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[52px] h-[52px] overflow-hidden ${
-                            selectedProductIds.has(product.id)
-                              ? "bg-sky-600 border-sky-400 text-white"
-                              : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
-                          }`}
+                          className={`flex-shrink-0 rounded-xl border p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[52px] h-[52px] overflow-hidden ${selectedProductIds.has(product.id)
+                            ? "bg-sky-600 border-sky-400 text-white"
+                            : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
+                            }`}
                         >
                           {selectedProductIds.has(product.id) ? (
                             <span className="text-2xl font-bold leading-none">
@@ -310,11 +309,10 @@ function ProductList({
                           e.stopPropagation();
                           onToggleSelection?.(product.id);
                         }}
-                        className={`flex-shrink-0 rounded-2xl border-2 p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[104px] h-[104px] overflow-hidden ${
-                          selectedProductIds.has(product.id)
-                            ? "bg-sky-600 border-sky-400 text-white"
-                            : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
-                        }`}
+                        className={`flex-shrink-0 rounded-2xl border-2 p-0 flex items-center justify-center cursor-pointer transition-colors duration-200 w-[104px] h-[104px] overflow-hidden ${selectedProductIds.has(product.id)
+                          ? "bg-sky-600 border-sky-400 text-white"
+                          : `${getCategoryInfo(product.category).bgColor} ${getCategoryInfo(product.category).borderColor} hover:border-sky-400`
+                          }`}
                       >
                         {selectedProductIds.has(product.id) ? (
                           <span className="text-4xl font-bold leading-none">
@@ -398,24 +396,24 @@ function ProductList({
                         className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
                         onClick={(e) => e.stopPropagation()}
                       >
-                      <motion.div>
-                        <h3
-                          id="modal-edit-product-title"
-                          className="mb-3 text-base font-semibold text-slate-100"
-                        >
-                          Editar producto
-                        </h3>
-                        <ProductForm
-                          mode="edit"
-                          initialProduct={product}
-                          loading={savingProductId === product.id}
-                          onSubmit={(input) =>
-                            handleUpdateProduct(product, input)
-                          }
-                          onCancel={closeEditModal}
-                        />
+                        <motion.div>
+                          <h3
+                            id="modal-edit-product-title"
+                            className="mb-3 text-base font-semibold text-slate-100"
+                          >
+                            Editar producto
+                          </h3>
+                          <ProductForm
+                            mode="edit"
+                            initialProduct={product}
+                            loading={savingProductId === product.id}
+                            onSubmit={(input) =>
+                              handleUpdateProduct(product, input)
+                            }
+                            onCancel={closeEditModal}
+                          />
+                        </motion.div>
                       </motion.div>
-                    </motion.div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -446,7 +444,7 @@ function ProductList({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed bottom-24 left-1/2 z-30 sm:bottom-10 md:bottom-8"
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-30 sm:bottom-10 md:bottom-8"
             >
               <motion.div
                 initial={{ scaleY: 0, originY: 0.5 }}
@@ -459,12 +457,12 @@ function ProductList({
                 }}
                 className="flex items-center gap-12 rounded-full border border-slate-700 bg-slate-900/95 px-2 py-2 shadow-md"
               >
-                {/* Botón Cancelar */}
+                {/* Botón Borrar */}
                 <button
                   type="button"
-                  onClick={onClearSelection}
-                  className="flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-white shadow-sm transition-colors duration-200 hover:bg-slate-700 sm:h-14 sm:w-14"
-                  aria-label="Cancelar selección"
+                  onClick={() => setIsDeleteMultipleModalOpen(true)}
+                  className="relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-500 bg-red-600 text-white shadow-sm transition-colors duration-200 hover:bg-red-500 sm:h-14 sm:w-14"
+                  aria-label="Borrar productos seleccionados"
                 >
                   <svg
                     className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6"
@@ -476,20 +474,23 @@ function ProductList({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2.5}
-                      d="M6 18L18 6M6 6l12 12"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
+                  {/* Badge con cantidad */}
+                  <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-[10px] font-bold text-white shadow-lg sm:h-6 sm:w-6 sm:text-xs">
+                    {selectedProductIds.size}
+                  </div>
                 </button>
 
                 {/* Botón Añadir a la cesta */}
                 <button
                   type="button"
                   onClick={() => void handleAddSelectedToCart()}
-                  className={`relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-white shadow-sm transition-colors duration-200 sm:h-14 sm:w-14 ${
-                    allSelectedInCart
-                      ? "border border-amber-500 bg-amber-600 hover:bg-amber-500"
-                      : "border border-emerald-500 bg-emerald-600 hover:bg-emerald-500"
-                  }`}
+                  className={`relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-white shadow-sm transition-colors duration-200 sm:h-14 sm:w-14 ${allSelectedInCart
+                    ? "border border-amber-500 bg-amber-600 hover:bg-amber-500"
+                    : "border border-emerald-500 bg-emerald-600 hover:bg-emerald-500"
+                    }`}
                   aria-label={
                     allSelectedInCart
                       ? "Quitar productos seleccionados de la cesta"
@@ -524,12 +525,12 @@ function ProductList({
                   </div>
                 </button>
 
-                {/* Botón Borrar */}
+                {/* Botón Cancelar */}
                 <button
                   type="button"
-                  onClick={() => setIsDeleteMultipleModalOpen(true)}
-                  className="relative flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-red-500 bg-red-600 text-white shadow-sm transition-colors duration-200 hover:bg-red-500 sm:h-14 sm:w-14"
-                  aria-label="Borrar productos seleccionados"
+                  onClick={onClearSelection}
+                  className="flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-white shadow-sm transition-colors duration-200 hover:bg-slate-700 sm:h-14 sm:w-14"
+                  aria-label="Cancelar selección"
                 >
                   <svg
                     className="w-5 h-5 relative z-10 drop-shadow-lg sm:w-6 sm:h-6"
@@ -541,14 +542,12 @@ function ProductList({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2.5}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                  {/* Badge con cantidad */}
-                  <div className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-900/90 border border-red-400/60 text-[10px] font-bold text-white shadow-lg sm:h-6 sm:w-6 sm:text-xs">
-                    {selectedProductIds.size}
-                  </div>
                 </button>
+
+
               </motion.div>
             </motion.div>
           )}
