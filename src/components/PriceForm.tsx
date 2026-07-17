@@ -88,7 +88,7 @@ export default function PriceForm({
   const [showSuggestionsBrand, setShowSuggestionsBrand] = useState(false);
   const [showSuggestionsSupermarket, setShowSuggestionsSupermarket] =
     useState(false);
-  const [addToDespensa, setAddToDespensa] = useState(true);
+  const [addToDespensa, setAddToDespensa] = useState(false);
 
   // Derivar listas filtradas durante el render (rerender-derived-state-no-effect)
   const filteredSuggestions = useMemo(() => {
@@ -332,7 +332,9 @@ export default function PriceForm({
               </label>
               <input
                 id="total-price"
-                type="number"
+                type="text"
+                inputMode="decimal"
+                pattern="^\d+(\.\d{1,2})?$"
                 step="0.01"
                 min="0"
                 value={totalPrice}
@@ -352,7 +354,9 @@ export default function PriceForm({
               </label>
               <input
                 id="quantity"
-                type="number"
+                type="text"
+                inputMode="decimal"
+                pattern="^\d+(\.\d{1,2})?$"
                 step="0.01"
                 min="0.01"
                 value={quantity}
@@ -602,13 +606,13 @@ export default function PriceForm({
               <motion.div
                 initial={{ scaleY: 0, scaleX: 0.7, opacity: 0 }}
                 animate={{ scaleY: 1, scaleX: 1, opacity: 1 }}
-                exit={{ 
-                  scaleY: 0, 
-                  scaleX: 0.6, 
+                exit={{
+                  scaleY: 0,
+                  scaleX: 0.6,
                   opacity: 0,
                   filter: "brightness(0.2) contrast(1.2)"
                 }}
-                transition={{ 
+                transition={{
                   scaleY: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
                   scaleX: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
                   opacity: { duration: 0.2, ease: "easeIn" },

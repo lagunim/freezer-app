@@ -27,5 +27,9 @@
     "sileo": "^0.1.4",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "sharp@0.34.5": true
   }
 }
