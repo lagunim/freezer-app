@@ -5,20 +5,20 @@ import PriceHunterApp from "@/components/PriceHunterApp";
 export type AppView = "freezer" | "price-hunter";
 
 function getInitialView(): AppView {
-  if (typeof window === "undefined") return "freezer";
+  if (typeof window === "undefined") return "price-hunter";
   const hash = window.location.hash?.toLowerCase();
   const params = new URLSearchParams(window.location.search);
-  if (hash === "#price-hunter" || params.get("view") === "price-hunter") {
-    return "price-hunter";
+  if (hash === "#freezer" || params.get("view") === "freezer") {
+    return "freezer";
   }
-  return "freezer";
+  return "price-hunter";
 }
 
 export default function AppShell() {
   const [view, setView] = useState<AppView>(getInitialView);
 
   useEffect(() => {
-    const target = view === "price-hunter" ? "/#price-hunter" : "/";
+    const target = view === "freezer" ? "/#freezer" : "/#price-hunter";
     const current = window.location.pathname + window.location.search + window.location.hash;
     if (current !== target) {
       window.history.replaceState(null, "", target);
@@ -28,9 +28,9 @@ export default function AppShell() {
   const onSwitchToPriceHunter = () => setView("price-hunter");
   const onSwitchToFreezer = () => setView("freezer");
 
-  if (view === "price-hunter") {
-    return <PriceHunterApp onSwitchToFreezer={onSwitchToFreezer} />;
+  if (view === "freezer") {
+    return <FreezerApp onSwitchToPriceHunter={onSwitchToPriceHunter} />;
   }
 
-  return <FreezerApp onSwitchToPriceHunter={onSwitchToPriceHunter} />;
+  return <PriceHunterApp onSwitchToFreezer={onSwitchToFreezer} />;
 }
