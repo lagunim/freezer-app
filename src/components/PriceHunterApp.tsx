@@ -26,7 +26,7 @@ import {
 } from "@/lib/productPrices";
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
-import { lookupByBarcode } from "@/lib/openFoodFacts";
+import { lookupByBarcode } from "@/lib/openProducts";
 import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, sileo } from "sileo";

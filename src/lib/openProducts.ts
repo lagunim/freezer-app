@@ -17,6 +17,14 @@ export interface OffLookupResult {
   unit?: Unit;
 }
 
+const API_BASES = [
+  "https://world.openfoodfacts.org",      // Alimentos
+  "https://world.openbeautyfacts.org",    // Higiene / cosméticos
+  "https://world.openproductsfacts.org",  // Limpieza / otros
+];
+
+const FIELDS = "product_name,brands,quantity";
+
 /**
  * Parsea el campo quantity de Open Food Facts (ej: "250 g", "1 L", "6 x 33 cl")
  * y lo convierte a quantity + unit del sistema local.
@@ -72,41 +80,54 @@ function parseOffQuantity(raw: string): { quantity?: number; unit?: Unit } {
   return {};
 }
 
-/**
- * Busca un producto por código de barras en Open Food Facts.
- */
-export async function lookupByBarcode(barcode: string): Promise<OffLookupResult> {
-  try {
-    const res = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${barcode}?fields=product_name,brands,quantity`,
-    );
-
-    if (!res.ok) {
-      return { found: false };
-    }
-
-    const data: OffApiResponse = await res.json();
-
-    if (data.status !== 1 || !data.product) {
-      return { found: false };
-    }
-
-    const { product_name, brands, quantity } = data.product;
-
-    if (!product_name) {
-      return { found: false };
-    }
-
-    const parsed = quantity ? parseOffQuantity(quantity) : {};
-
-    return {
-      found: true,
-      product_name: product_name.trim(),
-      brand: brands?.split(",")[0]?.trim() ?? undefined,
-      quantity: parsed.quantity,
-      unit: parsed.unit ?? "Unidad",
-    };
-  } catch {
+function parseApiResponse(data: OffApiResponse): OffLookupResult {
+  if (data.status !== 1 || !data.product) {
     return { found: false };
   }
+
+  const { product_name, brands, quantity } = data.product;
+
+  if (!product_name) {
+    return { found: false };
+  }
+
+  const parsed = quantity ? parseOffQuantity(quantity) : {};
+
+  return {
+    found: true,
+    product_name: product_name.trim(),
+    brand: brands?.split(",")[0]?.trim() ?? undefined,
+    quantity: parsed.quantity,
+    unit: parsed.unit ?? "Unidad",
+  };
+}
+
+/**
+ * Busca un producto por código de barras en Open Food Facts,
+ * Open Beauty Facts y Open Products Facts (en paralelo).
+ * Retorna el primer resultado encontrado.
+ */
+export async function lookupByBarcode(barcode: string): Promise<OffLookupResult> {
+  const urls = API_BASES.map(
+    (base) => `${base}/api/v2/product/${barcode}?fields=${FIELDS}`,
+  );
+
+  const results = await Promise.allSettled(
+    urls.map((url) =>
+      fetch(url)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ),
+  );
+
+  for (const result of results) {
+    if (result.status === "fulfilled" && result.value) {
+      const parsed = parseApiResponse(result.value);
+      if (parsed.found) {
+        return parsed;
+      }
+    }
+  }
+
+  return { found: false };
 }
