@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { PriceEntry, PriceInput, Unit, OfferType } from "@/lib/priceHunter";
+import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 /** Datos pre-rellenados desde el escáner de código de barras */
@@ -114,23 +115,20 @@ export default function PriceForm({
   // Derivar listas filtradas durante el render (rerender-derived-state-no-effect)
   const filteredSuggestions = useMemo(() => {
     if (productName.trim() === "") return [];
-    return productSuggestions.filter((suggestion) =>
-      suggestion.toLowerCase().includes(productName.toLowerCase()),
-    );
+    const q = normalizeStr(productName);
+    return productSuggestions.filter((s) => normalizeStr(s).includes(q));
   }, [productName, productSuggestions]);
 
   const filteredBrandSuggestions = useMemo(() => {
     if (brand.trim() === "") return [];
-    return brandSuggestions.filter((s) =>
-      s.toLowerCase().includes(brand.toLowerCase()),
-    );
+    const q = normalizeStr(brand);
+    return brandSuggestions.filter((s) => normalizeStr(s).includes(q));
   }, [brand, brandSuggestions]);
 
   const filteredSupermarketSuggestions = useMemo(() => {
     if (supermarket.trim() === "") return [];
-    return supermarketSuggestions.filter((s) =>
-      s.toLowerCase().includes(supermarket.toLowerCase()),
-    );
+    const q = normalizeStr(supermarket);
+    return supermarketSuggestions.filter((s) => normalizeStr(s).includes(q));
   }, [supermarket, supermarketSuggestions]);
 
   const handleProductNameChange = (

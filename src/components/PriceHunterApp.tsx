@@ -25,6 +25,7 @@ import {
 } from "@/lib/productPrices";
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
+import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, sileo } from "sileo";
 
@@ -382,14 +383,14 @@ export default function PriceHunterApp({
   };
 
   const filteredPrices = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = normalizeStr(searchTerm.trim());
 
     if (!term) {
       return prices;
     }
 
     return prices.filter((price) =>
-      price.product_name.toLowerCase().includes(term),
+      normalizeStr(price.product_name).includes(term),
     );
   }, [prices, searchTerm]);
 

@@ -6,6 +6,7 @@ import {
   fetchPricesBySupermarket,
 } from "@/lib/priceHunter";
 import { motion, AnimatePresence } from "framer-motion";
+import { normalizeStr } from "@/lib/utils";
 
 function hasOffer(price: PriceEntry): boolean {
   return !!price.offer_type;
@@ -245,10 +246,10 @@ function PriceTable({
     if (historyView?.type !== "supermarket") {
       return filteredHistoryPrices;
     }
-    const term = supermarketHistorySearchTerm.trim().toLowerCase();
+    const term = normalizeStr(supermarketHistorySearchTerm.trim());
     if (!term) return filteredHistoryPrices;
     return filteredHistoryPrices.filter((p) =>
-      p.product_name.toLowerCase().includes(term),
+      normalizeStr(p.product_name).includes(term),
     );
   }, [historyView?.type, filteredHistoryPrices, supermarketHistorySearchTerm]);
 

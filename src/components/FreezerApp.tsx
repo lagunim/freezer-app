@@ -8,6 +8,7 @@ import ProductForm from "@/components/ProductForm";
 import ProductList from "@/components/ProductList";
 import FloatingMenu from "@/components/FloatingMenu";
 import type { Product, ProductCategory } from "@/lib/products";
+import { normalizeStr } from "@/lib/utils";
 import {
   createProduct,
   deleteProduct,
@@ -321,7 +322,7 @@ export default function FreezerApp({
   };
 
   const filteredAndSortedProducts = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = normalizeStr(searchTerm.trim());
 
     let result = products;
 
@@ -340,7 +341,7 @@ export default function FreezerApp({
     // Filtrar por término de búsqueda
     if (term) {
       result = result.filter((product) =>
-        product.name.toLowerCase().includes(term),
+        normalizeStr(product.name).includes(term),
       );
     }
 
