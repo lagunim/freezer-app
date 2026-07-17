@@ -19,6 +19,7 @@ import {
 } from "@/lib/priceHunter";
 import {
   createProductPrice,
+  updateProductPrice,
   fetchUniqueProductNames as fetchPPNames,
   fetchUniqueBrands as fetchPPBrands,
   fetchProductPriceByBarcode,
@@ -343,6 +344,17 @@ export default function PriceHunterApp({
     setSavingPrice(true);
     setPricesError(null);
     try {
+      // Actualizar datos del producto en product_prices si hay product_prices_id
+      if (editingPrice.product_prices_id) {
+        await updateProductPrice(editingPrice.product_prices_id, {
+          product_name: input.product_name,
+          brand: input.brand,
+          quantity: input.quantity,
+          unit: input.unit,
+          bar_code: input.bar_code,
+        });
+      }
+
       const updated = await updatePrice(editingPrice.id, input);
       setPrices((prev) =>
         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),

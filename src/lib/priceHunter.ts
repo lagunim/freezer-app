@@ -41,6 +41,7 @@ export interface PriceInput {
   offer_type?: OfferType | null;
   offer_name?: string | null;
   offer_description?: string | null;
+  bar_code?: string;
 }
 
 /**

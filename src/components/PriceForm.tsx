@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { PriceEntry, PriceInput, Unit, OfferType } from "@/lib/priceHunter";
 import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import BarcodeScanner from "@/components/BarcodeScanner";
 
 /** Datos pre-rellenados desde el escáner de código de barras */
 export interface PrefillData {
@@ -111,6 +112,10 @@ export default function PriceForm({
   const [showSuggestionsSupermarket, setShowSuggestionsSupermarket] =
     useState(false);
   const [addToDespensa, setAddToDespensa] = useState(false);
+  const [barcode, setBarcode] = useState(
+    initialPrice?.bar_code ?? prefillData?.bar_code ?? "",
+  );
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // Derivar listas filtradas durante el render (rerender-derived-state-no-effect)
   const filteredSuggestions = useMemo(() => {
@@ -214,6 +219,7 @@ export default function PriceForm({
         offerType === "custom"
           ? customOfferDescription.trim() || null
           : null,
+      bar_code: barcode.trim() || undefined,
     };
 
     try {
@@ -506,6 +512,54 @@ export default function PriceForm({
             )}
           </div>
 
+          {/* Código de barras */}
+          <div>
+            <label
+              htmlFor="barcode"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              Código de barras
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="barcode"
+                type="text"
+                inputMode="numeric"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                placeholder="Ej: 8410076472586"
+                autoComplete="off"
+              />
+              <button
+                type="button"
+                onClick={() => setIsScannerOpen(true)}
+                className="flex h-[42px] min-w-[42px] shrink-0 items-center justify-center rounded-lg border border-sky-500/50 bg-sky-600/20 text-sky-400 transition-colors hover:bg-sky-600/40 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                aria-label="Escanear código de barras"
+                title="Escanear código de barras"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
           {/* Añadir a la despensa (solo en creación) */}
           {!isEdit && (
             <div className="flex items-center gap-3">
@@ -717,6 +771,19 @@ export default function PriceForm({
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Barcode Scanner */}
+      <AnimatePresence>
+        {isScannerOpen && (
+          <BarcodeScanner
+            onDetected={(code) => {
+              setBarcode(code);
+              setIsScannerOpen(false);
+            }}
+            onClose={() => setIsScannerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
