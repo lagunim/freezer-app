@@ -5,18 +5,24 @@ import FriezaIcon from "@/public/Frieza-icon.png";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
 import PriceForm from "@/components/PriceForm";
+import type { PrefillData } from "@/components/PriceForm";
 import PriceTable from "@/components/PriceTable";
 import FloatingMenu from "@/components/FloatingMenu";
+import BarcodeScanner from "@/components/BarcodeScanner";
 import type { PriceEntry, PriceInput, Unit } from "@/lib/priceHunter";
 import {
   createPrice,
   deletePrice,
   fetchPrices,
   updatePrice,
-  fetchUniqueProductNames,
-  fetchUniqueBrands,
   fetchUniqueSupermarkets,
 } from "@/lib/priceHunter";
+import {
+  createProductPrice,
+  fetchUniqueProductNames as fetchPPNames,
+  fetchUniqueBrands as fetchPPBrands,
+  fetchProductPriceByBarcode,
+} from "@/lib/productPrices";
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
 import { motion, AnimatePresence } from "framer-motion";
@@ -57,6 +63,8 @@ export default function PriceHunterApp({
     string[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [prefillData, setPrefillData] = useState<PrefillData | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
 
   const floatingMenuItems = useMemo(
@@ -136,16 +144,16 @@ export default function PriceHunterApp({
       setPricesLoading(true);
       setPricesError(null);
       try {
-        const [pricesData, suggestions, brands, supermarkets] =
+        const [pricesData, ppNames, ppBrands, supermarkets] =
           await Promise.all([
             fetchPrices(),
-            fetchUniqueProductNames(),
-            fetchUniqueBrands(),
+            fetchPPNames(),
+            fetchPPBrands(),
             fetchUniqueSupermarkets(),
           ]);
         setPrices(pricesData);
-        setProductSuggestions(suggestions);
-        setBrandSuggestions(brands);
+        setProductSuggestions(ppNames);
+        setBrandSuggestions(ppBrands);
         setSupermarketSuggestions(supermarkets);
       } catch (err) {
         console.error("Error al cargar precios desde Supabase:", err);
@@ -174,12 +182,47 @@ export default function PriceHunterApp({
 
   const openForm = () => {
     setEditingPrice(null);
+    setPrefillData(null);
+    setIsFormOpen(true);
+  };
+
+  const openFormWithPrefill = (data: PrefillData) => {
+    setEditingPrice(null);
+    setPrefillData(data);
     setIsFormOpen(true);
   };
 
   const closeForm = () => {
     setIsFormOpen(false);
     setEditingPrice(null);
+    setPrefillData(null);
+  };
+
+  const handleBarcodeDetected = async (barcode: string) => {
+    setIsScannerOpen(false);
+    try {
+      const found = await fetchProductPriceByBarcode(barcode);
+      if (found) {
+        openFormWithPrefill({
+          product_name: found.product_name,
+          brand: found.brand ?? undefined,
+          quantity: found.quantity,
+          unit: found.unit,
+          bar_code: found.bar_code ?? undefined,
+          product_prices_id: found.id,
+        });
+      } else {
+        sileo.info({
+          title: "Código no registrado",
+          description: "Introduce el precio manualmente.",
+        });
+        openForm();
+      }
+    } catch (err) {
+      console.error("Error al buscar código de barras:", err);
+      sileo.error({ title: "Error al buscar el código de barras." });
+      openForm();
+    }
   };
 
   function mapUnitToQuantityUnit(unit: Unit): string {
@@ -197,6 +240,17 @@ export default function PriceHunterApp({
     }
   }
 
+  const refreshSuggestions = async () => {
+    const [ppNames, ppBrands, supermarkets] = await Promise.all([
+      fetchPPNames(),
+      fetchPPBrands(),
+      fetchUniqueSupermarkets(),
+    ]);
+    setProductSuggestions(ppNames);
+    setBrandSuggestions(ppBrands);
+    setSupermarketSuggestions(supermarkets);
+  };
+
   const handleCreatePrice = async (
     input: PriceInput,
     options?: { addToDespensa?: boolean },
@@ -206,24 +260,29 @@ export default function PriceHunterApp({
     setSavingPrice(true);
     setPricesError(null);
     try {
-      const created = await createPrice(auth.user.id, input);
+      // Si no tiene product_prices_id, crear o buscar el producto primero
+      let productPricesId = input.product_prices_id;
+      if (!productPricesId) {
+        const newPP = await createProductPrice(auth.user.id, {
+          product_name: input.product_name,
+          brand: input.brand,
+          quantity: input.quantity,
+          unit: input.unit,
+        });
+        productPricesId = newPP.id;
+      }
+
+      const created = await createPrice(auth.user.id, {
+        ...input,
+        product_prices_id: productPricesId,
+      });
       setPrices((prev) => [created, ...prev]);
       sileo.success({ title: "Precio añadido correctamente." });
       setMessage("Precio añadido correctamente.");
       closeForm();
-      // Actualizar sugerencias
-      const [suggestions, brands, supermarkets] = await Promise.all([
-        fetchUniqueProductNames(),
-        fetchUniqueBrands(),
-        fetchUniqueSupermarkets(),
-      ]);
-      setProductSuggestions(suggestions);
-      setBrandSuggestions(brands);
-      setSupermarketSuggestions(supermarkets);
+      await refreshSuggestions();
 
       if (options?.addToDespensa) {
-        // Cuando la unidad es "Docena", quantity representa unidades individuales
-        // Por lo tanto, añadimos directamente esa cantidad como "uds" a la despensa
         const newQty = Math.max(1, Math.round(input.quantity));
         const quantityUnit = mapUnitToQuantityUnit(input.unit);
         const productNameNormalized = input.product_name.trim().toLowerCase();
@@ -286,15 +345,7 @@ export default function PriceHunterApp({
       sileo.success({ title: "Precio actualizado correctamente." });
       setMessage("Precio actualizado correctamente.");
       closeForm();
-      // Actualizar sugerencias
-      const [suggestions, brands, supermarkets] = await Promise.all([
-        fetchUniqueProductNames(),
-        fetchUniqueBrands(),
-        fetchUniqueSupermarkets(),
-      ]);
-      setProductSuggestions(suggestions);
-      setBrandSuggestions(brands);
-      setSupermarketSuggestions(supermarkets);
+      await refreshSuggestions();
     } catch (err) {
       console.error("Error al actualizar precio en Supabase:", err);
       const msg = "No se ha podido actualizar el precio.";
@@ -312,15 +363,7 @@ export default function PriceHunterApp({
       setPrices((prev) => prev.filter((p) => p.id !== id));
       sileo.success({ title: "Precio eliminado correctamente." });
       setMessage("Precio eliminado correctamente.");
-      // Actualizar sugerencias
-      const [suggestions, brands, supermarkets] = await Promise.all([
-        fetchUniqueProductNames(),
-        fetchUniqueBrands(),
-        fetchUniqueSupermarkets(),
-      ]);
-      setProductSuggestions(suggestions);
-      setBrandSuggestions(brands);
-      setSupermarketSuggestions(supermarkets);
+      await refreshSuggestions();
     } catch (err) {
       console.error("Error al borrar precio en Supabase:", err);
       const msg = "No se ha podido borrar el precio.";
@@ -548,14 +591,47 @@ export default function PriceHunterApp({
           />
         </div>
 
-        {/* Floating Add Button (inferior derecha) */}
-        <button
-          onClick={openForm}
-          className="fixed bottom-6 right-6 z-20 flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:bottom-8 sm:right-8 sm:h-16 sm:w-16"
-          aria-label="Añadir precio"
+        {/* Scanner + Add Price FABs (inferior derecha, apilados) */}
+        <div
+          className="fixed right-6 z-20 flex flex-col items-end gap-3 sm:right-8"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
         >
-          +
-        </button>
+          {/* FAB Scanner (encima del +) */}
+          <button
+            onClick={() => setIsScannerOpen(true)}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+            aria-label="Escanear código de barras"
+            title="Escanear código de barras"
+          >
+            <svg
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
+              />
+            </svg>
+          </button>
+
+          {/* FAB Añadir precio manual (+) */}
+          <button
+            onClick={openForm}
+            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+            aria-label="Añadir precio"
+          >
+            +
+          </button>
+        </div>
 
         {/* FAB Freezer App (inferior izquierda) */}
         <div
@@ -625,15 +701,26 @@ export default function PriceHunterApp({
         <AnimatePresence>
           {isFormOpen && (
             <PriceForm
-              key={editingPrice?.id ?? "create"}
+              key={editingPrice?.id ?? prefillData?.product_prices_id ?? "create"}
               mode={editingPrice ? "edit" : "create"}
               initialPrice={editingPrice}
+              prefillData={prefillData}
               loading={savingPrice}
               productSuggestions={productSuggestions}
               brandSuggestions={brandSuggestions}
               supermarketSuggestions={supermarketSuggestions}
               onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
               onCancel={closeForm}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Barcode Scanner */}
+        <AnimatePresence>
+          {isScannerOpen && (
+            <BarcodeScanner
+              onDetected={handleBarcodeDetected}
+              onClose={() => setIsScannerOpen(false)}
             />
           )}
         </AnimatePresence>

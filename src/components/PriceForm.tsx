@@ -2,9 +2,20 @@ import { useMemo, useState } from "react";
 import type { PriceEntry, PriceInput, Unit, OfferType } from "@/lib/priceHunter";
 import { motion, AnimatePresence } from "framer-motion";
 
+/** Datos pre-rellenados desde el escáner de código de barras */
+export interface PrefillData {
+  product_name?: string;
+  brand?: string;
+  quantity?: number;
+  unit?: Unit;
+  bar_code?: string;
+  product_prices_id?: string;
+}
+
 interface PriceFormProps {
   mode: "create" | "edit";
   initialPrice?: PriceEntry | null;
+  prefillData?: PrefillData | null;
   loading?: boolean;
   productSuggestions?: string[];
   brandSuggestions?: string[];
@@ -49,6 +60,7 @@ const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
 export default function PriceForm({
   mode,
   initialPrice,
+  prefillData = null,
   loading = false,
   productSuggestions = [],
   brandSuggestions = [],
@@ -57,18 +69,27 @@ export default function PriceForm({
   onCancel,
 }: PriceFormProps) {
   const isEdit = mode === "edit";
+  const source = initialPrice ?? prefillData;
 
   const [productName, setProductName] = useState(
-    initialPrice?.product_name ?? "",
+    initialPrice?.product_name ?? prefillData?.product_name ?? "",
   );
-  const [brand, setBrand] = useState(initialPrice?.brand ?? "");
+  const [brand, setBrand] = useState(
+    initialPrice?.brand ?? prefillData?.brand ?? "",
+  );
   const [totalPrice, setTotalPrice] = useState(
     initialPrice?.total_price != null ? String(initialPrice.total_price) : "",
   );
   const [quantity, setQuantity] = useState(
-    initialPrice?.quantity != null ? String(initialPrice.quantity) : "",
+    initialPrice?.quantity != null
+      ? String(initialPrice.quantity)
+      : prefillData?.quantity != null
+        ? String(prefillData.quantity)
+        : "",
   );
-  const [unit, setUnit] = useState<Unit>(initialPrice?.unit ?? "1Kg");
+  const [unit, setUnit] = useState<Unit>(
+    initialPrice?.unit ?? prefillData?.unit ?? "1Kg",
+  );
   const [supermarket, setSupermarket] = useState(
     initialPrice?.supermarket ?? "",
   );
@@ -180,6 +201,7 @@ export default function PriceForm({
     }
 
     const input: PriceInput = {
+      product_prices_id: initialPrice?.product_prices_id ?? prefillData?.product_prices_id,
       product_name: trimmedProductName,
       brand: brand.trim(),
       total_price: totalPriceNumber,

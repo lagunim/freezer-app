@@ -160,6 +160,7 @@ function PriceTable({
   };
 
   const handleViewProductHistory = async (
+    productPricesId: string,
     productName: string,
     priceFromDetail?: PriceEntry | null,
   ) => {
@@ -170,7 +171,7 @@ function PriceTable({
     setHistoryView({ type: "product", value: productName });
 
     try {
-      const data = await fetchPricesByProduct(productName);
+      const data = await fetchPricesByProduct(productPricesId);
       setHistoryPrices(data);
     } catch (error) {
       console.error("Error al cargar historial de producto:", error);
@@ -551,6 +552,7 @@ function PriceTable({
                   onClick={(e) => {
                     e.stopPropagation();
                     handleViewProductHistory(
+                      detailPrice.product_prices_id,
                       detailPrice.product_name,
                       detailPrice,
                     );

@@ -6,7 +6,7 @@ Freezer App es una aplicación personal de productividad del hogar compuesta por
 
 1. **Freezer (Inventario)** — Lista de productos almacenados en casa (alimentos, limpieza, higiene). Permite conocer qué hay disponible antes de ir a comprar o cocinar. Incluye gestión de cantidades, filtros por categoría, búsqueda, lista de la compra (cesta) y acciones en lote con gestos swipe en móvil.
 
-2. **Price Hunter (Comparador de precios)** — Historial de precios pagados en distintos supermercados. Permite comparar ofertas reales, identificar el mejor precio por unidad normalizada (kg, L, docena, unidad) y consultar el histórico por producto o supermercado.
+2. **Price Hunter (Comparador de precios)** — Historial de precios pagados en distintos supermercados. Permite comparar ofertas reales, identificar el mejor precio por unidad normalizada (kg, L, docena, unidad) y consultar el histórico por producto o supermercado. Incluye lector de código de barras para escanear productos.
 
 Ambos módulos comparten autenticación y se navega entre ellos con botones flotantes (FAB).
 
@@ -21,6 +21,7 @@ Ambos módulos comparten autenticación y se navega entre ellos con botones flot
 | Backend/BaaS | Supabase (PostgreSQL + Auth + RLS) | `@supabase/supabase-js` 2.95 |
 | Animaciones | Framer Motion (`motion`) | 12.34 |
 | Notificaciones | Sileo (toast) | 0.1.4 |
+| Escáner códigos de barras | html5-qrcode | 2.3.8 |
 
 ## Estructura del proyecto
 
@@ -35,7 +36,8 @@ freezer-app/
 ├── supabase/
 │   ├── schema.sql                     # Schema de la tabla products
 │   └── migrations/
-│       └── 20260215120000_*.sql       # RLS performance + índices
+│       ├── 20260215120000_*.sql       # RLS performance + índices
+│       └── 20260717120000_*.sql       # Normalización precios + código de barras
 ├── public/                            # Iconos estáticos (categorías, logo)
 │   ├── Frieza-icon.png
 │   ├── cart-icon.png
@@ -51,17 +53,19 @@ freezer-app/
     │   └── global.css                 # Tailwind + animaciones CSS
     ├── lib/                           # Capa de acceso a datos
     │   ├── supabaseClient.ts          # Cliente Supabase
-    │   ├── products.ts                # CRUD productos (tabla `products`)
+    │   ├── products.ts                # CRUD productos inventario (tabla `products`)
+    │   ├── productPrices.ts           # CRUD productos precio (tabla `product_prices`)
     │   └── priceHunter.ts             # CRUD precios + consultas (tabla `price_hunter_prices`)
     └── components/
         ├── AppShell.tsx               # Router interno (freezer | price-hunter)
         ├── FreezerApp.tsx             # Módulo inventario (vista principal)
         ├── PriceHunterApp.tsx         # Módulo comparador de precios
-        ├── ProductForm.tsx            # Formulario crear/editar producto
+        ├── ProductForm.tsx            # Formulario crear/editar producto inventario
         ├── ProductList.tsx            # Grid de productos con multi-selección
         ├── SwipeableProductCard.tsx   # Tarjeta con gestos swipe (móvil)
         ├── PriceForm.tsx              # Formulario crear/editar precio
         ├── PriceTable.tsx             # Tabla comparativa + historial
+        ├── BarcodeScanner.tsx         # Lector de código de barras (html5-qrcode)
         ├── FloatingMenu.tsx           # Menú flotante de navegación
         └── auth/
             ├── LoginForm.tsx          # Formulario de inicio de sesión
@@ -97,32 +101,47 @@ products (
 
 > **Nota**: El `schema.sql` del repo no incluye `category` ni `in_shopping_list`, pero existen en la BD en producción y en los tipos TypeScript.
 
+### Tabla `product_prices` (Productos del comparador de precios)
+
+```sql
+product_prices (
+  id              uuid PK DEFAULT gen_random_uuid(),
+  user_id         uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  product_name    text NOT NULL,
+  brand           text,
+  quantity        numeric NOT NULL,
+  unit            text NOT NULL,  -- '1Kg', '1L', 'Docena', 'Unidad'
+  bar_code        text,           -- Código de barras EAN/UPC
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz
+)
+```
+
+Almacena datos inmutables de producto (nombre, marca, cantidad, unidad, código de barras). Referenciada por `price_hunter_prices` mediante FK.
+
 ### Tabla `price_hunter_prices` (Comparador de precios)
 
 ```sql
 price_hunter_prices (
-  id                 uuid PK DEFAULT gen_random_uuid(),
-  user_id            uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_name       text NOT NULL,
-  brand              text,
-  total_price        numeric NOT NULL,
-  quantity           numeric NOT NULL,
-  unit               text NOT NULL,  -- '1Kg', '1L', 'Docena', 'Unidad'
-  supermarket        text NOT NULL,
-  date               text NOT NULL,  -- ISO date string
-  offer_type         text,  -- '2x1', '3x2', '50_second', 'custom', null
-  offer_name         text,
-  offer_description  text,
-  created_at         timestamptz,
-  updated_at         timestamptz
+  id                    uuid PK DEFAULT gen_random_uuid(),
+  user_id               uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  product_prices_id     uuid NOT NULL REFERENCES product_prices(id) ON DELETE CASCADE,
+  total_price           numeric NOT NULL,
+  supermarket           text NOT NULL,
+  date                  text NOT NULL,  -- ISO date string
+  offer_type            text,  -- '2x1', '3x2', '50_second', 'custom', null
+  offer_name            text,
+  offer_description     text,
+  created_at            timestamptz,
+  updated_at            timestamptz
 )
 ```
 
-> **Nota**: El CREATE TABLE de esta tabla no está en el repo. Solo se encuentra referenciada en el código TypeScript y en la migración de índices/RLS.
+> **Nota**: Esta tabla fue normalizada (migración `20260717120000`). Antes tenía columnas `product_name`, `brand`, `quantity`, `unit` directamente. Ahora referencia `product_prices` via FK.
 
 ### Seguridad (RLS)
 
-Ambas tablas tienen RLS habilitado. Políticas optimizadas con `(select auth.uid())` para evaluación única:
+Las tres tablas tienen RLS habilitado. Políticas optimizadas con `(select auth.uid())` para evaluación única:
 
 - SELECT: `(select auth.uid()) = user_id`
 - INSERT: `(select auth.uid()) = user_id` (WITH CHECK)
@@ -133,14 +152,17 @@ Ambas tablas tienen RLS habilitado. Políticas optimizadas con `(select auth.uid
 
 - `idx_products_user_id` en `products(user_id)`
 - `idx_products_added_at` en `products(added_at DESC)`
+- `idx_product_prices_user_id` en `product_prices(user_id)`
+- `idx_product_prices_bar_code` en `product_prices(bar_code)`
 - `idx_price_hunter_prices_supermarket` en `price_hunter_prices(supermarket)`
+- `idx_price_hunter_product_prices_id` en `price_hunter_prices(product_prices_id)`
 
 ## Capa de datos (`src/lib/`)
 
 ### `supabaseClient.ts`
 Crea y exporta el cliente Supabase usando las variables de entorno `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_ANON_KEY`.
 
-### `products.ts`
+### `products.ts` (Inventario)
 
 | Función | Descripción |
 |---|---|
@@ -151,22 +173,36 @@ Crea y exporta el cliente Supabase usando las variables de entorno `PUBLIC_SUPAB
 
 **Tipos exportados**: `Product`, `ProductInput`, `ProductCategory` (`'Alimentación' | 'Limpieza' | 'Higiene'`)
 
-### `priceHunter.ts`
+### `productPrices.ts` (Productos del comparador)
 
 | Función | Descripción |
 |---|---|
-| `fetchPrices()` | Obtiene todos los precios del usuario, ordenados por `date DESC` |
-| `createPrice(userId, input)` | Crea un nuevo registro de precio |
-| `updatePrice(id, input)` | Actualiza un registro existente |
-| `deletePrice(id)` | Elimina un registro |
-| `fetchUniqueProductNames()` | Nombres únicos de productos (para autocompletado) |
-| `fetchUniqueBrands()` | Marcas únicas (para autocompletado) |
-| `fetchUniqueSupermarkets()` | Supermercados únicos (para autocompletado) |
-| `fetchPricesByProduct(name)` | Historial completo de precios de un producto |
-| `fetchPricesBySupermarket(name)` | Todos los precios registrados en un supermercado |
-| `calculateNormalizedPrice(totalPrice, quantity, unit)` | Calcula precio normalizado por unidad |
+| `fetchProductPrices()` | Obtiene todos los productos del usuario |
+| `createProductPrice(userId, input)` | Crea un nuevo producto |
+| `updateProductPrice(id, input)` | Actualiza un producto |
+| `deleteProductPrice(id)` | Elimina un producto (cascade a precios) |
+| `fetchProductPriceByBarcode(barCode)` | Busca producto por código de barras |
+| `fetchUniqueProductNames()` | Nombres únicos (autocomplete) |
+| `fetchUniqueBrands()` | Marcas únicas (autocomplete) |
+
+**Tipos exportados**: `ProductPrice`, `ProductPriceInput`
+
+### `priceHunter.ts` (Precios)
+
+| Función | Descripción |
+|---|---|
+| `fetchPrices()` | Obtiene todos los precios del usuario (join con `product_prices`) |
+| `createPrice(userId, input)` | Crea un precio (requiere `product_prices_id`) |
+| `updatePrice(id, input)` | Actualiza un precio |
+| `deletePrice(id)` | Elimina un precio |
+| `fetchUniqueSupermarkets()` | Supermercados únicos (autocomplete) |
+| `fetchPricesByProduct(productPricesId)` | Historial de precios por producto |
+| `fetchPricesBySupermarket(name)` | Precios de un supermercado |
+| `calculateNormalizedPrice(totalPrice, quantity, unit)` | Precio normalizado por unidad |
 
 **Tipos exportados**: `PriceEntry`, `PriceInput`, `Unit` (`'1Kg' | '1L' | 'Docena' | 'Unidad'`), `OfferType`
+
+> **Nota**: `PriceEntry` incluye datos embebidos del producto (product_name, brand, quantity, unit, bar_code) via join con `product_prices`. `PriceInput` requiere `product_prices_id` para referenciar el producto.
 
 ## Funcionalidades clave
 
@@ -183,6 +219,7 @@ Crea y exporta el cliente Supabase usando las variables de entorno `PUBLIC_SUPAB
 ### Price Hunter (Comparador de precios)
 
 - **CRUD de precios** con formulario modal y campos con autocompletado.
+- **Lector de código de barras**: botón FAB con icono de código de barras (junto al "+"). Usa `html5-qrcode` con API de bajo nivel. Compatible con iOS/Safari (≥15.1). Al escanear un producto existente, auto-rellena nombre, marca, cantidad, unidad y fecha (hoy). Si no existe, muestra toast informativo y abre formulario vacío.
 - **Normalización de precios**: convierte a precio/kg, precio/L, precio/docena o precio/unidad para comparación justa.
 - **Tabla inteligente**: muestra solo el mejor precio (más bajo normalizado) de los últimos 12 meses por producto. Fallback a histórico si no hay datos recientes.
 - **Historial de precios**: al hacer clic en un producto se muestra el histórico completo con filtros (6m, 1 año, todo), estadísticas (min/avg/max) y mejor/peor supermercado.
@@ -222,10 +259,11 @@ No hay scripts de linting, formateo, typecheck ni testing configurados.
 ## Limitaciones conocidas
 
 1. **Sin tests**: no hay framework de testing (vitest, jest, playwright, cypress) ni archivos de test.
-2. **Schema incompleto en repo**: el `schema.sql` no incluye las columnas `category` e `in_shopping_list` de `products`, ni el CREATE TABLE de `price_hunter_prices`.
+2. **Schema incompleto en repo**: el `schema.sql` no incluye las columnas `category` e `in_shopping_list` de `products`, ni el CREATE TABLE de `price_hunter_prices` ni `product_prices`.
 3. **Sin linting/formateo**: no hay ESLint, Prettier ni scripts relacionados.
 4. **Sin CI/CD**: no hay configuración de GitHub Actions, Vercel o similar.
 5. **`.env` en working tree**: aunque está gitignoreado, el archivo `.env` existe en el directorio de trabajo.
+6. **html5-qrcode en maintenance mode**: la librería de escaneo no recibe actualizaciones desde abril 2023, pero funciona correctamente para formatos estándar (EAN-13, UPC-A).
 
 ## Skills de agentes disponibles
 
