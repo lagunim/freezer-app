@@ -10,12 +10,15 @@ export default function BarcodeScanner({
   onDetected,
   onClose,
 }: BarcodeScannerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<any>(null);
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
 
   const stopScanner = useCallback(async () => {
+    if (focusTimerRef.current) {
+      clearTimeout(focusTimerRef.current);
+      focusTimerRef.current = null;
+    }
     if (scannerRef.current) {
       try {
         const state = scannerRef.current.getState();
@@ -46,8 +49,21 @@ export default function BarcodeScanner({
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 280, height: 150 },
-            aspectRatio: 1.5,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+              return {
+                width: Math.floor(minEdge * 0.8),
+                height: Math.floor(minEdge * 0.4),
+              };
+            },
+            videoConstraints: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: "environment",
+            },
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true,
+            },
           },
           (decodedText: string) => {
             if (cancelled) return;
@@ -59,9 +75,19 @@ export default function BarcodeScanner({
           },
         );
 
-        if (!cancelled) {
-          setScanning(true);
-        }
+        if (cancelled) return;
+
+        // Aplicar focusMode continuo tras 2s (necesario para iOS)
+        focusTimerRef.current = setTimeout(async () => {
+          if (cancelled || !scannerRef.current) return;
+          try {
+            await scannerRef.current.applyVideoConstraints({
+              focusMode: "continuous",
+            });
+          } catch {
+            // No todos los dispositivos soportan focusMode
+          }
+        }, 2000);
       } catch (err: any) {
         if (cancelled) return;
         console.error("Error al iniciar escáner:", err);
@@ -69,7 +95,9 @@ export default function BarcodeScanner({
           err?.message?.includes("NotAllowedError") ||
           err?.message?.includes("Permission")
         ) {
-          setError("Permiso de cámara denegado. Activa el permiso en ajustes del navegador.");
+          setError(
+            "Permiso de cámara denegado. Activa el permiso en ajustes del navegador.",
+          );
         } else if (
           err?.message?.includes("NotFoundError") ||
           err?.message?.includes("DevicesNotFound")
@@ -133,9 +161,9 @@ export default function BarcodeScanner({
       </div>
 
       {/* Scanner area */}
-      <div className="relative flex-1 flex items-center justify-center overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {error ? (
-          <div className="flex flex-col items-center gap-4 px-6 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
             <svg
               className="h-16 w-16 text-red-400"
               fill="none"
@@ -160,37 +188,10 @@ export default function BarcodeScanner({
           </div>
         ) : (
           <>
-            <div id="barcode-reader" ref={containerRef} className="w-full h-full" />
-
-            {/* Overlay de guía de escaneo */}
-            {scanning && (
-              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-                {/* Marco de guía */}
-                <div className="relative w-[280px] h-[150px]">
-                  {/* Esquinas */}
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-sky-400 rounded-tl-md" />
-                  <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-sky-400 rounded-tr-md" />
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-sky-400 rounded-bl-md" />
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-sky-400 rounded-br-md" />
-
-                  {/* Línea de escaneo animada */}
-                  <motion.div
-                    className="absolute left-2 right-2 h-0.5 bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.6)]"
-                    animate={{ y: [0, 130, 0] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                </div>
-
-                {/* Texto de guía */}
-                <p className="mt-6 text-sm text-slate-300 text-center px-4">
-                  Apunta la cámara al código de barras del producto
-                </p>
-              </div>
-            )}
+            <div id="barcode-reader" className="w-full flex-1" />
+            <p className="py-3 text-center text-sm text-slate-400 bg-slate-900/90">
+              Apunta la cámara al código de barras del producto
+            </p>
           </>
         )}
       </div>
