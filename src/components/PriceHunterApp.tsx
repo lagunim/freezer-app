@@ -65,6 +65,7 @@ export default function PriceHunterApp({
   const [searchTerm, setSearchTerm] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [prefillData, setPrefillData] = useState<PrefillData | null>(null);
+  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
 
   const floatingMenuItems = useMemo(
@@ -196,10 +197,12 @@ export default function PriceHunterApp({
     setIsFormOpen(false);
     setEditingPrice(null);
     setPrefillData(null);
+    setScannedBarcode(null);
   };
 
   const handleBarcodeDetected = async (barcode: string) => {
     setIsScannerOpen(false);
+    setScannedBarcode(barcode);
     try {
       const found = await fetchProductPriceByBarcode(barcode);
       if (found) {
@@ -268,6 +271,7 @@ export default function PriceHunterApp({
           brand: input.brand,
           quantity: input.quantity,
           unit: input.unit,
+          bar_code: scannedBarcode ?? undefined,
         });
         productPricesId = newPP.id;
       }
