@@ -74,9 +74,11 @@ function getQuantityUnitLabel(unit: string): string {
       return "Unidades";
     case "Unidad":
       return "Unidades";
+    case "Kg":
     case "1Kg":
     case "100g":
       return "g";
+    case "L":
     case "1L":
     case "100ml":
       return "ml";

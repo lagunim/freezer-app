@@ -110,7 +110,7 @@ product_prices (
   product_name    text NOT NULL,
   brand           text,
   quantity        numeric NOT NULL,
-  unit            text NOT NULL,  -- '1Kg', '1L', 'Docena', 'Unidad'
+  unit            text NOT NULL,  -- 'Kg', 'L', 'Docena', 'Unidad'
   bar_code        text,           -- Código de barras EAN/UPC
   created_at      timestamptz NOT NULL DEFAULT now(),
   updated_at      timestamptz
@@ -200,7 +200,7 @@ Crea y exporta el cliente Supabase usando las variables de entorno `PUBLIC_SUPAB
 | `fetchPricesBySupermarket(name)` | Precios de un supermercado |
 | `calculateNormalizedPrice(totalPrice, quantity, unit)` | Precio normalizado por unidad |
 
-**Tipos exportados**: `PriceEntry`, `PriceInput`, `Unit` (`'1Kg' | '1L' | 'Docena' | 'Unidad'`), `OfferType`
+**Tipos exportados**: `PriceEntry`, `PriceInput`, `Unit` (`'Kg' | 'L' | 'Docena' | 'Unidad'`), `OfferType`
 
 > **Nota**: `PriceEntry` incluye datos embebidos del producto (product_name, brand, quantity, unit, bar_code) via join con `product_prices`. `PriceInput` requiere `product_prices_id` para referenciar el producto.
 

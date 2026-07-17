@@ -41,28 +41,28 @@ function parseOffQuantity(raw: string): { quantity?: number; unit?: Unit } {
   // Peso: g o kg → quantity en gramos
   const gMatch = lower.match(/([\d.,]+)\s*g(?:\s|$)/);
   if (gMatch) {
-    return { quantity: Math.round(Number.parseFloat(gMatch[1].replace(",", "."))), unit: "1Kg" };
+    return { quantity: Math.round(Number.parseFloat(gMatch[1].replace(",", "."))), unit: "Kg" };
   }
 
   const kgMatch = lower.match(/([\d.,]+)\s*kg(?:\s|$)/);
   if (kgMatch) {
-    return { quantity: Math.round(Number.parseFloat(kgMatch[1].replace(",", ".")) * 1000), unit: "1Kg" };
+    return { quantity: Math.round(Number.parseFloat(kgMatch[1].replace(",", ".")) * 1000), unit: "Kg" };
   }
 
   // Volumen: ml, cl o L → quantity en mililitros
   const mlMatch = lower.match(/([\d.,]+)\s*ml(?:\s|$)/);
   if (mlMatch) {
-    return { quantity: Math.round(Number.parseFloat(mlMatch[1].replace(",", "."))), unit: "1L" };
+    return { quantity: Math.round(Number.parseFloat(mlMatch[1].replace(",", "."))), unit: "L" };
   }
 
   const clMatch = lower.match(/([\d.,]+)\s*cl(?:\s|$)/);
   if (clMatch) {
-    return { quantity: Math.round(Number.parseFloat(clMatch[1].replace(",", ".")) * 10), unit: "1L" };
+    return { quantity: Math.round(Number.parseFloat(clMatch[1].replace(",", ".")) * 10), unit: "L" };
   }
 
   const lMatch = lower.match(/([\d.,]+)\s*l(?:\s|$)/);
   if (lMatch) {
-    return { quantity: Math.round(Number.parseFloat(lMatch[1].replace(",", ".")) * 1000), unit: "1L" };
+    return { quantity: Math.round(Number.parseFloat(lMatch[1].replace(",", ".")) * 1000), unit: "L" };
   }
 
   // Unidades

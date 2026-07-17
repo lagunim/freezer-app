@@ -49,7 +49,7 @@ function toDateInputValue(iso?: string): string {
   return `${year}-${month}-${day}`;
 }
 
-const AVAILABLE_UNITS: Unit[] = ["1Kg", "1L", "Docena", "Unidad"];
+const AVAILABLE_UNITS: Unit[] = ["Kg", "L", "Docena", "Unidad"];
 
 const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
   { value: "", label: "— Sin oferta —" },
@@ -90,7 +90,7 @@ export default function PriceForm({
         : "",
   );
   const [unit, setUnit] = useState<Unit>(
-    initialPrice?.unit ?? prefillData?.unit ?? "1Kg",
+    initialPrice?.unit ?? prefillData?.unit ?? "Kg",
   );
   const [supermarket, setSupermarket] = useState(
     initialPrice?.supermarket ?? "",

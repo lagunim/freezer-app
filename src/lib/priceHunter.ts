@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 
-export type Unit = '1Kg' | '1L' | 'Docena' | 'Unidad';
+export type Unit = 'Kg' | 'L' | 'Docena' | 'Unidad';
 
 /** Tipo de oferta predefinida o personalizada */
 export type OfferType = '2x1' | '3x2' | '50_second' | 'custom' | null;
@@ -59,7 +59,9 @@ export function calculateNormalizedPrice(
   if (quantity <= 0) return 0;
 
   switch (unit) {
+    case 'Kg':
     case '1Kg':
+    case 'L':
     case '1L': {
       const pricePerUnit = totalPrice / quantity;
       return pricePerUnit * 1000;

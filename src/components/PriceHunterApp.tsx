@@ -246,8 +246,10 @@ export default function PriceHunterApp({
 
   function mapUnitToQuantityUnit(unit: Unit): string {
     switch (unit) {
+      case "Kg":
       case "1Kg":
         return "g";
+      case "L":
       case "1L":
         return "ml";
       case "Docena":
