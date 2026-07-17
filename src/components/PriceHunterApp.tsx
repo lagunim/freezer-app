@@ -26,6 +26,7 @@ import {
 } from "@/lib/productPrices";
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
+import { lookupByBarcode } from "@/lib/openFoodFacts";
 import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, sileo } from "sileo";
@@ -215,6 +216,19 @@ export default function PriceHunterApp({
           unit: found.unit,
           bar_code: found.bar_code ?? undefined,
           product_prices_id: found.id,
+        });
+        return;
+      }
+
+      // Producto no encontrado en BD local → consultar Open Food Facts
+      const offResult = await lookupByBarcode(barcode);
+      if (offResult.found) {
+        openFormWithPrefill({
+          product_name: offResult.product_name,
+          brand: offResult.brand,
+          quantity: offResult.quantity,
+          unit: offResult.unit,
+          bar_code: barcode,
         });
       } else {
         sileo.info({
