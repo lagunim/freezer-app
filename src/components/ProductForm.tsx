@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Product, ProductInput, ProductCategory } from '@/lib/products';
+import { toDateInputValue } from '@/lib/utils';
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -7,26 +8,6 @@ interface ProductFormProps {
   loading?: boolean;
   onSubmit: (input: ProductInput) => Promise<void> | void;
   onCancel?: () => void;
-}
-
-function toDateInputValue(iso?: string): string {
-  if (!iso) {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return toDateInputValue();
-  }
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 export default function ProductForm({

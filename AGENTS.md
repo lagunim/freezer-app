@@ -55,16 +55,20 @@ freezer-app/
     │   ├── supabaseClient.ts          # Cliente Supabase
     │   ├── products.ts                # CRUD productos inventario (tabla `products`)
     │   ├── productPrices.ts           # CRUD productos precio (tabla `product_prices`)
-    │   └── priceHunter.ts             # CRUD precios + consultas (tabla `price_hunter_prices`)
+    │   ├── priceHunter.ts             # CRUD precios + consultas (tabla `price_hunter_prices`)
+    │   ├── openProducts.ts            # Lookup por código de barras (Open Food/Beauty/Products Facts)
+    │   ├── utils.ts                   # Utilidades compartidas (normalizeStr, formatDate, toDateInputValue, formatPrice)
+    │   └── useAuth.ts                 # Hook de autenticación (getSession + onAuthStateChange + logout)
     └── components/
-        ├── AppShell.tsx               # Router interno (freezer | price-hunter)
-        ├── FreezerApp.tsx             # Módulo inventario (vista principal)
-        ├── PriceHunterApp.tsx         # Módulo comparador de precios
+        ├── AppShell.tsx               # Router interno + auth + header + login/register
+        ├── FreezerApp.tsx             # Módulo inventario (sin auth — recibe user via props)
+        ├── PriceHunterApp.tsx         # Módulo comparador de precios (sin auth — recibe user via props)
         ├── ProductForm.tsx            # Formulario crear/editar producto inventario
         ├── ProductList.tsx            # Grid de productos con multi-selección
         ├── SwipeableProductCard.tsx   # Tarjeta con gestos swipe (móvil)
         ├── PriceForm.tsx              # Formulario crear/editar precio
         ├── PriceTable.tsx             # Tabla comparativa + historial
+        ├── SearchInput.tsx            # Barra de búsqueda reutilizable
         ├── BarcodeScanner.tsx         # Lector de código de barras (html5-qrcode)
         ├── FloatingMenu.tsx           # Menú flotante de navegación
         └── auth/
@@ -76,8 +80,10 @@ freezer-app/
 
 - **SPA cliente puro**: Astro genera un único HTML shell (`index.astro`). Toda la interactividad vive en React, hidratada con `client:load`.
 - **Router interno**: `AppShell.tsx` alterna entre `"price-hunter"` (vista por defecto) y `"freezer"` vía estado de React. Sincroniza con `#freezer` / `?view=freezer` para deep linking.
+- **Auth centralizada**: `AppShell` usa el hook `useAuth()` para gestionar sesión. Renderiza login/register o el contenido de la app. Los módulos (`FreezerApp`, `PriceHunterApp`) reciben `user` via props — no gestionan auth.
 - **Sin backend propio**: No hay API routes ni SSR data fetching. Todas las llamadas a Supabase se hacen desde el cliente con el SDK JS. La seguridad se garantiza con RLS (Row Level Security).
 - **Estado local**: No hay librería de estado global (Redux, Zustand). Cada módulo gestiona su estado con `useState` + `useMemo` + `useEffect`.
+- **Utilidades compartidas**: `src/lib/utils.ts` centraliza `normalizeStr`, `formatDate`, `toDateInputValue`, `formatPrice`. `SearchInput.tsx` es un componente de barra de búsqueda reutilizable.
 - **Idioma**: Toda la UI está en español.
 
 ## Base de datos

@@ -6,7 +6,7 @@ import {
   fetchPricesBySupermarket,
 } from "@/lib/priceHunter";
 import { motion, AnimatePresence } from "framer-motion";
-import { normalizeStr } from "@/lib/utils";
+import { normalizeStr, formatDate, formatPrice } from "@/lib/utils";
 
 function hasOffer(price: PriceEntry): boolean {
   return !!price.offer_type;
@@ -40,28 +40,6 @@ export default memo(PriceTable);
 
 type SortField = "product_name" | "price" | "date";
 type SortDirection = "asc" | "desc";
-
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return "Fecha no válida";
-  }
-
-  return date.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  });
-}
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
 
 /**
  * Obtiene la etiqueta de unidad para mostrar la cantidad según el tipo de unidad

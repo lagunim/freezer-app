@@ -3,6 +3,7 @@ import type { Product, ProductInput, ProductCategory } from "@/lib/products";
 import ProductForm from "@/components/ProductForm";
 import SwipeableProductCard from "@/components/SwipeableProductCard";
 import { AnimatePresence, motion } from "framer-motion";
+import { formatDate } from "@/lib/utils";
 
 export interface ProductListProps {
   products: Product[];
@@ -53,19 +54,6 @@ const getCategoryInfo = (category: ProductCategory) => {
       };
   }
 };
-
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return "Fecha no válida";
-  }
-
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  });
-}
 
 function ProductList({
   products,

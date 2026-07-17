@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
-import FriezaIcon from "@/public/Frieza-icon.png";
-import LoginForm from "@/components/auth/LoginForm";
-import RegisterForm from "@/components/auth/RegisterForm";
+import type { User } from "@supabase/supabase-js";
 import ProductForm from "@/components/ProductForm";
 import ProductList from "@/components/ProductList";
-import FloatingMenu from "@/components/FloatingMenu";
+import SearchInput from "@/components/SearchInput";
 import type { Product, ProductCategory } from "@/lib/products";
 import { normalizeStr } from "@/lib/utils";
 import {
@@ -16,31 +12,17 @@ import {
   updateProduct,
 } from "@/lib/products";
 import { AnimatePresence, motion } from "framer-motion";
-import { Toaster, sileo } from "sileo";
-
-type AuthView = "login" | "register";
-
-type AuthState = {
-  loading: boolean;
-  session: Session | null;
-  user: User | null;
-};
+import { sileo } from "sileo";
 
 export interface FreezerAppProps {
+  user: User;
   onSwitchToPriceHunter?: () => void;
 }
 
 export default function FreezerApp({
+  user,
   onSwitchToPriceHunter,
-}: FreezerAppProps = {}) {
-  const [auth, setAuth] = useState<AuthState>({
-    loading: true,
-    session: null,
-    user: null,
-  });
-  const [authView, setAuthView] = useState<AuthView>("login");
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+}: FreezerAppProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
@@ -51,85 +33,13 @@ export default function FreezerApp({
     ProductCategory[]
   >([]);
   const [showShoppingCart, setShowShoppingCart] = useState(false);
-  // Notificaciones ahora via Sileo (toast)
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
     new Set(),
   );
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  const floatingMenuItems = useMemo(
-    () => [
-      onSwitchToPriceHunter
-        ? {
-          id: "price-hunter",
-          label: "Price Hunter",
-          icon: "🔍" as const,
-          onClick: onSwitchToPriceHunter,
-          roundOnly: true,
-        }
-        : {
-          id: "price-hunter",
-          label: "Price Hunter",
-          href: "/price-hunter",
-          icon: "🔍" as const,
-          roundOnly: true,
-        },
-    ],
-    [onSwitchToPriceHunter],
-  );
-
+  // Load products when user is available
   useEffect(() => {
-    const init = async () => {
-      const {
-        data: { session: currentSession },
-      } = await supabase.auth.getSession();
-      setAuth({
-        loading: false,
-        session: currentSession,
-        user: currentSession?.user ?? null,
-      });
-    };
-
-    void init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setAuth((prev) => ({
-        ...prev,
-        session: newSession,
-        user: newSession?.user ?? null,
-      }));
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Clear auth error when user successfully logs in
-  useEffect(() => {
-    if (auth.user) setError(null);
-  }, [auth.user]);
-
-  // Auto-dismiss success/error messages after 5 seconds
-  useEffect(() => {
-    if (!message && !error) return;
-    const t = setTimeout(() => {
-      setMessage(null);
-      setError(null);
-    }, 5000);
-    return () => clearTimeout(t);
-  }, [message, error]);
-
-  useEffect(() => {
-    if (!auth.user) {
-      setProducts([]);
-      setIsFormOpen(false);
-      setProductsError(null);
-      return;
-    }
-
     const load = async () => {
       setProductsLoading(true);
       setProductsError(null);
@@ -148,18 +58,7 @@ export default function FreezerApp({
     };
 
     void load();
-  }, [auth.user]);
-
-  const handleLogout = async () => {
-    setError(null);
-    setMessage(null);
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) {
-      const msg = "No se ha podido cerrar sesión. Inténtalo de nuevo.";
-      sileo.error({ title: "Cerrar sesión", description: msg });
-      setError(msg);
-    }
-  };
+  }, [user]);
 
   const closeForm = () => {
     setIsFormOpen(false);
@@ -168,15 +67,12 @@ export default function FreezerApp({
   const handleCreateProduct = async (
     input: Parameters<typeof createProduct>[1],
   ) => {
-    if (!auth.user) return;
-
     setSavingProduct(true);
     setProductsError(null);
     try {
-      const created = await createProduct(auth.user.id, input);
+      const created = await createProduct(user.id, input);
       setProducts((prev) => [created, ...prev]);
       sileo.success({ title: "Producto añadido al listado." });
-      setMessage("Producto añadido al listado.");
       closeForm();
     } catch (err) {
       console.error("Error al crear producto en Supabase:", err);
@@ -273,20 +169,11 @@ export default function FreezerApp({
   const handleDeleteMultiple = async (productIds: string[]) => {
     setProductsError(null);
     try {
-      // Borrar todos los productos seleccionados en paralelo
       await Promise.all(productIds.map((id) => deleteProduct(id)));
-
-      setMessage(
-        `${productIds.length} producto${productIds.length > 1 ? "s" : ""} eliminado${productIds.length > 1 ? "s" : ""}.`,
-      );
       sileo.success({
         title: `${productIds.length} producto${productIds.length > 1 ? "s" : ""} eliminado${productIds.length > 1 ? "s" : ""}.`,
       });
-
-      // Eliminar los productos del estado
       setProducts((prev) => prev.filter((p) => !productIds.includes(p.id)));
-
-      // Limpiar la selección
       handleClearSelection();
     } catch (err) {
       console.error("Error al borrar productos en Supabase:", err);
@@ -296,26 +183,11 @@ export default function FreezerApp({
     }
   };
 
-  const handleAuthError = (msg: string) => {
-    sileo.error({ title: msg });
-    setError(msg);
-    setMessage(null);
-  };
-
-  const handleRegistered = (msg: string) => {
-    sileo.success({ title: msg });
-    setMessage(msg);
-    setError(null);
-    setAuthView("login");
-  };
-
   const toggleCategory = (category: ProductCategory) => {
     setSelectedCategories((prev) => {
       if (prev.includes(category)) {
-        // Si ya está seleccionada, la quitamos
         return prev.filter((c) => c !== category);
       } else {
-        // Si no está seleccionada, la añadimos
         return [...prev, category];
       }
     });
@@ -326,26 +198,22 @@ export default function FreezerApp({
 
     let result = products;
 
-    // Filtrar por cesta (si está activo)
     if (showShoppingCart) {
       result = result.filter((product) => product.in_shopping_list);
     }
 
-    // Filtrar por categorías seleccionadas (si hay alguna seleccionada)
     if (selectedCategories.length > 0) {
       result = result.filter((product) =>
         selectedCategories.includes(product.category),
       );
     }
 
-    // Filtrar por término de búsqueda
     if (term) {
       result = result.filter((product) =>
         normalizeStr(product.name).includes(term),
       );
     }
 
-    // Ordenar por fecha descendente (más recientes primero) — toSorted() inmutable (js-tosorted-immutable)
     return result.toSorted((a, b) => {
       const aTime = new Date(a.added_at).getTime();
       const bTime = new Date(b.added_at).getTime();
@@ -353,475 +221,243 @@ export default function FreezerApp({
     });
   }, [products, searchTerm, selectedCategories, showShoppingCart]);
 
-  if (auth.loading) {
-    return (
-      <>
-        <section>
-          {/* Header */}
-          <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-20 px-4 rounded-2xl shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Freezer App</span>
-                </h1>
-                <p className="text-xs text-slate-400 sm:text-sm">
-                  Cargando sesión de Supabase…
-                </p>
-              </div>
-            </div>
-          </header>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
-            <p>Un momento…</p>
-          </div>
-        </section>
-        {/* Menú flotante de aplicaciones */}
-        <FloatingMenu items={floatingMenuItems} />
-      </>
-    );
-  }
-
-  if (!auth.session || !auth.user) {
-    return (
-      <>
-        <section>
-          {/* Header */}
-          <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-20 px-4 rounded-2xl shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Freezer App</span>
-                </h1>
-                <p className="text-xs text-slate-400 sm:text-sm">
-                  Identifícate para gestionar tu congelador.
-                </p>
-              </div>
-            </div>
-          </header>
-
-          <div className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50">
-            <div className="mb-4 flex rounded-lg bg-slate-800/80 p-0.5 text-xs font-medium text-slate-300">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthView("login");
-                  setError(null);
-                  setMessage(null);
-                }}
-                className={`flex-1 rounded-md px-2 py-1 transition ${authView === "login"
-                  ? "bg-slate-950 text-slate-50"
-                  : "text-slate-400 hover:text-slate-100"
-                  }`}
-              >
-                Iniciar sesión
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthView("register");
-                  setError(null);
-                  setMessage(null);
-                }}
-                className={`flex-1 rounded-md px-2 py-1 transition ${authView === "register"
-                  ? "bg-slate-950 text-slate-50"
-                  : "text-slate-400 hover:text-slate-100"
-                  }`}
-              >
-                Crear cuenta
-              </button>
-            </div>
-
-            {authView === "login" ? (
-              <LoginForm onAuthError={handleAuthError} />
-            ) : (
-              <RegisterForm
-                onAuthError={handleAuthError}
-                onRegistered={handleRegistered}
-              />
-            )}
-          </div>
-        </section>
-        {/* Menú flotante de aplicaciones */}
-        <FloatingMenu items={floatingMenuItems} />
-      </>
-    );
-  }
-
   return (
     <>
-      <section>
-        {/* Header */}
-        <header className="flex items-center justify-between p-2 mb-2 sm:mb-3 md:mb-4">
-          <div className="flex items-center">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-20 px-4 rounded-2xl shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Freezer App</span>
-                </h1>
-                <p className="text-xs text-left text-slate-400 sm:text-sm">
-                  {auth.user.email ?? "usuario sin email"}
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Barra de búsqueda + filtros por categoría y cesta (anclados arriba) */}
+      <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl space-y-2 md:space-y-3">
+        <SearchInput
+          id="product-search-fixed"
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar por nombre…"
+          label="Buscar por nombre"
+          inputRef={searchInputRef}
+        />
+
+        {/* Filtros por categoría y cesta */}
+        <div className="grid grid-cols-4 gap-1.5 md:gap-2">
           <button
-            onClick={handleLogout}
-            className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-slate-100 shadow-sm transition-colors duration-200 hover:bg-slate-700 hover:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-          </button>
-        </header>
-
-        {/* Barra de búsqueda + filtros por categoría y cesta (anclados arriba) */}
-        <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl space-y-2 md:space-y-3">
-          {/* Barra de búsqueda siempre visible, anclada sobre las categorías (mismo estilo que Price Hunter) */}
-          <div>
-            <label htmlFor="product-search-fixed" className="sr-only">
-              Buscar por nombre
-            </label>
-            <div className="relative">
-              <div
-                className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
-                aria-hidden
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded-full p-1"
-                  aria-label="Limpiar búsqueda"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              )}
-              <input
-                ref={searchInputRef}
-                id="product-search-fixed"
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por nombre…"
-                inputMode="search"
-                enterKeyHint="search"
-                className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-10 text-[16px] md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)] sm:text-base"
-              />
-            </div>
-          </div>
-
-          {/* Filtros por categoría y cesta */}
-          <div className="grid grid-cols-4 gap-1.5 md:gap-2">
-            <button
-              type="button"
-              onClick={() => toggleCategory("Alimentación")}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px]  ${selectedCategories.includes("Alimentación")
+            type="button"
+            onClick={() => toggleCategory("Alimentación")}
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px]  ${
+              selectedCategories.includes("Alimentación")
                 ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
                 : "border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-400 hover:bg-slate-700 hover:text-white"
-                }`}
-            >
-              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <motion.img
-                  animate={{
-                    scale: selectedCategories.includes("Alimentación")
-                      ? 0.95
-                      : 1,
-                  }}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeInOut",
-                  }}
-                  src="/groceries-icon.png"
-                  alt="Comida"
-                  className="w-full h-full object-contain"
-                />
-              </span>
-              <span className="leading-tight shrionk-0">Comida</span>
-            </button>
+            }`}
+          >
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <motion.img
+                animate={{
+                  scale: selectedCategories.includes("Alimentación")
+                    ? 0.95
+                    : 1,
+                }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                src="/groceries-icon.png"
+                alt="Comida"
+                className="w-full h-full object-contain"
+              />
+            </span>
+            <span className="leading-tight shrink-0">Comida</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => toggleCategory("Limpieza")}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${selectedCategories.includes("Limpieza")
+          <button
+            type="button"
+            onClick={() => toggleCategory("Limpieza")}
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
+              selectedCategories.includes("Limpieza")
                 ? "border-cyan-500 bg-cyan-600 text-white shadow-sm"
                 : "border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:bg-slate-700 hover:text-white"
-                }`}
-            >
-              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <motion.img
-                  animate={{
-                    scale: selectedCategories.includes("Limpieza") ? 0.95 : 1,
-                  }}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeInOut",
-                  }}
-                  src="/cleaning-icon.png"
-                  alt="Limpieza"
-                  className="w-full h-full object-contain"
-                />
-              </span>
-              <span className="leading-tight shrink-0">Limpieza</span>
-            </button>
+            }`}
+          >
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <motion.img
+                animate={{
+                  scale: selectedCategories.includes("Limpieza") ? 0.95 : 1,
+                }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                src="/cleaning-icon.png"
+                alt="Limpieza"
+                className="w-full h-full object-contain"
+              />
+            </span>
+            <span className="leading-tight shrink-0">Limpieza</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => toggleCategory("Higiene")}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${selectedCategories.includes("Higiene")
+          <button
+            type="button"
+            onClick={() => toggleCategory("Higiene")}
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
+              selectedCategories.includes("Higiene")
                 ? "border-amber-500 bg-amber-500 text-slate-900 shadow-sm"
                 : "border-slate-700 bg-slate-800 text-slate-300 hover:border-amber-400 hover:bg-slate-700 hover:text-white"
-                }`}
-            >
-              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <motion.img
-                  animate={{
-                    scale: selectedCategories.includes("Higiene") ? 0.95 : 1,
-                  }}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeInOut",
-                  }}
-                  src="/higiene-icon.png"
-                  alt="Higiene"
-                  className="w-full h-full object-contain"
-                />
-              </span>
-              <span className="leading-tight shrink-0">Higiene</span>
-            </button>
+            }`}
+          >
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <motion.img
+                animate={{
+                  scale: selectedCategories.includes("Higiene") ? 0.95 : 1,
+                }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                src="/higiene-icon.png"
+                alt="Higiene"
+                className="w-full h-full object-contain"
+              />
+            </span>
+            <span className="leading-tight shrink-0">Higiene</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => setShowShoppingCart(!showShoppingCart)}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${showShoppingCart
+          <button
+            type="button"
+            onClick={() => setShowShoppingCart(!showShoppingCart)}
+            className={`flex flex-col items-center justify-center gap-0.5 rounded-lg md:rounded-xl border px-1.5 py-1.5 md:px-2 md:py-2 text-[8px] md:text-[9px] font-bold transition-colors-scale duration-200 min-h-[56px] md:min-h-[64px] ${
+              showShoppingCart
                 ? "border-purple-500 bg-purple-600 text-white shadow-sm"
                 : "border-slate-700 bg-slate-800 text-slate-300 hover:border-purple-400 hover:bg-slate-700 hover:text-white"
-                }`}
-            >
-              <span className="flex-1 min-h-0 w-full flex items-center justify-center">
-                <motion.img
-                  animate={{
-                    scale: showShoppingCart ? 0.95 : 1,
-                  }}
-                  transition={{
-                    duration: 0.2,
-                    ease: "easeInOut",
-                  }}
-                  src="/cart-icon.png"
-                  alt="Cesta"
-                  className="w-full h-full object-contain"
-                />
-              </span>
-              <span className="leading-tight shrink-0">Cesta</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Contenido con scroll: mensajes + lista */}
-        <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24 mt-2 sm:mt-3 md:mt-4">
-          <ProductList
-            products={filteredAndSortedProducts}
-            loading={productsLoading}
-            onUpdateProduct={handleUpdateProduct}
-            onDelete={handleDeleteProduct}
-            onToggleShoppingCart={handleToggleShoppingCart}
-            showShoppingCart={showShoppingCart}
-            selectedProductIds={selectedProductIds}
-            onToggleSelection={handleToggleSelection}
-            onClearSelection={handleClearSelection}
-            onDeleteMultiple={handleDeleteMultiple}
-          />
-        </div>
-
-        {/* Contenedor FAB Añadir (inferior derecha) */}
-        <div
-          className="fixed right-6 z-20 flex flex-col items-end gap-2 sm:right-8"
-          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          {/* FAB Añadir nuevo producto */}
-          <button
-            type="button"
-            onClick={() => {
-              setMessage(null);
-              setProductsError(null);
-              setIsFormOpen(true);
-            }}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 sm:text-3xl"
-            aria-label="Añadir nuevo producto"
+            }`}
           >
-            +
-          </button>
-        </div>
-
-        {/* FAB Price Hunter (inferior izquierda) */}
-        <div
-          className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
-          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          <button
-            type="button"
-            onClick={
-              onSwitchToPriceHunter
-                ? onSwitchToPriceHunter
-                : () => {
-                    window.location.href = "/price-hunter";
-                  }
-            }
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-            aria-label="Ir a Price Hunter"
-            title="Price Hunter"
-          >
-            🎯
-          </button>
-        </div>
-        {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
-        <div
-          className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
-          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              const input = searchInputRef.current;
-              if (!input) return;
-
-              // Foco síncrono para que el teclado se abra en móviles
-              input.focus();
-              input.select();
-
-              // Desplazar suavemente el campo a la vista sin perder el foco
-              window.requestAnimationFrame(() => {
-                input.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-              });
-            }}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
-            aria-label="Buscar productos"
-          >
-            <svg
-              className="h-6 w-6 sm:h-7 sm:w-7"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            <span className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <motion.img
+                animate={{ scale: showShoppingCart ? 0.95 : 1 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                src="/cart-icon.png"
+                alt="Cesta"
+                className="w-full h-full object-contain"
               />
-            </svg>
+            </span>
+            <span className="leading-tight shrink-0">Cesta</span>
           </button>
         </div>
+      </div>
 
-        {/* Modal para añadir nuevo producto */}
-        <AnimatePresence>
-          {isFormOpen && (
+      {/* Contenido con scroll: mensajes + lista */}
+      <div className="min-w-0 space-y-2 md:space-y-3 pb-20 sm:pb-24 mt-2 sm:mt-3 md:mt-4">
+        <ProductList
+          products={filteredAndSortedProducts}
+          loading={productsLoading}
+          onUpdateProduct={handleUpdateProduct}
+          onDelete={handleDeleteProduct}
+          onToggleShoppingCart={handleToggleShoppingCart}
+          showShoppingCart={showShoppingCart}
+          selectedProductIds={selectedProductIds}
+          onToggleSelection={handleToggleSelection}
+          onClearSelection={handleClearSelection}
+          onDeleteMultiple={handleDeleteMultiple}
+        />
+      </div>
+
+      {/* Contenedor FAB Añadir (inferior derecha) */}
+      <div
+        className="fixed right-6 z-20 flex flex-col items-end gap-2 sm:right-8"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setProductsError(null);
+            setIsFormOpen(true);
+          }}
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 sm:text-3xl"
+          aria-label="Añadir nuevo producto"
+        >
+          +
+        </button>
+      </div>
+
+      {/* FAB Price Hunter (inferior izquierda) */}
+      <div
+        className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={
+            onSwitchToPriceHunter
+              ? onSwitchToPriceHunter
+              : () => { window.location.href = "/#price-hunter"; }
+          }
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+          aria-label="Ir a Price Hunter"
+          title="Price Hunter"
+        >
+          🎯
+        </button>
+      </div>
+
+      {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
+      <div
+        className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            const input = searchInputRef.current;
+            if (!input) return;
+            input.focus();
+            input.select();
+            window.requestAnimationFrame(() => {
+              input.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+          }}
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
+          aria-label="Buscar productos"
+        >
+          <svg
+            className="h-6 w-6 sm:h-7 sm:w-7"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Modal para añadir nuevo producto */}
+      <AnimatePresence>
+        {isFormOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-new-product-title"
+            onClick={closeForm}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="modal-new-product-title"
-              onClick={closeForm}
+              initial={{ scaleY: 0, originY: 0.5 }}
+              animate={{ scaleY: 1, originY: 0.5 }}
+              exit={{ scaleY: 0, originY: 0.5 }}
+              transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
+              className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                initial={{ scaleY: 0, originY: 0.5 }}
-                animate={{ scaleY: 1, originY: 0.5 }}
-                exit={{ scaleY: 0, originY: 0.5 }}
-                transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
-                className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
-                onClick={(e) => e.stopPropagation()}
+              <h2
+                id="modal-new-product-title"
+                className="mb-3 text-base font-semibold text-slate-100"
               >
-                <h2
-                  id="modal-new-product-title"
-                  className="mb-3 text-base font-semibold text-slate-100"
-                >
-                  Añadir producto
-                </h2>
-                <ProductForm
-                  mode="create"
-                  initialProduct={null}
-                  loading={savingProduct}
-                  onSubmit={handleCreateProduct}
-                  onCancel={closeForm}
-                />
-              </motion.div>
+                Añadir producto
+              </h2>
+              <ProductForm
+                mode="create"
+                initialProduct={null}
+                loading={savingProduct}
+                onSubmit={handleCreateProduct}
+                onCancel={closeForm}
+              />
             </motion.div>
-          )}
-        </AnimatePresence>
-      </section>
-
-      <Toaster
-        position="top-center"
-        options={{
-          fill: "#1e293b",
-          roundness: 16,
-          styles: {
-            title: "text-slate-100!",
-            description: "text-slate-400!",
-            badge: "bg-white/10!",
-            button: "bg-white/10! hover:bg-white/15!",
-          },
-        }}
-      />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

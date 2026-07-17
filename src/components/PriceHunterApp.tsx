@@ -1,13 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
-import FriezaIcon from "@/public/Frieza-icon.png";
-import LoginForm from "@/components/auth/LoginForm";
-import RegisterForm from "@/components/auth/RegisterForm";
+import type { User } from "@supabase/supabase-js";
 import PriceForm from "@/components/PriceForm";
 import type { PrefillData } from "@/components/PriceForm";
 import PriceTable from "@/components/PriceTable";
-import FloatingMenu from "@/components/FloatingMenu";
+import SearchInput from "@/components/SearchInput";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import type { PriceEntry, PriceInput, Unit } from "@/lib/priceHunter";
 import {
@@ -28,32 +24,18 @@ import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
 import { lookupByBarcode } from "@/lib/openProducts";
 import { normalizeStr } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { Toaster, sileo } from "sileo";
-
-type AuthView = "login" | "register";
-
-type AuthState = {
-  loading: boolean;
-  session: Session | null;
-  user: User | null;
-};
+import { AnimatePresence } from "framer-motion";
+import { sileo } from "sileo";
 
 export interface PriceHunterAppProps {
+  user: User;
   onSwitchToFreezer?: () => void;
 }
 
 export default function PriceHunterApp({
+  user,
   onSwitchToFreezer,
-}: PriceHunterAppProps = {}) {
-  const [auth, setAuth] = useState<AuthState>({
-    loading: true,
-    session: null,
-    user: null,
-  });
-  const [authView, setAuthView] = useState<AuthView>("login");
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+}: PriceHunterAppProps) {
   const [prices, setPrices] = useState<PriceEntry[]>([]);
   const [pricesLoading, setPricesLoading] = useState(false);
   const [pricesError, setPricesError] = useState<string | null>(null);
@@ -71,79 +53,7 @@ export default function PriceHunterApp({
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
 
-  const floatingMenuItems = useMemo(
-    () => [
-      onSwitchToFreezer
-        ? {
-          id: "freezer-app",
-          label: "Freezer App",
-          icon: "❄️" as const,
-          onClick: onSwitchToFreezer,
-          roundOnly: true,
-        }
-        : {
-          id: "freezer-app",
-          label: "Freezer App",
-          href: "/",
-          icon: "❄️" as const,
-          roundOnly: true,
-        },
-    ],
-    [onSwitchToFreezer],
-  );
-
   useEffect(() => {
-    const init = async () => {
-      const {
-        data: { session: currentSession },
-      } = await supabase.auth.getSession();
-      setAuth({
-        loading: false,
-        session: currentSession,
-        user: currentSession?.user ?? null,
-      });
-    };
-
-    void init();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setAuth((prev) => ({
-        ...prev,
-        session: newSession,
-        user: newSession?.user ?? null,
-      }));
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Clear auth error when user successfully logs in
-  useEffect(() => {
-    if (auth.user) setError(null);
-  }, [auth.user]);
-
-  // Auto-dismiss success/error messages after 5 seconds
-  useEffect(() => {
-    if (!message && !error) return;
-    const t = setTimeout(() => {
-      setMessage(null);
-      setError(null);
-    }, 5000);
-    return () => clearTimeout(t);
-  }, [message, error]);
-
-  useEffect(() => {
-    if (!auth.user) {
-      setPrices([]);
-      setIsFormOpen(false);
-      setPricesError(null);
-      return;
-    }
-
     const load = async () => {
       setPricesLoading(true);
       setPricesError(null);
@@ -171,17 +81,17 @@ export default function PriceHunterApp({
     };
 
     void load();
-  }, [auth.user]);
+  }, [user]);
 
-  const handleLogout = async () => {
-    setError(null);
-    setMessage(null);
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) {
-      const msg = "No se ha podido cerrar sesión. Inténtalo de nuevo.";
-      sileo.error({ title: "Cerrar sesión", description: msg });
-      setError(msg);
-    }
+  const refreshSuggestions = async () => {
+    const [ppNames, ppBrands, supermarkets] = await Promise.all([
+      fetchPPNames(),
+      fetchPPBrands(),
+      fetchUniqueSupermarkets(),
+    ]);
+    setProductSuggestions(ppNames);
+    setBrandSuggestions(ppBrands);
+    setSupermarketSuggestions(supermarkets);
   };
 
   const openForm = () => {
@@ -220,7 +130,6 @@ export default function PriceHunterApp({
         return;
       }
 
-      // Producto no encontrado en BD local → consultar Open Food Facts
       const offResult = await lookupByBarcode(barcode);
       if (offResult.found) {
         openFormWithPrefill({
@@ -261,30 +170,16 @@ export default function PriceHunterApp({
     }
   }
 
-  const refreshSuggestions = async () => {
-    const [ppNames, ppBrands, supermarkets] = await Promise.all([
-      fetchPPNames(),
-      fetchPPBrands(),
-      fetchUniqueSupermarkets(),
-    ]);
-    setProductSuggestions(ppNames);
-    setBrandSuggestions(ppBrands);
-    setSupermarketSuggestions(supermarkets);
-  };
-
   const handleCreatePrice = async (
     input: PriceInput,
     options?: { addToDespensa?: boolean },
   ) => {
-    if (!auth.user) return;
-
     setSavingPrice(true);
     setPricesError(null);
     try {
-      // Si no tiene product_prices_id, crear o buscar el producto primero
       let productPricesId = input.product_prices_id;
       if (!productPricesId) {
-        const newPP = await createProductPrice(auth.user.id, {
+        const newPP = await createProductPrice(user.id, {
           product_name: input.product_name,
           brand: input.brand,
           quantity: input.quantity,
@@ -294,15 +189,15 @@ export default function PriceHunterApp({
         productPricesId = newPP.id;
       }
 
-      const created = await createPrice(auth.user.id, {
+      const created = await createPrice(user.id, {
         ...input,
         product_prices_id: productPricesId,
       });
       setPrices((prev) => [created, ...prev]);
       sileo.success({ title: "Precio añadido correctamente." });
-      setMessage("Precio añadido correctamente.");
       closeForm();
-      await refreshSuggestions();
+      // Refresh suggestions non-blocking
+      void refreshSuggestions();
 
       if (options?.addToDespensa) {
         const newQty = Math.max(1, Math.round(input.quantity));
@@ -331,7 +226,7 @@ export default function PriceHunterApp({
               added_at: input.date,
               in_shopping_list: false,
             };
-            await createProduct(auth.user.id, productInput);
+            await createProduct(user.id, productInput);
           }
         } catch (despensaErr) {
           console.error(
@@ -341,7 +236,6 @@ export default function PriceHunterApp({
           const msg =
             "Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.";
           sileo.warning({ title: msg });
-          setMessage(msg);
         }
       }
     } catch (err) {
@@ -360,7 +254,6 @@ export default function PriceHunterApp({
     setSavingPrice(true);
     setPricesError(null);
     try {
-      // Actualizar datos del producto en product_prices si hay product_prices_id
       if (editingPrice.product_prices_id) {
         await updateProductPrice(editingPrice.product_prices_id, {
           product_name: input.product_name,
@@ -376,9 +269,15 @@ export default function PriceHunterApp({
         prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
       );
       sileo.success({ title: "Precio actualizado correctamente." });
-      setMessage("Precio actualizado correctamente.");
       closeForm();
-      await refreshSuggestions();
+      // Only refresh suggestions if suggestion-relevant fields changed
+      if (
+        input.product_name !== editingPrice.product_name ||
+        input.brand !== editingPrice.brand ||
+        input.supermarket !== editingPrice.supermarket
+      ) {
+        void refreshSuggestions();
+      }
     } catch (err) {
       console.error("Error al actualizar precio en Supabase:", err);
       const msg = "No se ha podido actualizar el precio.";
@@ -392,11 +291,25 @@ export default function PriceHunterApp({
   const handleDeletePrice = async (id: string) => {
     setPricesError(null);
     try {
+      const deleted = prices.find((p) => p.id === id);
       await deletePrice(id);
       setPrices((prev) => prev.filter((p) => p.id !== id));
       sileo.success({ title: "Precio eliminado correctamente." });
-      setMessage("Precio eliminado correctamente.");
-      await refreshSuggestions();
+      // Only refresh if the deleted product/brand/supermarket no longer exists
+      if (deleted) {
+        const remaining = prices.filter((p) => p.id !== id);
+        const hasSameProduct = remaining.some(
+          (p) =>
+            p.product_name === deleted.product_name &&
+            p.brand === deleted.brand,
+        );
+        const hasSameSupermarket = remaining.some(
+          (p) => p.supermarket === deleted.supermarket,
+        );
+        if (!hasSameProduct || !hasSameSupermarket) {
+          void refreshSuggestions();
+        }
+      }
     } catch (err) {
       console.error("Error al borrar precio en Supabase:", err);
       const msg = "No se ha podido borrar el precio.";
@@ -422,356 +335,153 @@ export default function PriceHunterApp({
     );
   }, [prices, searchTerm]);
 
-  if (auth.loading) {
-    return (
-      <>
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
-            <p className="text-sm text-slate-400">Cargando...</p>
-          </div>
-        </div>
-        <FloatingMenu items={floatingMenuItems} />
-      </>
-    );
-  }
-
-  if (!auth.session || !auth.user) {
-    return (
-      <>
-        <section className="flex min-h-screen flex-col items-center justify-center p-4">
-          {/* Header */}
-          <header className="mb-8 flex items-center justify-center">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Price Hunter"
-              className="h-20 rounded-2xl px-4 shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Price Hunter</span>
-                </h1>
-                <p className="text-left text-xs text-slate-400 sm:text-sm">
-                  Compara precios y encuentra las mejores ofertas
-                </p>
-              </div>
-            </div>
-          </header>
-
-          {/* Auth Form */}
-          <div className="w-full max-w-md">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
-              {authView === "login" ? (
-                <LoginForm
-                  onAuthError={(msg: string) => {
-                    sileo.error({ title: msg });
-                    setError(msg);
-                  }}
-                />
-              ) : (
-                <RegisterForm
-                  onAuthError={(msg: string) => {
-                    sileo.error({ title: msg });
-                    setError(msg);
-                  }}
-                  onRegistered={(msg: string) => {
-                    sileo.success({ title: msg });
-                    setMessage(msg);
-                    setAuthView("login");
-                  }}
-                />
-              )}
-
-              {/* Toggle Auth View */}
-              <div className="mt-4 text-center">
-                <button
-                  onClick={() =>
-                    setAuthView(authView === "login" ? "register" : "login")
-                  }
-                  className="text-sm text-sky-400 hover:underline"
-                >
-                  {authView === "login"
-                    ? "¿No tienes cuenta? Regístrate"
-                    : "¿Ya tienes cuenta? Inicia sesión"}
-                </button>
-              </div>
-            </div>
-
-            {/* Notificaciones via Sileo */}
-          </div>
-        </section>
-        {/* Menú flotante de aplicaciones */}
-        <FloatingMenu items={floatingMenuItems} />
-      </>
-    );
-  }
-
   return (
     <>
-      <section>
-        {/* Header */}
-        <header className="mb-2 flex items-center justify-between p-2 sm:mb-3 md:mb-4">
-          <div className="flex items-center">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Price Hunter"
-              className="h-20 rounded-2xl px-4 shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Price Hunter</span>
-                </h1>
-                <p className="text-left text-xs text-slate-400 sm:text-sm">
-                  {auth.user.email ?? "usuario sin email"}
-                </p>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex h-10 w-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
+      {/* Barra de búsqueda */}
+      <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
+        <SearchInput
+          id="price-search"
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar por producto…"
+          label="Buscar por producto"
+          inputRef={priceSearchInputRef}
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
+        <PriceTable
+          prices={filteredPrices}
+          loading={pricesLoading}
+          onEdit={handleEdit}
+          onDelete={handleDeletePrice}
+          searchTerm={searchTerm}
+        />
+      </div>
+
+      {/* Scanner + Add Price FABs (inferior derecha, apilados) */}
+      <div
+        className="fixed right-6 z-20 flex flex-col items-end gap-3 sm:right-8"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          onClick={() => setIsScannerOpen(true)}
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+          aria-label="Escanear código de barras"
+          title="Escanear código de barras"
+        >
+          <svg
+            className="h-7 w-7 sm:h-8 sm:w-8"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-          </button>
-        </header>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
+            />
+          </svg>
+        </button>
 
-        {/* Barra de búsqueda */}
-        <div className="sticky top-0 z-50 backdrop-blur-md pb-2 md:pb-3 pt-2 md:pt-3 -mx-3 px-3 sm:-mx-4 sm:px-4 shadow-lg rounded-b-2xl">
-          <div>
-            <label htmlFor="price-search" className="sr-only">
-              Buscar por producto
-            </label>
-            <div className="relative">
-              <div
-                className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-100"
-                aria-hidden
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-slate-400 hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-800 rounded-full p-1"
-                  aria-label="Limpiar búsqueda"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              )}
-              <input
-                ref={priceSearchInputRef}
-                id="price-search"
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por producto…"
-                inputMode="search"
-                enterKeyHint="search"
-                className="block w-full rounded-2xl border border-white/10 bg-slate-800/30 backdrop-blur-xl py-2 pl-12 pr-10 text-[16px] md:py-2.5 text-slate-100 placeholder:text-slate-400 shadow-[0_0_15px_rgba(255,255,255,0.08)] focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:shadow-[0_0_20px_rgba(255,255,255,0.12)] sm:text-base"
-              />
-            </div>
-          </div>
-        </div>
+        <button
+          onClick={openForm}
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+          aria-label="Añadir precio"
+        >
+          +
+        </button>
+      </div>
 
-        {/* Main Content */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
-          <PriceTable
-            prices={filteredPrices}
-            loading={pricesLoading}
-            onEdit={handleEdit}
-            onDelete={handleDeletePrice}
-            searchTerm={searchTerm}
+      {/* FAB Freezer App (inferior izquierda) */}
+      <div
+        className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={
+            onSwitchToFreezer
+              ? onSwitchToFreezer
+              : () => { window.location.href = "/"; }
+          }
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
+          aria-label="Ir a Freezer App"
+          title="Freezer App"
+        >
+          ❄️
+        </button>
+      </div>
+
+      {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
+      <div
+        className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            const input = priceSearchInputRef.current;
+            if (!input) return;
+            input.focus();
+            input.select();
+            window.requestAnimationFrame(() => {
+              input.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+          }}
+          className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
+          aria-label="Buscar precios"
+        >
+          <svg
+            className="h-6 w-6 sm:h-7 sm:w-7"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Price Form Modal */}
+      <AnimatePresence>
+        {isFormOpen && (
+          <PriceForm
+            key={editingPrice?.id ?? prefillData?.product_prices_id ?? "create"}
+            mode={editingPrice ? "edit" : "create"}
+            initialPrice={editingPrice}
+            prefillData={prefillData}
+            loading={savingPrice}
+            productSuggestions={productSuggestions}
+            brandSuggestions={brandSuggestions}
+            supermarketSuggestions={supermarketSuggestions}
+            onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
+            onCancel={closeForm}
           />
-        </div>
+        )}
+      </AnimatePresence>
 
-        {/* Scanner + Add Price FABs (inferior derecha, apilados) */}
-        <div
-          className="fixed right-6 z-20 flex flex-col items-end gap-3 sm:right-8"
-          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          {/* FAB Scanner (encima del +) */}
-          <button
-            onClick={() => setIsScannerOpen(true)}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-            aria-label="Escanear código de barras"
-            title="Escanear código de barras"
-          >
-            <svg
-              className="h-7 w-7 sm:h-8 sm:w-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
-              />
-            </svg>
-          </button>
-
-          {/* FAB Añadir precio manual (+) */}
-          <button
-            onClick={openForm}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-            aria-label="Añadir precio"
-          >
-            +
-          </button>
-        </div>
-
-        {/* FAB Freezer App (inferior izquierda) */}
-        <div
-          className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
-          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          <button
-            type="button"
-            onClick={
-              onSwitchToFreezer
-                ? onSwitchToFreezer
-                : () => {
-                    window.location.href = "/";
-                  }
-            }
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-            aria-label="Ir a Freezer App"
-            title="Freezer App"
-          >
-            ❄️
-          </button>
-        </div>
-
-        {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
-        <div
-          className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
-          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              const input = priceSearchInputRef.current;
-              if (!input) return;
-
-              // Foco síncrono para que el teclado se abra en móviles
-              input.focus();
-              input.select();
-
-              // Desplazar suavemente el campo a la vista sin perder el foco
-              window.requestAnimationFrame(() => {
-                input.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-              });
-            }}
-            className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
-            aria-label="Buscar precios"
-          >
-            <svg
-              className="h-6 w-6 sm:h-7 sm:w-7"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Price Form Modal */}
-        <AnimatePresence>
-          {isFormOpen && (
-            <PriceForm
-              key={editingPrice?.id ?? prefillData?.product_prices_id ?? "create"}
-              mode={editingPrice ? "edit" : "create"}
-              initialPrice={editingPrice}
-              prefillData={prefillData}
-              loading={savingPrice}
-              productSuggestions={productSuggestions}
-              brandSuggestions={brandSuggestions}
-              supermarketSuggestions={supermarketSuggestions}
-              onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
-              onCancel={closeForm}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Barcode Scanner */}
-        <AnimatePresence>
-          {isScannerOpen && (
-            <BarcodeScanner
-              onDetected={handleBarcodeDetected}
-              onClose={() => setIsScannerOpen(false)}
-            />
-          )}
-        </AnimatePresence>
-      </section>
-
-      <Toaster
-        position="top-center"
-        options={{
-          fill: "#1e293b",
-          roundness: 16,
-          styles: {
-            title: "text-slate-100!",
-            description: "text-slate-400!",
-            badge: "bg-white/10!",
-            button: "bg-white/10! hover:bg-white/15!",
-          },
-        }}
-      />
+      {/* Barcode Scanner */}
+      <AnimatePresence>
+        {isScannerOpen && (
+          <BarcodeScanner
+            onDetected={handleBarcodeDetected}
+            onClose={() => setIsScannerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
