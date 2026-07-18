@@ -160,13 +160,13 @@ export default function PriceForm({
       return;
     }
 
-    const totalPriceNumber = Number.parseFloat(totalPrice);
+    const totalPriceNumber = Number.parseFloat(totalPrice.replace(",", "."));
     if (Number.isNaN(totalPriceNumber) || totalPriceNumber < 0) {
       setLocalError("El precio debe ser un número mayor o igual que 0.");
       return;
     }
 
-    const quantityNumber = Number.parseFloat(quantity);
+    const quantityNumber = Number.parseFloat(quantity.replace(",", "."));
     if (Number.isNaN(quantityNumber) || quantityNumber <= 0) {
       setLocalError("La cantidad debe ser un número mayor que 0.");
       return;
@@ -340,13 +340,13 @@ export default function PriceForm({
                 id="total-price"
                 type="text"
                 inputMode="decimal"
-                pattern="^\d+(\.\d{1,2})?$"
+                pattern="^\d+([.,]\d{1,2})?$"
                 step="0.01"
                 min="0"
                 value={totalPrice}
                 onChange={(e) => setTotalPrice(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-                placeholder="Ej: 3.40"
+                placeholder="Ej: 3,40"
                 required
               />
             </div>
@@ -362,7 +362,7 @@ export default function PriceForm({
                 id="quantity"
                 type="text"
                 inputMode="decimal"
-                pattern="^\d+(\.\d{1,2})?$"
+                pattern="^\d+([.,]\d{1,2})?$"
                 step="0.01"
                 min="0.01"
                 value={quantity}
