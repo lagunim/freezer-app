@@ -17,6 +17,25 @@ export interface OffLookupResult {
   unit?: Unit;
 }
 
+/** Datos nutricionales por 100g (solo alimentos) */
+export interface NutritionData {
+  energy_kcal: number | null;
+  fat: number | null;
+  saturated_fat: number | null;
+  carbohydrates: number | null;
+  sugars: number | null;
+  proteins: number | null;
+  salt: number | null;
+  fiber: number | null;
+}
+
+interface NutrimentsResponse {
+  status: number;
+  product?: {
+    nutriments?: Record<string, number | null>;
+  };
+}
+
 const API_BASES = [
   "https://world.openfoodfacts.org",      // Alimentos
   "https://world.openbeautyfacts.org",    // Higiene / cosméticos
@@ -130,4 +149,37 @@ export async function lookupByBarcode(barcode: string): Promise<OffLookupResult>
   }
 
   return { found: false };
+}
+
+const NUTRITION_FIELDS = "nutriments";
+
+/**
+ * Obtiene datos nutricionales por código de barras desde Open Food Facts.
+ * Solo consulta la API de alimentos (no beauty ni products).
+ */
+export async function fetchNutritionByBarcode(
+  barcode: string,
+): Promise<NutritionData | null> {
+  const url = `${API_BASES[0]}/api/v2/product/${barcode}?fields=${NUTRITION_FIELDS}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data: NutrimentsResponse = await res.json();
+    if (data.status !== 1 || !data.product?.nutriments) return null;
+
+    const n = data.product.nutriments;
+    return {
+      energy_kcal: n["energy-kcal_100g"] ?? null,
+      fat: n["fat_100g"] ?? null,
+      saturated_fat: n["saturated-fat_100g"] ?? null,
+      carbohydrates: n["carbohydrates_100g"] ?? null,
+      sugars: n["sugars_100g"] ?? null,
+      proteins: n["proteins_100g"] ?? null,
+      salt: n["salt_100g"] ?? null,
+      fiber: n["fiber_100g"] ?? null,
+    };
+  } catch {
+    return null;
+  }
 }

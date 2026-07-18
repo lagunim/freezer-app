@@ -5,6 +5,8 @@ import {
   fetchPricesByProduct,
   fetchPricesBySupermarket,
 } from "@/lib/priceHunter";
+import type { NutritionData } from "@/lib/openProducts";
+import { fetchNutritionByBarcode } from "@/lib/openProducts";
 import { motion, AnimatePresence } from "framer-motion";
 import { normalizeStr, formatDate, formatPrice } from "@/lib/utils";
 
@@ -92,6 +94,11 @@ function PriceTable({
     useState<PriceEntry | null>(null);
   const [supermarketHistorySearchTerm, setSupermarketHistorySearchTerm] =
     useState("");
+  const [nutritionBarCode, setNutritionBarCode] = useState<string | null>(null);
+  const [nutritionData, setNutritionData] = useState<NutritionData | null>(
+    null,
+  );
+  const [loadingNutrition, setLoadingNutrition] = useState(false);
 
   // Sincronizar detailPrice cuando se actualiza un precio en el array prices
   useEffect(() => {
@@ -189,6 +196,8 @@ function PriceTable({
     setHistoryPrices([]);
     setHistoryError(null);
     setSupermarketHistorySearchTerm("");
+    setNutritionBarCode(null);
+    setNutritionData(null);
   };
 
   const handleBackToDetails = () => {
@@ -198,6 +207,24 @@ function PriceTable({
     setHistoryPrices([]);
     setHistoryError(null);
     setSupermarketHistorySearchTerm("");
+  };
+
+  const handleOpenNutrition = async (barCode: string) => {
+    setNutritionBarCode(barCode);
+    setLoadingNutrition(true);
+    try {
+      const data = await fetchNutritionByBarcode(barCode);
+      setNutritionData(data);
+    } catch {
+      setNutritionData(null);
+    } finally {
+      setLoadingNutrition(false);
+    }
+  };
+
+  const handleCloseNutrition = () => {
+    setNutritionBarCode(null);
+    setNutritionData(null);
   };
 
   // Filtrar precios según el rango temporal seleccionado
@@ -435,9 +462,8 @@ function PriceTable({
                       duration: 0.2,
                     }}
                     onClick={() => handleRowClick(price)}
-                    className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${
-                      hasOffer(price) ? "bg-amber-500/5" : ""
-                    }`}
+                    className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${hasOffer(price) ? "bg-amber-500/5" : ""
+                      }`}
                     style={{
                       contentVisibility: "auto",
                       containIntrinsicSize: "44px",
@@ -463,11 +489,10 @@ function PriceTable({
                       </span>
                     </td>
                     <td
-                      className={`px-2 py-2 text-sm font-medium whitespace-nowrap ${
-                        hasOffer(price)
-                          ? "text-amber-300/90"
-                          : "text-sky-400"
-                      }`}
+                      className={`px-2 py-2 text-sm font-medium whitespace-nowrap ${hasOffer(price)
+                        ? "text-amber-300/90"
+                        : "text-sky-400"
+                        }`}
                     >
                       {formatPrice(normalizedPrice)}/{price.unit}
                     </td>
@@ -819,9 +844,17 @@ function PriceTable({
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={handleBackToDetails}
+                    onClick={
+                      nutritionBarCode
+                        ? handleCloseNutrition
+                        : handleBackToDetails
+                    }
                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                    aria-label="Volver a detalles"
+                    aria-label={
+                      nutritionBarCode
+                        ? "Volver a historial"
+                        : "Volver a detalles"
+                    }
                   >
                     <svg
                       className="h-5 w-5"
@@ -840,10 +873,19 @@ function PriceTable({
                   <div className="flex items-center gap-2 text-sm text-slate-400">
                     <button
                       type="button"
-                      onClick={handleBackToDetails}
+                      onClick={
+                        nutritionBarCode
+                          ? handleCloseNutrition
+                          : handleBackToDetails
+                      }
                       className="text-slate-400 transition-colors hover:text-slate-100 focus:outline-none focus:underline"
                     >
-                      Detalles
+                      {nutritionBarCode
+                        ? `Historial de ${historyView.type === "product"
+                          ? "Producto"
+                          : "Supermercado"
+                        }`
+                        : "Detalles"}
                     </button>
                     <svg
                       className="h-4 w-4"
@@ -859,17 +901,27 @@ function PriceTable({
                       />
                     </svg>
                     <span className="text-slate-100 font-medium">
-                      Historial de{" "}
-                      {historyView.type === "product"
-                        ? "Producto"
-                        : "Supermercado"}
+                      {nutritionBarCode
+                        ? "Información nutricional"
+                        : `Historial de ${historyView.type === "product"
+                          ? "Producto"
+                          : "Supermercado"
+                        }`}
                     </span>
                   </div>
                 </div>
                 <button
-                  onClick={handleBackToDetails}
+                  onClick={
+                    nutritionBarCode
+                      ? handleCloseNutrition
+                      : handleBackToDetails
+                  }
                   className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                  aria-label="Cerrar y volver a detalles"
+                  aria-label={
+                    nutritionBarCode
+                      ? "Cerrar nutrición"
+                      : "Cerrar y volver a detalles"
+                  }
                 >
                   <svg
                     className="h-5 w-5"
@@ -888,20 +940,147 @@ function PriceTable({
               </div>
 
               {/* Título */}
-              <div className="mb-4">
-                <h3 className="text-2xl font-semibold text-slate-100">
-                  {historyView.type === "product" ? "📦 " : "🏪 "}
-                  {historyView.value}
-                </h3>
-                <p className="mt-1 text-sm text-slate-400">
-                  {historyView.type === "product"
-                    ? "Todos los precios registrados de este producto"
-                    : "Todos los productos registrados en este supermercado"}
-                </p>
-              </div>
+              {!nutritionBarCode && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-3">
+                    <h3 className="min-w-0 flex-1 truncate text-2xl font-semibold text-slate-100">
+                      {historyView.type === "product" ? "📦 " : "🏪 "}
+                      {historyView.value}
+                    </h3>
+                    {historyView.type === "product" &&
+                      historyPrices[0]?.bar_code && (
+                        <button
+                          onClick={() =>
+                            handleOpenNutrition(historyPrices[0].bar_code!)
+                          }
+                          className="flex shrink-0 items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1 text-xs font-medium text-amber-300 transition-all hover:border-amber-500/50 hover:bg-amber-500/20 hover:text-amber-200"
+                          aria-label="Ver información nutricional"
+                        >
+                          <span className="text-xl">🥗</span>
+                        </button>
+                      )}
+                  </div>
+                  <p className="mt-1 text-sm text-slate-400">
+                    {historyView.type === "product"
+                      ? "Todos los precios registrados de este producto"
+                      : "Todos los productos registrados en este supermercado"}
+                  </p>
+                </div>
+              )}
+
+              {/* Vista de información nutricional */}
+              {nutritionBarCode && (
+                <div className="mt-2">
+                  {loadingNutrition && (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
+                        <p className="text-sm text-slate-400">
+                          Cargando información nutricional...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!loadingNutrition && !nutritionData && (
+                    <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-700/20 to-slate-800/40">
+                        <span className="text-4xl">🥗</span>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-slate-100">
+                          Sin datos nutricionales
+                        </h3>
+                        <p className="max-w-md text-sm text-slate-400">
+                          No se encontraron datos nutricionales para este
+                          producto. Es posible que no esté registrado en Open
+                          Food Facts.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!loadingNutrition && nutritionData && (
+                    <>
+                      <p className="mb-4 text-sm font-medium text-slate-300">
+                        Por 100g de producto
+                      </p>
+                      <div className="space-y-2">
+                        {[
+                          {
+                            label: "Energía",
+                            value: nutritionData.energy_kcal,
+                            unit: "kcal",
+                            icon: "🔥",
+                          },
+                          {
+                            label: "Grasas",
+                            value: nutritionData.fat,
+                            unit: "g",
+                            icon: "🧈",
+                          },
+                          {
+                            label: "Grasas saturadas",
+                            value: nutritionData.saturated_fat,
+                            unit: "g",
+                            icon: "🟠",
+                          },
+                          {
+                            label: "Hidratos de carbono",
+                            value: nutritionData.carbohydrates,
+                            unit: "g",
+                            icon: "🍞",
+                          },
+                          {
+                            label: "Azúcares",
+                            value: nutritionData.sugars,
+                            unit: "g",
+                            icon: "🍬",
+                          },
+                          {
+                            label: "Proteínas",
+                            value: nutritionData.proteins,
+                            unit: "g",
+                            icon: "🥩",
+                          },
+                          {
+                            label: "Sal",
+                            value: nutritionData.salt,
+                            unit: "g",
+                            icon: "🧂",
+                          },
+                          {
+                            label: "Fibra",
+                            value: nutritionData.fiber,
+                            unit: "g",
+                            icon: "🌾",
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/20 px-4 py-3"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{item.icon}</span>
+                              <span className="text-sm text-slate-300">
+                                {item.label}
+                              </span>
+                            </div>
+                            <span className="text-sm font-medium text-slate-100">
+                              {item.value !== null
+                                ? `${item.value} ${item.unit}`
+                                : "—"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Barra de búsqueda (solo para historial de supermercado) */}
-              {historyView.type === "supermarket" && (
+              {!nutritionBarCode && historyView.type === "supermarket" && (
                 <div className="mb-6">
                   <label
                     htmlFor="supermarket-history-search"
@@ -965,15 +1144,14 @@ function PriceTable({
               )}
 
               {/* Filtros temporales (solo para vista de producto) */}
-              {historyView.type === "product" && (
+              {!nutritionBarCode && historyView.type === "product" && (
                 <div className="mb-6 flex flex-wrap gap-2">
                   <button
                     onClick={() => setTimeFilter("6months")}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                      timeFilter === "6months"
-                        ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
-                        : "border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-                    }`}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${timeFilter === "6months"
+                      ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
+                      : "border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                      }`}
                   >
                     <svg
                       className="h-3.5 w-3.5"
@@ -992,11 +1170,10 @@ function PriceTable({
                   </button>
                   <button
                     onClick={() => setTimeFilter("1year")}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                      timeFilter === "1year"
-                        ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
-                        : "border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-                    }`}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${timeFilter === "1year"
+                      ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
+                      : "border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                      }`}
                   >
                     <svg
                       className="h-3.5 w-3.5"
@@ -1015,11 +1192,10 @@ function PriceTable({
                   </button>
                   <button
                     onClick={() => setTimeFilter("all")}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                      timeFilter === "all"
-                        ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
-                        : "border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-                    }`}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${timeFilter === "all"
+                      ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
+                      : "border border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                      }`}
                   >
                     <svg
                       className="h-3.5 w-3.5"
@@ -1040,7 +1216,7 @@ function PriceTable({
               )}
 
               {/* Estados de carga y error */}
-              {loadingHistory && (
+              {!nutritionBarCode && loadingHistory && (
                 <div className="flex items-center justify-center py-12">
                   <div className="flex flex-col items-center gap-3">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
@@ -1051,7 +1227,7 @@ function PriceTable({
                 </div>
               )}
 
-              {historyError && (
+              {!nutritionBarCode && historyError && (
                 <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">⚠️</span>
@@ -1061,7 +1237,8 @@ function PriceTable({
               )}
 
               {/* Estadísticas (solo para historial de producto) */}
-              {!loadingHistory &&
+              {!nutritionBarCode &&
+                !loadingHistory &&
                 !historyError &&
                 filteredHistoryPrices.length > 0 &&
                 historyView.type === "product" && (
@@ -1144,7 +1321,8 @@ function PriceTable({
                 )}
 
               {/* Tabla de historial */}
-              {!loadingHistory &&
+              {!nutritionBarCode &&
+                !loadingHistory &&
                 !historyError &&
                 filteredHistoryPrices.length > 0 && (
                   <>
@@ -1181,9 +1359,8 @@ function PriceTable({
                               <tr
                                 key={price.id}
                                 onClick={() => handleHistoryRowClick(price)}
-                                className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${
-                                  hasOffer(price) ? "bg-amber-500/5" : ""
-                                }`}
+                                className={`border-b border-slate-800 transition-colors hover:bg-slate-800/40 cursor-pointer ${hasOffer(price) ? "bg-amber-500/5" : ""
+                                  }`}
                               >
                                 {historyView.type === "supermarket" && (
                                   <td className="px-2 py-3 text-sm">
@@ -1228,11 +1405,10 @@ function PriceTable({
                                   </td>
                                 )}
                                 <td
-                                  className={`px-2 py-3 text-sm font-medium whitespace-nowrap ${
-                                    hasOffer(price)
-                                      ? "text-amber-300/90"
-                                      : "text-sky-400"
-                                  }`}
+                                  className={`px-2 py-3 text-sm font-medium whitespace-nowrap ${hasOffer(price)
+                                    ? "text-amber-300/90"
+                                    : "text-sky-400"
+                                    }`}
                                 >
                                   {formatPrice(normalizedPrice)}/{price.unit}
                                 </td>
@@ -1303,7 +1479,8 @@ function PriceTable({
                 )}
 
               {/* Sin resultados - Filtro sin coincidencias */}
-              {!loadingHistory &&
+              {!nutritionBarCode &&
+                !loadingHistory &&
                 !historyError &&
                 filteredHistoryPrices.length === 0 &&
                 historyPrices.length > 0 && (
