@@ -444,6 +444,14 @@ function PriceTable({
                     }}
                   >
                     <td className="px-2 py-2 text-sm">
+                      {hasOffer(price) && (
+                        <span
+                          className="mr-1.5 inline-flex items-center justify-center rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
+                          title={getOfferLabel(price)}
+                        >
+                          🏷
+                        </span>
+                      )}
                       <span
                         className={
                           hasOffer(price)
@@ -453,14 +461,6 @@ function PriceTable({
                       >
                         {price.product_name}
                       </span>
-                      {hasOffer(price) && (
-                        <span
-                          className="ml-1.5 inline-flex items-center justify-center rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
-                          title={getOfferLabel(price)}
-                        >
-                          🏷
-                        </span>
-                      )}
                     </td>
                     <td
                       className={`px-2 py-2 text-sm font-medium whitespace-nowrap ${
@@ -577,9 +577,12 @@ function PriceTable({
 
                 {/* Marca */}
                 <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <p className="text-xs font-medium text-slate-400 mb-1">
-                    Marca
-                  </p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">🏷️</span>
+                    <p className="text-xs font-medium text-slate-400">
+                      Marca
+                    </p>
+                  </div>
                   <p className="text-base font-semibold text-slate-100">
                     {detailPrice.brand && detailPrice.brand.trim() !== ""
                       ? detailPrice.brand
@@ -589,9 +592,12 @@ function PriceTable({
 
                 {/* Precio calculado */}
                 <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-4">
-                  <p className="text-xs font-medium text-slate-400 mb-2">
-                    Precio normalizado
-                  </p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">💰</span>
+                    <p className="text-xs font-medium text-slate-400">
+                      Precio normalizado
+                    </p>
+                  </div>
                   <p className="text-2xl font-bold text-sky-400">
                     {formatPrice(
                       calculateNormalizedPrice(
@@ -609,9 +615,12 @@ function PriceTable({
                 <div className="grid grid-cols-2 gap-4">
                   {/* Precio pagado */}
                   <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                    <p className="text-xs font-medium text-slate-400 mb-1">
-                      Precio pagado
-                    </p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl">💸</span>
+                      <p className="text-xs font-medium text-slate-400">
+                        Precio pagado
+                      </p>
+                    </div>
                     <p className="text-base font-semibold text-slate-100">
                       {formatPrice(detailPrice.total_price)}
                     </p>
@@ -619,9 +628,12 @@ function PriceTable({
 
                   {/* Cantidad */}
                   <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                    <p className="text-xs font-medium text-slate-400 mb-1">
-                      Cantidad
-                    </p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl">🔢</span>
+                      <p className="text-xs font-medium text-slate-400">
+                        Cantidad
+                      </p>
+                    </div>
                     <p className="text-base font-semibold text-slate-100">
                       {detailPrice.quantity} {getQuantityUnitLabel(detailPrice.unit)}
                     </p>
@@ -676,9 +688,12 @@ function PriceTable({
 
                 {/* Fecha */}
                 <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <p className="text-xs font-medium text-slate-400 mb-1">
-                    Fecha de compra
-                  </p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">📅</span>
+                    <p className="text-xs font-medium text-slate-400">
+                      Fecha de compra
+                    </p>
+                  </div>
                   <p className="text-base font-semibold text-slate-100">
                     {formatDate(detailPrice.date)}
                   </p>
@@ -688,7 +703,7 @@ function PriceTable({
                 {hasOffer(detailPrice) && (
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-amber-400/90" aria-hidden>
+                      <span className="text-2xl text-amber-400/90" aria-hidden>
                         🏷
                       </span>
                       <p className="text-xs font-medium text-amber-300/90">
@@ -1148,13 +1163,7 @@ function PriceTable({
                               </th>
                             )}
                             <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
-                              Precio Normalizado
-                            </th>
-                            <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
-                              Precio Total
-                            </th>
-                            <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
-                              Cantidad
+                              Precio
                             </th>
                             <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
                               Fecha
@@ -1178,6 +1187,14 @@ function PriceTable({
                               >
                                 {historyView.type === "supermarket" && (
                                   <td className="px-2 py-3 text-sm">
+                                    {hasOffer(price) && (
+                                      <span
+                                        className="mr-1.5 inline-flex rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
+                                        title={getOfferLabel(price)}
+                                      >
+                                        🏷
+                                      </span>
+                                    )}
                                     <span
                                       className={
                                         hasOffer(price)
@@ -1187,18 +1204,18 @@ function PriceTable({
                                     >
                                       {price.product_name}
                                     </span>
+                                  </td>
+                                )}
+                                {historyView.type === "product" && (
+                                  <td className="px-2 py-3 text-sm">
                                     {hasOffer(price) && (
                                       <span
-                                        className="ml-1.5 inline-flex rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
+                                        className="mr-1.5 inline-flex rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
                                         title={getOfferLabel(price)}
                                       >
                                         🏷
                                       </span>
                                     )}
-                                  </td>
-                                )}
-                                {historyView.type === "product" && (
-                                  <td className="px-2 py-3 text-sm">
                                     <span
                                       className={
                                         hasOffer(price)
@@ -1208,14 +1225,6 @@ function PriceTable({
                                     >
                                       {price.supermarket}
                                     </span>
-                                    {hasOffer(price) && (
-                                      <span
-                                        className="ml-1.5 inline-flex rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-medium text-amber-300/90"
-                                        title={getOfferLabel(price)}
-                                      >
-                                        🏷
-                                      </span>
-                                    )}
                                   </td>
                                 )}
                                 <td
@@ -1226,12 +1235,6 @@ function PriceTable({
                                   }`}
                                 >
                                   {formatPrice(normalizedPrice)}/{price.unit}
-                                </td>
-                                <td className="px-2 py-3 text-sm text-slate-300 whitespace-nowrap">
-                                  {formatPrice(price.total_price)}
-                                </td>
-                                <td className="px-2 py-3 text-sm text-slate-300 whitespace-nowrap">
-                                  {price.quantity} {getQuantityUnitLabel(price.unit)}
                                 </td>
                                 <td className="px-2 py-3 text-sm text-slate-400 whitespace-nowrap">
                                   {formatDate(price.date)}
