@@ -239,7 +239,7 @@ function PriceTable({
     if (timeFilter === "6months") {
       filterDate.setMonth(now.getMonth() - 6);
     } else if (timeFilter === "1year") {
-      filterDate.setFullYear(now.getFullYear() - 1);
+      filterDate.setFullYear(now.getFullYear() - 2);
     }
 
     return historyPrices.filter((price) => {
@@ -1188,7 +1188,7 @@ function PriceTable({
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    <span>1 año</span>
+                    <span>2 años</span>
                   </button>
                   <button
                     onClick={() => setTimeFilter("all")}
