@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState, memo } from "react";
-import type { PriceEntry, PriceInput } from "@/lib/priceHunter";
+import type { PriceEntry, PriceInput, OfferType } from "@/lib/priceHunter";
 import {
   calculateNormalizedPrice,
-  fetchPricesByProduct,
+  fetchPricesByProductName,
   fetchPricesBySupermarket,
 } from "@/lib/priceHunter";
 import type { NutritionData } from "@/lib/openProducts";
 import { fetchNutritionByBarcode } from "@/lib/openProducts";
 import { motion, AnimatePresence } from "framer-motion";
-import { normalizeStr, formatDate, formatPrice } from "@/lib/utils";
+import BarcodeScanner from "@/components/BarcodeScanner";
+import { normalizeStr, formatDate, formatPrice, toDateInputValue } from "@/lib/utils";
 
 function hasOffer(price: PriceEntry): boolean {
   return !!price.offer_type;
@@ -30,12 +31,22 @@ function getOfferLabel(price: PriceEntry): string {
   }
 }
 
+const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
+  { value: "", label: "— Sin oferta —" },
+  { value: "2x1", label: "2x1 Segunda unidad gratis" },
+  { value: "3x2", label: "3x2 Tercera unidad gratis" },
+  { value: "50_second", label: "50% descuento en segunda unidad" },
+  { value: "custom", label: "Personalizado" },
+];
+
 export interface PriceTableProps {
   prices: PriceEntry[];
   loading?: boolean;
   onEdit: (price: PriceEntry) => void;
   onDelete: (id: string) => void;
   searchTerm?: string;
+  onQuickAdd?: (input: PriceInput) => Promise<void>;
+  savingQuickAdd?: boolean;
 }
 
 export default memo(PriceTable);
@@ -73,6 +84,8 @@ function PriceTable({
   onEdit,
   onDelete,
   searchTerm = "",
+  onQuickAdd,
+  savingQuickAdd = false,
 }: PriceTableProps) {
   const [priceToDelete, setPriceToDelete] = useState<string | null>(null);
   const [detailPrice, setDetailPrice] = useState<PriceEntry | null>(null);
@@ -99,6 +112,19 @@ function PriceTable({
     null,
   );
   const [loadingNutrition, setLoadingNutrition] = useState(false);
+
+  // Quick-add price states
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [quickAddPrice, setQuickAddPrice] = useState("");
+  const [quickAddQuantity, setQuickAddQuantity] = useState("");
+  const [quickAddDate, setQuickAddDate] = useState(toDateInputValue());
+  const [quickAddOfferType, setQuickAddOfferType] = useState<"" | OfferType>("");
+  const [quickAddCustomOfferName, setQuickAddCustomOfferName] = useState("");
+  const [quickAddCustomOfferDescription, setQuickAddCustomOfferDescription] = useState("");
+  const [showQuickAddCustomOfferModal, setShowQuickAddCustomOfferModal] = useState(false);
+  const [quickAddBarcode, setQuickAddBarcode] = useState("");
+  const [isQuickAddScannerOpen, setIsQuickAddScannerOpen] = useState(false);
+  const [quickAddError, setQuickAddError] = useState<string | null>(null);
 
   // Sincronizar detailPrice cuando se actualiza un precio en el array prices
   useEffect(() => {
@@ -148,8 +174,8 @@ function PriceTable({
   };
 
   const handleViewProductHistory = async (
-    productPricesId: string,
     productName: string,
+    userId: string,
     priceFromDetail?: PriceEntry | null,
   ) => {
     setPriceBeforeHistory(priceFromDetail ?? null);
@@ -159,7 +185,7 @@ function PriceTable({
     setHistoryView({ type: "product", value: productName });
 
     try {
-      const data = await fetchPricesByProduct(productPricesId);
+      const data = await fetchPricesByProductName(productName, userId);
       setHistoryPrices(data);
     } catch (error) {
       console.error("Error al cargar historial de producto:", error);
@@ -225,6 +251,67 @@ function PriceTable({
   const handleCloseNutrition = () => {
     setNutritionBarCode(null);
     setNutritionData(null);
+  };
+
+  const openQuickAdd = () => {
+    setQuickAddPrice("");
+    setQuickAddQuantity("");
+    setQuickAddDate(toDateInputValue());
+    setQuickAddOfferType("");
+    setQuickAddCustomOfferName("");
+    setQuickAddCustomOfferDescription("");
+    setQuickAddBarcode("");
+    setQuickAddError(null);
+    setIsQuickAddOpen(true);
+  };
+
+  const closeQuickAdd = () => {
+    setIsQuickAddOpen(false);
+    setQuickAddError(null);
+  };
+
+  const handleQuickAddSubmit = async () => {
+    if (!detailPrice || !onQuickAdd) return;
+    setQuickAddError(null);
+
+    const priceNum = Number.parseFloat(quickAddPrice.replace(",", "."));
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      setQuickAddError("El precio debe ser un número mayor o igual que 0.");
+      return;
+    }
+
+    const qtyNum = Number.parseFloat(quickAddQuantity.replace(",", "."));
+    if (Number.isNaN(qtyNum) || qtyNum <= 0) {
+      setQuickAddError("La cantidad debe ser un número mayor que 0.");
+      return;
+    }
+
+    if (!quickAddDate) {
+      setQuickAddError("Selecciona una fecha.");
+      return;
+    }
+
+    const input: PriceInput = {
+      product_prices_id: detailPrice.product_prices_id,
+      product_name: detailPrice.product_name,
+      brand: detailPrice.brand ?? "",
+      total_price: priceNum,
+      quantity: qtyNum,
+      unit: detailPrice.unit,
+      supermarket: detailPrice.supermarket,
+      date: new Date(quickAddDate).toISOString(),
+      offer_type: quickAddOfferType === "" ? null : quickAddOfferType,
+      offer_name: quickAddOfferType === "custom" ? quickAddCustomOfferName.trim() || null : null,
+      offer_description: quickAddOfferType === "custom" ? quickAddCustomOfferDescription.trim() || null : null,
+      bar_code: detailPrice.bar_code || quickAddBarcode.trim() || undefined,
+    };
+
+    try {
+      await onQuickAdd(input);
+      closeQuickAdd();
+    } catch {
+      setQuickAddError("No se ha podido crear el precio.");
+    }
   };
 
   // Filtrar precios según el rango temporal seleccionado
@@ -558,8 +645,8 @@ function PriceTable({
                   onClick={(e) => {
                     e.stopPropagation();
                     handleViewProductHistory(
-                      detailPrice.product_prices_id,
                       detailPrice.product_name,
+                      detailPrice.user_id,
                       detailPrice,
                     );
                   }}
@@ -748,8 +835,31 @@ function PriceTable({
                 )}
               </div>
 
+              {/* Añadir nuevo precio */}
+              {onQuickAdd && (
+                <button
+                  onClick={openQuickAdd}
+                  className="mt-6 w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Añadir nuevo precio
+                </button>
+              )}
+
               {/* Acciones */}
-              <div className="mt-6 flex gap-2 sm:gap-3">
+              <div className="mt-3 flex gap-2 sm:gap-3">
                 <button
                   onClick={handleCloseDetail}
                   className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg border border-slate-700 bg-slate-800 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
@@ -1555,6 +1665,387 @@ function PriceTable({
           </div>
         </div>
       )}
+      {/* Modal de añadir precio rápido */}
+      <AnimatePresence>
+        {isQuickAddOpen && detailPrice && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={closeQuickAdd}
+          >
+            <motion.div
+              initial={{ scaleY: 0, originY: 0.5 }}
+              animate={{ scaleY: 1, originY: 0.5 }}
+              exit={{ scaleY: 0, originY: 0.5 }}
+              transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
+              className="mx-4 w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-slate-100">
+                  Añadir nuevo precio
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Registro rápido de precio para este producto
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Producto (solo lectura) */}
+                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">📦</span>
+                    <p className="text-xs font-medium text-slate-400">Producto</p>
+                  </div>
+                  <p className="text-base font-semibold text-slate-100">
+                    {detailPrice.product_name}
+                  </p>
+                </div>
+
+                {/* Marca (solo lectura) */}
+                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🏷️</span>
+                    <p className="text-xs font-medium text-slate-400">Marca</p>
+                  </div>
+                  <p className="text-base font-semibold text-slate-100">
+                    {detailPrice.brand && detailPrice.brand.trim() !== ""
+                      ? detailPrice.brand
+                      : "—"}
+                  </p>
+                </div>
+
+                {/* Supermercado (solo lectura) */}
+                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🏪</span>
+                    <p className="text-xs font-medium text-slate-400">Supermercado</p>
+                  </div>
+                  <p className="text-base font-semibold text-slate-100">
+                    {detailPrice.supermarket}
+                  </p>
+                </div>
+
+                {/* Unidad (solo lectura) */}
+                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">📐</span>
+                    <p className="text-xs font-medium text-slate-400">Unidad</p>
+                  </div>
+                  <p className="text-base font-semibold text-slate-100">
+                    {detailPrice.unit}
+                  </p>
+                </div>
+
+                {/* Precio y Cantidad */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label
+                      htmlFor="quick-price"
+                      className="mb-2 block text-sm font-medium text-slate-300 min-h-[20px]"
+                    >
+                      Precio pagado (€)
+                    </label>
+                    <input
+                      id="quick-price"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="^\d+([.,]\d{1,2})?$"
+                      step="0.01"
+                      min="0"
+                      value={quickAddPrice}
+                      onChange={(e) => setQuickAddPrice(e.target.value)}
+                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      placeholder="Ej: 3,40"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="quick-quantity"
+                      className="mb-2 block text-sm font-medium text-slate-300 min-h-[20px]"
+                    >
+                      Cantidad
+                    </label>
+                    <input
+                      id="quick-quantity"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="^\d+([.,]\d{1,2})?$"
+                      step="0.01"
+                      min="0.01"
+                      value={quickAddQuantity}
+                      onChange={(e) => setQuickAddQuantity(e.target.value)}
+                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      placeholder="Ej: 250"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Fecha */}
+                <div>
+                  <label
+                    htmlFor="quick-date"
+                    className="mb-2 block text-sm font-medium text-slate-300"
+                  >
+                    Fecha
+                  </label>
+                  <input
+                    id="quick-date"
+                    type="date"
+                    value={quickAddDate}
+                    onChange={(e) => setQuickAddDate(e.target.value)}
+                    className="min-w-0 w-full max-w-full appearance-none box-border rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
+                    required
+                  />
+                </div>
+
+                {/* Código de barras (solo si no existe uno previo) */}
+                {!detailPrice.bar_code && (
+                  <div>
+                    <label
+                      htmlFor="quick-barcode"
+                      className="mb-2 block text-sm font-medium text-slate-300"
+                    >
+                      Código de barras
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="quick-barcode"
+                        type="text"
+                        inputMode="numeric"
+                        value={quickAddBarcode}
+                        onChange={(e) => setQuickAddBarcode(e.target.value)}
+                        className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                        placeholder="Ej: 8410076472586"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickAddScannerOpen(true)}
+                        className="flex h-[42px] min-w-[42px] shrink-0 items-center justify-center rounded-lg border border-sky-500/50 bg-sky-600/20 text-sky-400 transition-colors hover:bg-sky-600/40 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        aria-label="Escanear código de barras"
+                        title="Escanear código de barras"
+                      >
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Oferta */}
+                <div>
+                  <label
+                    htmlFor="quick-offer"
+                    className="mb-2 block text-sm font-medium text-slate-300"
+                  >
+                    Oferta
+                  </label>
+                  <select
+                    id="quick-offer"
+                    value={quickAddOfferType}
+                    onChange={(e) => {
+                      const v = e.target.value as "" | OfferType;
+                      setQuickAddOfferType(v);
+                      if (v === "custom") setShowQuickAddCustomOfferModal(true);
+                    }}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                  >
+                    {OFFER_OPTIONS.map((opt) => (
+                      <option key={opt.value || "none"} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  {quickAddOfferType === "custom" && (
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickAddCustomOfferModal(true)}
+                      className="mt-2 text-sm text-sky-400 hover:text-sky-300 transition-colors"
+                    >
+                      Editar nombre y descripción →
+                    </button>
+                  )}
+                </div>
+
+                {/* Error */}
+                {quickAddError && (
+                  <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-3">
+                    <p className="text-sm text-red-400">{quickAddError}</p>
+                  </div>
+                )}
+
+                {/* Botones */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={closeQuickAdd}
+                    disabled={savingQuickAdd}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleQuickAddSubmit}
+                    disabled={savingQuickAdd}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {savingQuickAdd ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        Guardando...
+                      </span>
+                    ) : (
+                      <>
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        Guardar
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal oferta personalizada */}
+              <AnimatePresence>
+                {showQuickAddCustomOfferModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60"
+                    onClick={() => setShowQuickAddCustomOfferModal(false)}
+                  >
+                    <motion.div
+                      initial={{ scaleY: 0, scaleX: 0.7, opacity: 0 }}
+                      animate={{ scaleY: 1, scaleX: 1, opacity: 1 }}
+                      exit={{ scaleY: 0, scaleX: 0.6, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mx-4 w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                    >
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-slate-100">
+                          Oferta personalizada
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowQuickAddCustomOfferModal(false)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                        >
+                          <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor="quick-custom-offer-name"
+                            className="mb-1.5 block text-sm font-medium text-slate-300"
+                          >
+                            Nombre
+                          </label>
+                          <input
+                            id="quick-custom-offer-name"
+                            type="text"
+                            value={quickAddCustomOfferName}
+                            onChange={(e) => setQuickAddCustomOfferName(e.target.value)}
+                            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-base text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                            placeholder="Ej: 3x2 en yogures"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="quick-custom-offer-desc"
+                            className="mb-1.5 block text-sm font-medium text-slate-300"
+                          >
+                            Descripción
+                          </label>
+                          <textarea
+                            id="quick-custom-offer-desc"
+                            value={quickAddCustomOfferDescription}
+                            onChange={(e) => setQuickAddCustomOfferDescription(e.target.value)}
+                            rows={3}
+                            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-base text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 resize-none"
+                            placeholder="Ej: Lleva 3 y paga 2"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setShowQuickAddCustomOfferModal(false)}
+                          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                          Listo
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Barcode Scanner (quick-add) */}
+      <AnimatePresence>
+        {isQuickAddScannerOpen && (
+          <BarcodeScanner
+            onDetected={(code) => {
+              setQuickAddBarcode(code);
+              setIsQuickAddScannerOpen(false);
+            }}
+            onClose={() => setIsQuickAddScannerOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

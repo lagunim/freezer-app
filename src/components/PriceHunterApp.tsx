@@ -429,6 +429,41 @@ export default function PriceHunterApp({
     }
   };
 
+  const handleQuickAdd = async (input: PriceInput) => {
+    setSavingPrice(true);
+    setPricesError(null);
+    try {
+      let productPricesId = input.product_prices_id;
+
+      if (!productPricesId) {
+        const newPP = await createProductPrice(user.id, {
+          product_name: input.product_name,
+          brand: input.brand,
+          quantity: input.quantity,
+          unit: input.unit,
+          bar_code: input.bar_code,
+        });
+        productPricesId = newPP.id;
+      }
+
+      const created = await createPrice(user.id, {
+        ...input,
+        product_prices_id: productPricesId,
+      });
+      setPrices((prev) => [created, ...prev]);
+      sileo.success({ title: "Precio añadido correctamente." });
+      void refreshSuggestions();
+    } catch (err) {
+      console.error("Error al crear precio rápido en Supabase:", err);
+      const msg = "No se ha podido crear el precio.";
+      sileo.error({ title: msg });
+      setPricesError(msg);
+      throw err;
+    } finally {
+      setSavingPrice(false);
+    }
+  };
+
   const handleEdit = (price: PriceEntry) => {
     setEditingPrice(price);
     setIsFormOpen(true);
@@ -468,6 +503,8 @@ export default function PriceHunterApp({
           onEdit={handleEdit}
           onDelete={handleDeletePrice}
           searchTerm={searchTerm}
+          onQuickAdd={handleQuickAdd}
+          savingQuickAdd={savingPrice}
         />
       </div>
 

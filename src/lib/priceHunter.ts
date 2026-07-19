@@ -237,20 +237,23 @@ export async function fetchUniqueSupermarkets(): Promise<string[]> {
 
 /**
  * Obtiene todos los precios históricos de un producto específico
- * @param productPricesId - ID del producto en product_prices
+ * @param productName - Nombre del producto a buscar
+ * @param userId - ID del usuario
  * @returns Array de precios ordenados por fecha descendente
  */
-export async function fetchPricesByProduct(
-  productPricesId: string,
+export async function fetchPricesByProductName(
+  productName: string,
+  userId: string,
 ): Promise<PriceEntry[]> {
   const { data, error } = await supabase
     .from('price_hunter_prices')
     .select(`
       id, user_id, product_prices_id, total_price, supermarket, date,
       offer_type, offer_name, offer_description, created_at, updated_at,
-      product_prices (product_name, brand, quantity, unit, bar_code)
+      product_prices!inner (product_name, brand, quantity, unit, bar_code)
     `)
-    .eq('product_prices_id', productPricesId)
+    .eq('product_prices.product_name', productName)
+    .eq('user_id', userId)
     .order('date', { ascending: false });
 
   if (error) {
