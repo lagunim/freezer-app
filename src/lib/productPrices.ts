@@ -114,6 +114,52 @@ export async function fetchProductPriceByBarcode(
   return data as ProductPrice | null;
 }
 
+export async function findExistingProductPrice(
+  userId: string,
+  input: ProductPriceInput,
+): Promise<ProductPrice | null> {
+  const brand = input.brand?.trim() || null;
+
+  const { data, error } = await supabase
+    .from('product_prices')
+    .select('*')
+    .eq('user_id', userId)
+    .ilike('product_name', input.product_name.trim())
+    .eq('quantity', input.quantity)
+    .eq('unit', input.unit)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+
+  const candidates = (data as ProductPrice[]) ?? [];
+
+  const match = candidates.find((c) => {
+    if (brand === null && c.brand === null) return true;
+    if (brand === null || c.brand === null) return false;
+    return c.brand.toLowerCase() === brand.toLowerCase();
+  });
+
+  return match ?? null;
+}
+
+export async function updateProductPriceBarCode(
+  id: string,
+  barCode: string,
+): Promise<ProductPrice> {
+  const { data, error } = await supabase
+    .from('product_prices')
+    .update({
+      bar_code: barCode.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data as ProductPrice;
+}
+
 export async function fetchUniqueProductNames(): Promise<string[]> {
   const { data, error } = await supabase
     .from('product_prices')

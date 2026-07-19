@@ -16,16 +16,26 @@ import {
 import {
   createProductPrice,
   updateProductPrice,
+  findExistingProductPrice,
+  updateProductPriceBarCode,
   fetchUniqueProductNames as fetchPPNames,
   fetchUniqueBrands as fetchPPBrands,
   fetchProductPriceByBarcode,
 } from "@/lib/productPrices";
+import type { ProductPrice } from "@/lib/productPrices";
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
 import { lookupByBarcode } from "@/lib/openProducts";
 import { normalizeStr } from "@/lib/utils";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { sileo } from "sileo";
+
+interface DuplicateCandidate {
+  existing: ProductPrice;
+  newInput: PriceInput;
+  options?: { addToDespensa?: boolean };
+  barcodeAutoUpdated?: boolean;
+}
 
 export interface PriceHunterAppProps {
   user: User;
@@ -51,6 +61,8 @@ export default function PriceHunterApp({
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [prefillData, setPrefillData] = useState<PrefillData | null>(null);
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [duplicateCandidate, setDuplicateCandidate] =
+    useState<DuplicateCandidate | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -178,6 +190,51 @@ export default function PriceHunterApp({
     setPricesError(null);
     try {
       let productPricesId = input.product_prices_id;
+
+      if (!productPricesId) {
+        const existing = await findExistingProductPrice(user.id, {
+          product_name: input.product_name,
+          brand: input.brand,
+          quantity: input.quantity,
+          unit: input.unit,
+        });
+
+        if (existing) {
+          const existingBC = existing.bar_code?.trim() || null;
+          const newBC = input.bar_code?.trim() || scannedBarcode?.trim() || null;
+
+          let barcodeAutoUpdated = false;
+          if (existingBC !== newBC) {
+            if (existingBC === null && newBC !== null) {
+              await updateProductPriceBarCode(existing.id, newBC);
+              barcodeAutoUpdated = true;
+            } else if (existingBC !== null && newBC === null) {
+              barcodeAutoUpdated = true;
+            } else if (existingBC !== null && newBC !== null && existingBC !== newBC) {
+              // Both non-null but different → different product, create new
+            } else {
+              barcodeAutoUpdated = true;
+            }
+          }
+
+          const quantityMatch = existing.quantity === input.quantity;
+          const unitMatch = existing.unit === input.unit;
+
+          if (quantityMatch && unitMatch) {
+            productPricesId = existing.id;
+          } else if (barcodeAutoUpdated || existingBC === newBC) {
+            setDuplicateCandidate({
+              existing,
+              newInput: input,
+              options,
+              barcodeAutoUpdated,
+            });
+            setSavingPrice(false);
+            return;
+          }
+        }
+      }
+
       if (!productPricesId) {
         const newPP = await createProductPrice(user.id, {
           product_name: input.product_name,
@@ -196,50 +253,104 @@ export default function PriceHunterApp({
       setPrices((prev) => [created, ...prev]);
       sileo.success({ title: "Precio añadido correctamente." });
       closeForm();
-      // Refresh suggestions non-blocking
       void refreshSuggestions();
 
       if (options?.addToDespensa) {
-        const newQty = Math.max(1, Math.round(input.quantity));
-        const quantityUnit = mapUnitToQuantityUnit(input.unit);
-        const productNameNormalized = input.product_name.trim().toLowerCase();
-        try {
-          const products = await fetchProducts();
-          const existing = products.find(
-            (p) => p.name.trim().toLowerCase() === productNameNormalized,
-          );
-          if (existing) {
-            await updateProduct(existing.id, {
-              name: existing.name,
-              quantity: existing.quantity + newQty,
-              quantity_unit: existing.quantity_unit,
-              category: existing.category,
-              added_at: existing.added_at,
-              in_shopping_list: existing.in_shopping_list,
-            });
-          } else {
-            const productInput: ProductInput = {
-              name: input.product_name.trim(),
-              quantity: newQty,
-              quantity_unit: quantityUnit,
-              category: "Alimentación",
-              added_at: input.date,
-              in_shopping_list: false,
-            };
-            await createProduct(user.id, productInput);
-          }
-        } catch (despensaErr) {
-          console.error(
-            "Error al añadir/actualizar en la despensa:",
-            despensaErr,
-          );
-          const msg =
-            "Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.";
-          sileo.warning({ title: msg });
-        }
+        await addToDespensa(input);
       }
     } catch (err) {
       console.error("Error al crear precio en Supabase:", err);
+      const msg = "No se ha podido crear el precio.";
+      sileo.error({ title: msg });
+      setPricesError(msg);
+    } finally {
+      setSavingPrice(false);
+    }
+  };
+
+  const addToDespensa = async (input: PriceInput) => {
+    const newQty = Math.max(1, Math.round(input.quantity));
+    const quantityUnit = mapUnitToQuantityUnit(input.unit);
+    const productNameNormalized = input.product_name.trim().toLowerCase();
+    try {
+      const products = await fetchProducts();
+      const existing = products.find(
+        (p) => p.name.trim().toLowerCase() === productNameNormalized,
+      );
+      if (existing) {
+        await updateProduct(existing.id, {
+          name: existing.name,
+          quantity: existing.quantity + newQty,
+          quantity_unit: existing.quantity_unit,
+          category: existing.category,
+          added_at: existing.added_at,
+          in_shopping_list: existing.in_shopping_list,
+        });
+      } else {
+        const productInput: ProductInput = {
+          name: input.product_name.trim(),
+          quantity: newQty,
+          quantity_unit: quantityUnit,
+          category: "Alimentación",
+          added_at: input.date,
+          in_shopping_list: false,
+        };
+        await createProduct(user.id, productInput);
+      }
+    } catch (despensaErr) {
+      console.error(
+        "Error al añadir/actualizar en la despensa:",
+        despensaErr,
+      );
+      const msg =
+        "Precio añadido correctamente; no se pudo añadir o actualizar en la despensa.";
+      sileo.warning({ title: msg });
+    }
+  };
+
+  const handleDuplicateAction = async (action: "update" | "create_new") => {
+    if (!duplicateCandidate) return;
+    const { existing, newInput, options } = duplicateCandidate;
+    setSavingPrice(true);
+    setPricesError(null);
+    try {
+      let productPricesId: string;
+
+      if (action === "update") {
+        await updateProductPrice(existing.id, {
+          product_name: newInput.product_name,
+          brand: newInput.brand,
+          quantity: newInput.quantity,
+          unit: newInput.unit,
+          bar_code: newInput.bar_code?.trim() || existing.bar_code || undefined,
+        });
+        productPricesId = existing.id;
+      } else {
+        const newPP = await createProductPrice(user.id, {
+          product_name: newInput.product_name,
+          brand: newInput.brand,
+          quantity: newInput.quantity,
+          unit: newInput.unit,
+          bar_code: newInput.bar_code || scannedBarcode || undefined,
+        });
+        productPricesId = newPP.id;
+      }
+
+      const created = await createPrice(user.id, {
+        ...newInput,
+        product_prices_id: productPricesId,
+      });
+      setPrices((prev) => [created, ...prev]);
+      sileo.success({ title: "Precio añadido correctamente." });
+      setDuplicateCandidate(null);
+      closeForm();
+      void refreshSuggestions();
+
+      if (options?.addToDespensa) {
+        await addToDespensa(newInput);
+      }
+    } catch (err) {
+      console.error("Error al resolver duplicado:", err);
       const msg = "No se ha podido crear el precio.";
       sileo.error({ title: msg });
       setPricesError(msg);
@@ -470,6 +581,104 @@ export default function PriceHunterApp({
             onSubmit={editingPrice ? handleUpdatePrice : handleCreatePrice}
             onCancel={closeForm}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Duplicate Confirmation Modal */}
+      <AnimatePresence>
+        {duplicateCandidate && (
+          <motion.div
+            key="duplicate-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setDuplicateCandidate(null)}
+          >
+            <motion.div
+              key="duplicate-modal"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <span className="text-2xl">⚠️</span>
+                <h2 className="text-lg font-semibold text-slate-100">
+                  Producto duplicado
+                </h2>
+              </div>
+
+              <p className="mb-4 text-sm text-slate-400">
+                Ya existe un producto con el mismo nombre y marca pero con
+                cantidad y/o unidad diferentes. ¿Qué quieres hacer?
+              </p>
+
+              {/* Comparison table */}
+              <div className="mb-5 overflow-hidden rounded-xl border border-slate-700/50">
+                <div className="grid grid-cols-[1fr_1fr_1fr] bg-slate-800/80 text-xs font-medium uppercase tracking-wider text-slate-400">
+                  <div className="px-3 py-2">Campo</div>
+                  <div className="px-3 py-2">Existente</div>
+                  <div className="px-3 py-2">Nuevo</div>
+                </div>
+
+                {([
+                  ["Nombre", duplicateCandidate.existing.product_name, duplicateCandidate.newInput.product_name],
+                  ["Marca", duplicateCandidate.existing.brand ?? "—", duplicateCandidate.newInput.brand || "—"],
+                  ["Cantidad", String(duplicateCandidate.existing.quantity), String(duplicateCandidate.newInput.quantity)],
+                  ["Unidad", duplicateCandidate.existing.unit, duplicateCandidate.newInput.unit],
+                  ["Código barras", duplicateCandidate.existing.bar_code ?? "—", duplicateCandidate.newInput.bar_code ?? "—"],
+                ] as [string, string, string][]).map(([label, existVal, newVal], i) => {
+                  const differs = existVal.toLowerCase() !== newVal.toLowerCase();
+                  return (
+                    <div
+                      key={label}
+                      className={`grid grid-cols-[1fr_1fr_1fr] border-t border-slate-700/50 text-sm ${
+                        differs ? "bg-amber-900/20" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 px-3 py-2 text-slate-300">
+                        {differs && <span className="text-xs">⚠️</span>}
+                        {label}
+                      </div>
+                      <div className="px-3 py-2 text-slate-200">{existVal}</div>
+                      <div className={`px-3 py-2 ${differs ? "font-semibold text-amber-300" : "text-slate-200"}`}>
+                        {newVal}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => handleDuplicateAction("update")}
+                  disabled={savingPrice}
+                  className="w-full rounded-xl bg-sky-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-sky-700 disabled:opacity-50"
+                >
+                  {savingPrice ? "Guardando…" : "Actualizar existente"}
+                </button>
+                <button
+                  onClick={() => handleDuplicateAction("create_new")}
+                  disabled={savingPrice}
+                  className="w-full rounded-xl bg-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-600 disabled:opacity-50"
+                >
+                  {savingPrice ? "Guardando…" : "Crear nuevo"}
+                </button>
+                <button
+                  onClick={() => setDuplicateCandidate(null)}
+                  disabled={savingPrice}
+                  className="w-full rounded-xl px-4 py-2 text-sm text-slate-500 transition-colors hover:text-slate-300 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
