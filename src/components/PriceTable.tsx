@@ -139,10 +139,14 @@ function PriceTable({
 
   const handleRowClick = (price: PriceEntry) => {
     setDetailPrice(price);
+    setNutritionBarCode(null);
+    setNutritionData(null);
   };
 
   const handleCloseDetail = () => {
     setDetailPrice(null);
+    setNutritionBarCode(null);
+    setNutritionData(null);
   };
 
   const handleHistoryRowClick = (price: PriceEntry) => {
@@ -151,6 +155,8 @@ function PriceTable({
     setHistoryPrices([]);
     setHistoryError(null);
     setSupermarketHistorySearchTerm("");
+    setNutritionBarCode(null);
+    setNutritionData(null);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -222,8 +228,6 @@ function PriceTable({
     setHistoryPrices([]);
     setHistoryError(null);
     setSupermarketHistorySearchTerm("");
-    setNutritionBarCode(null);
-    setNutritionData(null);
   };
 
   const handleBackToDetails = () => {
@@ -616,29 +620,155 @@ function PriceTable({
             >
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-slate-100">
-                  Detalles del precio
+                  {nutritionBarCode
+                    ? "Información nutricional"
+                    : "Detalles del precio"}
                 </h3>
-                <button
-                  onClick={handleCloseDetail}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                  aria-label="Cerrar"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
+                <div className="flex items-center gap-2">
+                  {!nutritionBarCode && detailPrice.bar_code && (
+                    <button
+                      onClick={() => handleOpenNutrition(detailPrice.bar_code!)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 transition-all hover:border-amber-500/50 hover:bg-amber-500/20 hover:text-amber-200"
+                      aria-label="Ver información nutricional"
+                    >
+                      <span className="text-lg">🥗</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={nutritionBarCode ? handleCloseNutrition : handleCloseDetail}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+                    aria-label={nutritionBarCode ? "Volver a detalles" : "Cerrar"}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
+              {/* Vista de información nutricional */}
+              {nutritionBarCode && (
+                <div className="mt-2">
+                  {loadingNutrition && (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
+                        <p className="text-sm text-slate-400">
+                          Cargando información nutricional...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!loadingNutrition && !nutritionData && (
+                    <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-700/20 to-slate-800/40">
+                        <span className="text-4xl">🥗</span>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-semibold text-slate-100">
+                          Sin datos nutricionales
+                        </h3>
+                        <p className="max-w-md text-sm text-slate-400">
+                          No se encontraron datos nutricionales para este
+                          producto. Es posible que no esté registrado en Open
+                          Food Facts.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!loadingNutrition && nutritionData && (
+                    <>
+                      <p className="mb-4 text-sm font-medium text-slate-300">
+                        Por 100g de producto
+                      </p>
+                      <div className="space-y-2">
+                        {[
+                          {
+                            label: "Energía",
+                            value: nutritionData.energy_kcal,
+                            unit: "kcal",
+                            icon: "🔥",
+                          },
+                          {
+                            label: "Grasas",
+                            value: nutritionData.fat,
+                            unit: "g",
+                            icon: "🧈",
+                          },
+                          {
+                            label: "Grasas saturadas",
+                            value: nutritionData.saturated_fat,
+                            unit: "g",
+                            icon: "🟠",
+                          },
+                          {
+                            label: "Hidratos de carbono",
+                            value: nutritionData.carbohydrates,
+                            unit: "g",
+                            icon: "🍞",
+                          },
+                          {
+                            label: "Azúcares",
+                            value: nutritionData.sugars,
+                            unit: "g",
+                            icon: "🍬",
+                          },
+                          {
+                            label: "Proteínas",
+                            value: nutritionData.proteins,
+                            unit: "g",
+                            icon: "🥩",
+                          },
+                          {
+                            label: "Sal",
+                            value: nutritionData.salt,
+                            unit: "g",
+                            icon: "🧂",
+                          },
+                          {
+                            label: "Fibra",
+                            value: nutritionData.fiber,
+                            unit: "g",
+                            icon: "🌾",
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/20 px-4 py-3"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{item.icon}</span>
+                              <span className="text-sm text-slate-300">
+                                {item.label}
+                              </span>
+                            </div>
+                            <span className="text-sm font-medium text-slate-100">
+                              {item.value !== null
+                                ? `${item.value} ${item.unit}`
+                                : "—"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Contenido normal del detalle */}
+              {!nutritionBarCode && (
               <div className="space-y-4">
                 {/* Producto - Tarjeta clicable mejorada */}
                 <button
@@ -834,98 +964,103 @@ function PriceTable({
                   </div>
                 )}
               </div>
-
-              {/* Añadir nuevo precio */}
-              {onQuickAdd && (
-                <button
-                  onClick={openQuickAdd}
-                  className="mt-6 w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Añadir nuevo precio
-                </button>
               )}
 
-              {/* Acciones */}
-              <div className="mt-3 flex gap-2 sm:gap-3">
-                <button
-                  onClick={handleCloseDetail}
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg border border-slate-700 bg-slate-800 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
-                >
-                  <svg
-                    className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.5"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                  <span>Cancelar</span>
-                </button>
-                <button
-                  onClick={() => handleEditClick(detailPrice)}
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg bg-sky-600 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                >
-                  <svg
-                    className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.5"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 16v3a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 15l10-10a2.121 2.121 0 013 3L12 18l-4 1 1-4z"
-                    />
-                  </svg>
-                  <span>Editar</span>
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(detailPrice.id)}
-                  className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg bg-red-600 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <svg
-                    className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.5"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  <span>Eliminar</span>
-                </button>
-              </div>
+              {/* Añadir nuevo precio y acciones */}
+              {!nutritionBarCode && (
+                <>
+                  {onQuickAdd && (
+                    <button
+                      onClick={openQuickAdd}
+                      className="mt-6 w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2.5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      Añadir nuevo precio
+                    </button>
+                  )}
+
+                  {/* Acciones */}
+                  <div className="mt-3 flex gap-2 sm:gap-3">
+                    <button
+                      onClick={handleCloseDetail}
+                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg border border-slate-700 bg-slate-800 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    >
+                      <svg
+                        className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2.5"
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                      <span>Cancelar</span>
+                    </button>
+                    <button
+                      onClick={() => handleEditClick(detailPrice)}
+                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg bg-sky-600 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    >
+                      <svg
+                        className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2.5"
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17 16v3a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 15l10-10a2.121 2.121 0 013 3L12 18l-4 1 1-4z"
+                        />
+                      </svg>
+                      <span>Editar</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(detailPrice.id)}
+                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg bg-red-600 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <svg
+                        className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2.5"
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      <span>Eliminar</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -954,17 +1089,9 @@ function PriceTable({
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={
-                      nutritionBarCode
-                        ? handleCloseNutrition
-                        : handleBackToDetails
-                    }
+                    onClick={handleBackToDetails}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                    aria-label={
-                      nutritionBarCode
-                        ? "Volver a historial"
-                        : "Volver a detalles"
-                    }
+                    aria-label="Volver a detalles"
                   >
                     <svg
                       className="h-5 w-5"
@@ -983,19 +1110,10 @@ function PriceTable({
                   <div className="flex items-center gap-2 text-sm text-slate-400">
                     <button
                       type="button"
-                      onClick={
-                        nutritionBarCode
-                          ? handleCloseNutrition
-                          : handleBackToDetails
-                      }
+                      onClick={handleBackToDetails}
                       className="text-slate-400 transition-colors hover:text-slate-100 focus:outline-none focus:underline"
                     >
-                      {nutritionBarCode
-                        ? `Historial de ${historyView.type === "product"
-                          ? "Producto"
-                          : "Supermercado"
-                        }`
-                        : "Detalles"}
+                      Detalles
                     </button>
                     <svg
                       className="h-4 w-4"
@@ -1011,27 +1129,16 @@ function PriceTable({
                       />
                     </svg>
                     <span className="text-slate-100 font-medium">
-                      {nutritionBarCode
-                        ? "Información nutricional"
-                        : `Historial de ${historyView.type === "product"
-                          ? "Producto"
-                          : "Supermercado"
-                        }`}
+                      {historyView.type === "product"
+                        ? "Historial de Producto"
+                        : "Historial de Supermercado"}
                     </span>
                   </div>
                 </div>
                 <button
-                  onClick={
-                    nutritionBarCode
-                      ? handleCloseNutrition
-                      : handleBackToDetails
-                  }
+                  onClick={handleBackToDetails}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
-                  aria-label={
-                    nutritionBarCode
-                      ? "Cerrar nutrición"
-                      : "Cerrar y volver a detalles"
-                  }
+                  aria-label="Cerrar y volver a detalles"
                 >
                   <svg
                     className="h-5 w-5"
@@ -1050,147 +1157,22 @@ function PriceTable({
               </div>
 
               {/* Título */}
-              {!nutritionBarCode && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-3">
-                    <h3 className="min-w-0 flex-1 truncate text-2xl font-semibold text-slate-100">
-                      {historyView.type === "product" ? "📦 " : "🏪 "}
-                      {historyView.value}
-                    </h3>
-                    {historyView.type === "product" &&
-                      historyPrices[0]?.bar_code && (
-                        <button
-                          onClick={() =>
-                            handleOpenNutrition(historyPrices[0].bar_code!)
-                          }
-                          className="flex shrink-0 items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1 text-xs font-medium text-amber-300 transition-all hover:border-amber-500/50 hover:bg-amber-500/20 hover:text-amber-200"
-                          aria-label="Ver información nutricional"
-                        >
-                          <span className="text-xl">🥗</span>
-                        </button>
-                      )}
-                  </div>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {historyView.type === "product"
-                      ? "Todos los precios registrados de este producto"
-                      : "Todos los productos registrados en este supermercado"}
-                  </p>
+              <div className="mb-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="min-w-0 flex-1 truncate text-2xl font-semibold text-slate-100">
+                    {historyView.type === "product" ? "📦 " : "🏪 "}
+                    {historyView.value}
+                  </h3>
                 </div>
-              )}
-
-              {/* Vista de información nutricional */}
-              {nutritionBarCode && (
-                <div className="mt-2">
-                  {loadingNutrition && (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
-                        <p className="text-sm text-slate-400">
-                          Cargando información nutricional...
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {!loadingNutrition && !nutritionData && (
-                    <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-700/20 to-slate-800/40">
-                        <span className="text-4xl">🥗</span>
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-lg font-semibold text-slate-100">
-                          Sin datos nutricionales
-                        </h3>
-                        <p className="max-w-md text-sm text-slate-400">
-                          No se encontraron datos nutricionales para este
-                          producto. Es posible que no esté registrado en Open
-                          Food Facts.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {!loadingNutrition && nutritionData && (
-                    <>
-                      <p className="mb-4 text-sm font-medium text-slate-300">
-                        Por 100g de producto
-                      </p>
-                      <div className="space-y-2">
-                        {[
-                          {
-                            label: "Energía",
-                            value: nutritionData.energy_kcal,
-                            unit: "kcal",
-                            icon: "🔥",
-                          },
-                          {
-                            label: "Grasas",
-                            value: nutritionData.fat,
-                            unit: "g",
-                            icon: "🧈",
-                          },
-                          {
-                            label: "Grasas saturadas",
-                            value: nutritionData.saturated_fat,
-                            unit: "g",
-                            icon: "🟠",
-                          },
-                          {
-                            label: "Hidratos de carbono",
-                            value: nutritionData.carbohydrates,
-                            unit: "g",
-                            icon: "🍞",
-                          },
-                          {
-                            label: "Azúcares",
-                            value: nutritionData.sugars,
-                            unit: "g",
-                            icon: "🍬",
-                          },
-                          {
-                            label: "Proteínas",
-                            value: nutritionData.proteins,
-                            unit: "g",
-                            icon: "🥩",
-                          },
-                          {
-                            label: "Sal",
-                            value: nutritionData.salt,
-                            unit: "g",
-                            icon: "🧂",
-                          },
-                          {
-                            label: "Fibra",
-                            value: nutritionData.fiber,
-                            unit: "g",
-                            icon: "🌾",
-                          },
-                        ].map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/20 px-4 py-3"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-xl">{item.icon}</span>
-                              <span className="text-sm text-slate-300">
-                                {item.label}
-                              </span>
-                            </div>
-                            <span className="text-sm font-medium text-slate-100">
-                              {item.value !== null
-                                ? `${item.value} ${item.unit}`
-                                : "—"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+                <p className="mt-1 text-sm text-slate-400">
+                  {historyView.type === "product"
+                    ? "Todos los precios registrados de este producto"
+                    : "Todos los productos registrados en este supermercado"}
+                </p>
+              </div>
 
               {/* Barra de búsqueda (solo para historial de supermercado) */}
-              {!nutritionBarCode && historyView.type === "supermarket" && (
+              {historyView.type === "supermarket" && (
                 <div className="mb-6">
                   <label
                     htmlFor="supermarket-history-search"
@@ -1254,7 +1236,7 @@ function PriceTable({
               )}
 
               {/* Filtros temporales (solo para vista de producto) */}
-              {!nutritionBarCode && historyView.type === "product" && (
+              {historyView.type === "product" && (
                 <div className="mb-6 flex flex-wrap gap-2">
                   <button
                     onClick={() => setTimeFilter("6months")}
@@ -1326,7 +1308,7 @@ function PriceTable({
               )}
 
               {/* Estados de carga y error */}
-              {!nutritionBarCode && loadingHistory && (
+              {loadingHistory && (
                 <div className="flex items-center justify-center py-12">
                   <div className="flex flex-col items-center gap-3">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
@@ -1337,7 +1319,7 @@ function PriceTable({
                 </div>
               )}
 
-              {!nutritionBarCode && historyError && (
+              {historyError && (
                 <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">⚠️</span>
@@ -1347,8 +1329,7 @@ function PriceTable({
               )}
 
               {/* Estadísticas (solo para historial de producto) */}
-              {!nutritionBarCode &&
-                !loadingHistory &&
+              {!loadingHistory &&
                 !historyError &&
                 filteredHistoryPrices.length > 0 &&
                 historyView.type === "product" && (
@@ -1431,8 +1412,7 @@ function PriceTable({
                 )}
 
               {/* Tabla de historial */}
-              {!nutritionBarCode &&
-                !loadingHistory &&
+              {!loadingHistory &&
                 !historyError &&
                 filteredHistoryPrices.length > 0 && (
                   <>
@@ -1589,8 +1569,7 @@ function PriceTable({
                 )}
 
               {/* Sin resultados - Filtro sin coincidencias */}
-              {!nutritionBarCode &&
-                !loadingHistory &&
+              {!loadingHistory &&
                 !historyError &&
                 filteredHistoryPrices.length === 0 &&
                 historyPrices.length > 0 && (

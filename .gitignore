@@ -24,3 +24,4 @@ pnpm-debug.log*
 .idea/
 VERIFICACION_HISTORIAL.md
 test-history-feature.js
+docs/ui-references/
