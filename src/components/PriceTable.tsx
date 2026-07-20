@@ -40,6 +40,13 @@ const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
   { value: "custom", label: "Personalizado" },
 ];
 
+const UNIT_LABELS: Record<string, string> = {
+  Kg: "g",
+  L: "ml",
+  Docena: "Docena",
+  Unidad: "Unidad",
+};
+
 export interface PriceTableProps {
   prices: PriceEntry[];
   loading?: boolean;
@@ -1542,7 +1549,7 @@ function PriceTable({
                     </div>
                     <div className="flex-1 px-3 py-2.5">
                       <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Unidad</p>
-                      <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.unit}</p>
+                      <p className="text-base font-bold text-[#f4f6fb]">{UNIT_LABELS[detailPrice.unit] ?? detailPrice.unit}</p>
                     </div>
                   </div>
                 </div>

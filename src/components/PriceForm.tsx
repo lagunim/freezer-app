@@ -32,6 +32,13 @@ interface PriceFormProps {
 
 const AVAILABLE_UNITS: Unit[] = ["Kg", "L", "Docena", "Unidad"];
 
+const UNIT_LABELS: Record<Unit, string> = {
+  Kg: "g",
+  L: "ml",
+  Docena: "Docena",
+  Unidad: "Unidad",
+};
+
 const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
   { value: "", label: "— Sin oferta —" },
   { value: "2x1", label: "2x1 Segunda unidad gratis" },
@@ -370,7 +377,7 @@ export default function PriceForm({
               >
                 {AVAILABLE_UNITS.map((u) => (
                   <option key={u} value={u} className="bg-[#141c30] text-[#f4f6fb]">
-                    {u}
+                    {UNIT_LABELS[u]}
                   </option>
                 ))}
               </select>
