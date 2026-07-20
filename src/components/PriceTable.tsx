@@ -834,7 +834,7 @@ function PriceTable({
                         detailPrice,
                       );
                     }}
-                    className="w-full flex items-center gap-2.5 border-t border-dashed border-white/[0.07] pt-2.5 text-left cursor-pointer group"
+                    className="w-full flex items-center gap-2.5 border-t border-dashed border-white/[0.07] py-2.5 text-left cursor-pointer group"
                   >
                     <span className="flex items-center text-base leading-none">🏬</span>
                     <span className="flex-1 min-w-0 flex items-center text-md font-semibold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors truncate leading-none">
@@ -857,7 +857,7 @@ function PriceTable({
 
               {/* Añadir nuevo precio y acciones */}
               {!nutritionBarCode && (
-                <div className="mt-3 space-y-2.5">
+                <div className="mt-3.5 space-y-3.5">
                   {onQuickAdd && (
                     <button
                       onClick={openQuickAdd}
