@@ -786,7 +786,7 @@ function PriceTable({
                     <p className="ml-[34px] text-xs text-[#8b93a9] group-hover:text-[#4da2ff] transition-colors">
                       {detailPrice.brand && detailPrice.brand.trim() !== ""
                         ? detailPrice.brand
-                        : "—"} · Ver historial completo →
+                        : "—"}
                     </p>
                   </button>
 
@@ -1502,71 +1502,51 @@ function PriceTable({
               animate={{ scaleY: 1, originY: 0.5 }}
               exit={{ scaleY: 0, originY: 0.5 }}
               transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
-              className="mx-4 w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              className="mx-4 w-full max-w-lg rounded-[22px] border border-white/[0.07] bg-[#141c30] p-3.5 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-slate-100">
+              <div className="mb-3">
+                <h2 className="text-lg font-bold text-[#f4f6fb]">
                   Añadir nuevo precio
                 </h2>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-0.5 text-xs text-[#8b93a9]">
                   Registro rápido de precio para este producto
                 </p>
               </div>
 
-              <div className="space-y-4">
-                {/* Producto (solo lectura) */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">📦</span>
-                    <p className="text-xs font-medium text-slate-400">Producto</p>
+              <div className="space-y-3">
+                {/* Campos de solo lectura — miniStats 2×2 */}
+                <div className="overflow-hidden rounded-xl border border-white/[0.07]">
+                  <div className="flex">
+                    <div className="flex-1 border-r border-white/[0.07] px-3 py-2.5">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Producto</p>
+                      <p className="text-sm font-bold text-[#f4f6fb] truncate">{detailPrice.product_name}</p>
+                    </div>
+                    <div className="flex-1 px-3 py-2.5">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Marca</p>
+                      <p className="text-sm font-bold text-[#f4f6fb] truncate">
+                        {detailPrice.brand && detailPrice.brand.trim() !== "" ? detailPrice.brand : "—"}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-base font-semibold text-slate-100">
-                    {detailPrice.product_name}
-                  </p>
-                </div>
-
-                {/* Marca (solo lectura) */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">🏷️</span>
-                    <p className="text-xs font-medium text-slate-400">Marca</p>
+                  <div className="flex border-t border-white/[0.07]">
+                    <div className="flex-1 border-r border-white/[0.07] px-3 py-2.5">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Supermercado</p>
+                      <p className="text-sm font-bold text-[#f4f6fb] truncate">{detailPrice.supermarket}</p>
+                    </div>
+                    <div className="flex-1 px-3 py-2.5">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Unidad</p>
+                      <p className="text-sm font-bold text-[#f4f6fb]">{detailPrice.unit}</p>
+                    </div>
                   </div>
-                  <p className="text-base font-semibold text-slate-100">
-                    {detailPrice.brand && detailPrice.brand.trim() !== ""
-                      ? detailPrice.brand
-                      : "—"}
-                  </p>
-                </div>
-
-                {/* Supermercado (solo lectura) */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">🏪</span>
-                    <p className="text-xs font-medium text-slate-400">Supermercado</p>
-                  </div>
-                  <p className="text-base font-semibold text-slate-100">
-                    {detailPrice.supermarket}
-                  </p>
-                </div>
-
-                {/* Unidad (solo lectura) */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">📐</span>
-                    <p className="text-xs font-medium text-slate-400">Unidad</p>
-                  </div>
-                  <p className="text-base font-semibold text-slate-100">
-                    {detailPrice.unit}
-                  </p>
                 </div>
 
                 {/* Precio y Cantidad */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   <div>
                     <label
                       htmlFor="quick-price"
-                      className="mb-2 block text-sm font-medium text-slate-300 min-h-[20px]"
+                      className="mb-1 block text-xs font-medium text-[#8b93a9]"
                     >
                       Precio pagado (€)
                     </label>
@@ -1579,7 +1559,7 @@ function PriceTable({
                       min="0"
                       value={quickAddPrice}
                       onChange={(e) => setQuickAddPrice(e.target.value)}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                       placeholder="Ej: 3,40"
                       required
                     />
@@ -1587,7 +1567,7 @@ function PriceTable({
                   <div>
                     <label
                       htmlFor="quick-quantity"
-                      className="mb-2 block text-sm font-medium text-slate-300 min-h-[20px]"
+                      className="mb-1 block text-xs font-medium text-[#8b93a9]"
                     >
                       Cantidad
                     </label>
@@ -1600,7 +1580,7 @@ function PriceTable({
                       min="0.01"
                       value={quickAddQuantity}
                       onChange={(e) => setQuickAddQuantity(e.target.value)}
-                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                       placeholder="Ej: 250"
                       required
                     />
@@ -1611,7 +1591,7 @@ function PriceTable({
                 <div>
                   <label
                     htmlFor="quick-date"
-                    className="mb-2 block text-sm font-medium text-slate-300"
+                    className="mb-1 block text-xs font-medium text-[#8b93a9]"
                   >
                     Fecha
                   </label>
@@ -1620,7 +1600,7 @@ function PriceTable({
                     type="date"
                     value={quickAddDate}
                     onChange={(e) => setQuickAddDate(e.target.value)}
-                    className="min-w-0 w-full max-w-full appearance-none box-border rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
+                    className="min-w-0 w-full max-w-full appearance-none box-border rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
                     required
                   />
                 </div>
@@ -1630,7 +1610,7 @@ function PriceTable({
                   <div>
                     <label
                       htmlFor="quick-barcode"
-                      className="mb-2 block text-sm font-medium text-slate-300"
+                      className="mb-1 block text-xs font-medium text-[#8b93a9]"
                     >
                       Código de barras
                     </label>
@@ -1641,34 +1621,20 @@ function PriceTable({
                         inputMode="numeric"
                         value={quickAddBarcode}
                         onChange={(e) => setQuickAddBarcode(e.target.value)}
-                        className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 placeholder-slate-500 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                        className="min-w-0 flex-1 rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                         placeholder="Ej: 8410076472586"
                         autoComplete="off"
                       />
                       <button
                         type="button"
                         onClick={() => setIsQuickAddScannerOpen(true)}
-                        className="flex h-[42px] min-w-[42px] shrink-0 items-center justify-center rounded-lg border border-sky-500/50 bg-sky-600/20 text-sky-400 transition-colors hover:bg-sky-600/40 hover:text-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="flex h-[38px] min-w-[38px] shrink-0 items-center justify-center rounded-xl border border-[#4da2ff]/30 bg-[#4da2ff]/10 text-[#4da2ff] transition-colors hover:bg-[#4da2ff]/20 focus:outline-none focus:ring-2 focus:ring-[#4da2ff]"
                         aria-label="Escanear código de barras"
                         title="Escanear código de barras"
                       >
-                        <svg
-                          className="h-5 w-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
-                          />
+                        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
                         </svg>
                       </button>
                     </div>
@@ -1679,7 +1645,7 @@ function PriceTable({
                 <div>
                   <label
                     htmlFor="quick-offer"
-                    className="mb-2 block text-sm font-medium text-slate-300"
+                    className="mb-1 block text-xs font-medium text-[#8b93a9]"
                   >
                     Oferta
                   </label>
@@ -1691,7 +1657,7 @@ function PriceTable({
                       setQuickAddOfferType(v);
                       if (v === "custom") setShowQuickAddCustomOfferModal(true);
                     }}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-base text-slate-100 transition-all focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                    className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                   >
                     {OFFER_OPTIONS.map((opt) => (
                       <option key={opt.value || "none"} value={opt.value}>
@@ -1703,7 +1669,7 @@ function PriceTable({
                     <button
                       type="button"
                       onClick={() => setShowQuickAddCustomOfferModal(true)}
-                      className="mt-2 text-sm text-sky-400 hover:text-sky-300 transition-colors"
+                      className="mt-1.5 text-xs text-[#4da2ff] hover:text-[#3b8fe6] transition-colors"
                     >
                       Editar nombre y descripción →
                     </button>
@@ -1712,18 +1678,18 @@ function PriceTable({
 
                 {/* Error */}
                 {quickAddError && (
-                  <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-3">
-                    <p className="text-sm text-red-400">{quickAddError}</p>
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3.5 py-2.5">
+                    <p className="text-xs text-red-400">{quickAddError}</p>
                   </div>
                 )}
 
                 {/* Botones */}
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-2 pt-1">
                   <button
                     type="button"
                     onClick={closeQuickAdd}
                     disabled={savingQuickAdd}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-white/[0.06] py-2.5 text-xs font-bold text-[#8b93a9] transition-colors hover:bg-white/[0.10] hover:text-[#f4f6fb] focus:outline-none focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Cancelar
                   </button>
@@ -1731,27 +1697,17 @@ function PriceTable({
                     type="button"
                     onClick={handleQuickAddSubmit}
                     disabled={savingQuickAdd}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-green-600 py-2.5 text-xs font-bold text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {savingQuickAdd ? (
                       <span className="flex items-center justify-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
                         Guardando...
                       </span>
                     ) : (
                       <>
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 4v16m8-8H4"
-                          />
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                         Guardar
                       </>
