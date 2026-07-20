@@ -1527,29 +1527,25 @@ function PriceTable({
               </div>
 
               <div className="space-y-3">
-                {/* Campos de solo lectura — miniStats 2×2 */}
+                {/* Campos de solo lectura — miniStats 1 columna */}
                 <div className="overflow-hidden rounded-xl border border-white/[0.07]">
-                  <div className="flex">
-                    <div className="flex-1 border-r border-white/[0.07] px-3 py-2.5">
-                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Producto</p>
-                      <p className="text-sm font-bold text-[#f4f6fb] truncate">{detailPrice.product_name}</p>
-                    </div>
-                    <div className="flex-1 px-3 py-2.5">
-                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Marca</p>
-                      <p className="text-sm font-bold text-[#f4f6fb] truncate">
-                        {detailPrice.brand && detailPrice.brand.trim() !== "" ? detailPrice.brand : "—"}
-                      </p>
-                    </div>
+                  <div className="px-3 py-2.5">
+                    <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Producto</p>
+                    <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.product_name}</p>
                   </div>
-                  <div className="flex border-t border-white/[0.07]">
-                    <div className="flex-1 border-r border-white/[0.07] px-3 py-2.5">
-                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Supermercado</p>
-                      <p className="text-sm font-bold text-[#f4f6fb] truncate">{detailPrice.supermarket}</p>
-                    </div>
-                    <div className="flex-1 px-3 py-2.5">
-                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Unidad</p>
-                      <p className="text-sm font-bold text-[#f4f6fb]">{detailPrice.unit}</p>
-                    </div>
+                  <div className="border-t border-white/[0.07] px-3 py-2.5">
+                    <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Marca</p>
+                    <p className="text-base font-bold text-[#f4f6fb]">
+                      {detailPrice.brand && detailPrice.brand.trim() !== "" ? detailPrice.brand : "—"}
+                    </p>
+                  </div>
+                  <div className="border-t border-white/[0.07] px-3 py-2.5">
+                    <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Supermercado</p>
+                    <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.supermarket}</p>
+                  </div>
+                  <div className="border-t border-white/[0.07] px-3 py-2.5">
+                    <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Unidad</p>
+                    <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.unit}</p>
                   </div>
                 </div>
 
