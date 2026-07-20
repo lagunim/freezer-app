@@ -625,27 +625,25 @@ function PriceTable({
                     ? "Información nutricional"
                     : "Detalles del precio"}
                 </h3>
-                <div className="flex items-center gap-2">
-                  {!nutritionBarCode && detailPrice.bar_code && (
-                    <button
-                      onClick={() => handleOpenNutrition(detailPrice.bar_code!)}
-                      className="flex h-8 items-center justify-center gap-1.5 rounded-full bg-[rgba(227,181,103,0.10)] border border-[rgba(227,181,103,0.3)] px-3 text-sm transition-all hover:bg-[rgba(227,181,103,0.20)] hover:border-[rgba(227,181,103,0.5)]"
-                      aria-label="Ver información nutricional"
-                    >
-                      <span className="text-sm leading-none">🥗</span>
-                      <span className="text-xs font-semibold text-[#e3b567] leading-none">Nutrición</span>
-                    </button>
-                  )}
+                {!nutritionBarCode && detailPrice.bar_code && (
                   <button
-                    onClick={nutritionBarCode ? handleCloseNutrition : handleCloseDetail}
-                    className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-white/[0.06] text-[#8b93a9] transition-colors hover:bg-white/10 hover:text-[#f4f6fb]"
-                    aria-label={nutritionBarCode ? "Volver a detalles" : "Cerrar"}
+                    onClick={() => handleOpenNutrition(detailPrice.bar_code!)}
+                    className="flex h-8 items-center justify-center gap-1.5 rounded-full bg-[rgba(227,181,103,0.10)] border border-[rgba(227,181,103,0.3)] px-3 text-sm transition-all hover:bg-[rgba(227,181,103,0.20)] hover:border-[rgba(227,181,103,0.5)]"
+                    aria-label="Ver información nutricional"
                   >
-                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <span className="text-sm leading-none">🥗</span>
+                    <span className="text-xs font-semibold text-[#e3b567] leading-none">Nutrición</span>
                   </button>
-                </div>
+                )}
+                <button
+                  onClick={nutritionBarCode ? handleCloseNutrition : handleCloseDetail}
+                  className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-white/[0.06] text-[#8b93a9] transition-colors hover:bg-white/10 hover:text-[#f4f6fb]"
+                  aria-label={nutritionBarCode ? "Volver a detalles" : "Cerrar"}
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
 
               {/* Vista de información nutricional */}
@@ -681,82 +679,85 @@ function PriceTable({
                   )}
 
                   {!loadingNutrition && nutritionData && (
-                    <>
-                      <p className="mb-4 text-sm font-medium text-[#8b93a9]">
-                        Por 100g de producto
-                      </p>
-                      <div className="space-y-2">
-                        {[
-                          {
-                            label: "Energía",
-                            value: nutritionData.energy_kcal,
-                            unit: "kcal",
-                            icon: "🔥",
-                          },
-                          {
-                            label: "Grasas",
-                            value: nutritionData.fat,
-                            unit: "g",
-                            icon: "🧈",
-                          },
-                          {
-                            label: "Grasas saturadas",
-                            value: nutritionData.saturated_fat,
-                            unit: "g",
-                            icon: "🟠",
-                          },
-                          {
-                            label: "Hidratos de carbono",
-                            value: nutritionData.carbohydrates,
-                            unit: "g",
-                            icon: "🍞",
-                          },
-                          {
-                            label: "Azúcares",
-                            value: nutritionData.sugars,
-                            unit: "g",
-                            icon: "🍬",
-                          },
-                          {
-                            label: "Proteínas",
-                            value: nutritionData.proteins,
-                            unit: "g",
-                            icon: "🥩",
-                          },
-                          {
-                            label: "Sal",
-                            value: nutritionData.salt,
-                            unit: "g",
-                            icon: "🧂",
-                          },
-                          {
-                            label: "Fibra",
-                            value: nutritionData.fiber,
-                            unit: "g",
-                            icon: "🌾",
-                          },
-                        ].map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-[#141c30] px-4 py-2.5"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-base">{item.icon}</span>
-                              <span className="text-sm text-[#8b93a9]">
-                                {item.label}
-                              </span>
-                            </div>
-                            <span className="text-sm font-semibold text-[#f4f6fb]">
-                              {item.value !== null
-                                ? `${item.value} ${item.unit}`
-                                : "—"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
+                    <div className="rounded-[22px] border border-white/[0.07] bg-[#141c30] px-3.5 py-1">
+                      <p className="py-2 text-xs font-medium text-[#8b93a9]">Por 100g de producto</p>
+                      {[
+                        {
+                          label: "Energía",
+                          value: nutritionData.energy_kcal,
+                          unit: "kcal",
+                          icon: "🔥",
+                        },
+                        {
+                          label: "Grasas",
+                          value: nutritionData.fat,
+                          unit: "g",
+                          icon: "🧈",
+                        },
+                        {
+                          label: "Grasas saturadas",
+                          value: nutritionData.saturated_fat,
+                          unit: "g",
+                          icon: "🟠",
+                        },
+                        {
+                          label: "Hidratos de carbono",
+                          value: nutritionData.carbohydrates,
+                          unit: "g",
+                          icon: "🍞",
+                        },
+                        {
+                          label: "Azúcares",
+                          value: nutritionData.sugars,
+                          unit: "g",
+                          icon: "🍬",
+                        },
+                        {
+                          label: "Proteínas",
+                          value: nutritionData.proteins,
+                          unit: "g",
+                          icon: "🥩",
+                        },
+                        {
+                          label: "Sal",
+                          value: nutritionData.salt,
+                          unit: "g",
+                          icon: "🧂",
+                        },
+                        {
+                          label: "Fibra",
+                          value: nutritionData.fiber,
+                          unit: "g",
+                          icon: "🌾",
+                        },
+                      ].map((item, i) => (
+                        <div
+                          key={item.label}
+                          className={`flex items-center gap-2.5 py-2.5 ${i > 0 ? "border-t border-dashed border-white/[0.07]" : ""}`}
+                        >
+                          <span className="text-base leading-none">{item.icon}</span>
+                          <span className="flex-1 text-sm text-[#8b93a9]">{item.label}</span>
+                          <span className="text-sm font-semibold text-[#f4f6fb]">
+                            {item.value !== null ? `${item.value} ${item.unit}` : "—"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
+              )}
+
+              {/* Botón Atrás (solo en vista nutricional) */}
+              {nutritionBarCode && (
+                <button
+                  onClick={handleCloseNutrition}
+                  className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl bg-white/[0.06] py-2.5 text-xs font-bold text-[#8b93a9] transition-colors hover:bg-white/[0.10] hover:text-[#f4f6fb] focus:outline-none focus:ring-2 focus:ring-white/20"
+                >
+                  <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Atrás</span>
+                </button>
               )}
 
               {/* Contenido normal del detalle — Estilo ticket */}
