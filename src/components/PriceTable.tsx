@@ -1571,7 +1571,7 @@ function PriceTable({
                       min="0"
                       value={quickAddPrice}
                       onChange={(e) => setQuickAddPrice(e.target.value)}
-                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
+                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                       placeholder="Ej: 3,40"
                       required
                     />
@@ -1592,7 +1592,7 @@ function PriceTable({
                       min="0.01"
                       value={quickAddQuantity}
                       onChange={(e) => setQuickAddQuantity(e.target.value)}
-                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
+                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                       placeholder="Ej: 250"
                       required
                     />
@@ -1612,7 +1612,7 @@ function PriceTable({
                     type="date"
                     value={quickAddDate}
                     onChange={(e) => setQuickAddDate(e.target.value)}
-                    className="min-w-0 w-full max-w-full appearance-none box-border rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
+                    className="min-w-0 w-full max-w-full appearance-none box-border rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
                     required
                   />
                 </div>
@@ -1633,7 +1633,7 @@ function PriceTable({
                         inputMode="numeric"
                         value={quickAddBarcode}
                         onChange={(e) => setQuickAddBarcode(e.target.value)}
-                        className="min-w-0 flex-1 rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
+                        className="min-w-0 flex-1 rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                         placeholder="Ej: 8410076472586"
                         autoComplete="off"
                       />
@@ -1669,7 +1669,7 @@ function PriceTable({
                       setQuickAddOfferType(v);
                       if (v === "custom") setShowQuickAddCustomOfferModal(true);
                     }}
-                    className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
+                    className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                   >
                     {OFFER_OPTIONS.map((opt) => (
                       <option key={opt.value || "none"} value={opt.value}>
