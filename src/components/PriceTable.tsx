@@ -127,7 +127,7 @@ function PriceTable({
   const [isQuickAddScannerOpen, setIsQuickAddScannerOpen] = useState(false);
   const [quickAddError, setQuickAddError] = useState<string | null>(null);
 
-  useScrollLock(detailPrice !== null || isQuickAddOpen);
+  useScrollLock(detailPrice !== null || isQuickAddOpen || historyView !== null);
 
   // Sincronizar detailPrice cuando se actualiza un precio en el array prices
   useEffect(() => {
