@@ -117,7 +117,6 @@ function PriceTable({
   // Quick-add price states
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [quickAddPrice, setQuickAddPrice] = useState("");
-  const [quickAddQuantity, setQuickAddQuantity] = useState("");
   const [quickAddDate, setQuickAddDate] = useState(toDateInputValue());
   const [quickAddOfferType, setQuickAddOfferType] = useState<"" | OfferType>("");
   const [quickAddCustomOfferName, setQuickAddCustomOfferName] = useState("");
@@ -262,7 +261,6 @@ function PriceTable({
 
   const openQuickAdd = () => {
     setQuickAddPrice("");
-    setQuickAddQuantity("");
     setQuickAddDate(toDateInputValue());
     setQuickAddOfferType("");
     setQuickAddCustomOfferName("");
@@ -287,12 +285,6 @@ function PriceTable({
       return;
     }
 
-    const qtyNum = Number.parseFloat(quickAddQuantity.replace(",", "."));
-    if (Number.isNaN(qtyNum) || qtyNum <= 0) {
-      setQuickAddError("La cantidad debe ser un número mayor que 0.");
-      return;
-    }
-
     if (!quickAddDate) {
       setQuickAddError("Selecciona una fecha.");
       return;
@@ -303,7 +295,7 @@ function PriceTable({
       product_name: detailPrice.product_name,
       brand: detailPrice.brand ?? "",
       total_price: priceNum,
-      quantity: qtyNum,
+      quantity: detailPrice.quantity,
       unit: detailPrice.unit,
       supermarket: detailPrice.supermarket,
       date: new Date(quickAddDate).toISOString(),
@@ -1527,7 +1519,7 @@ function PriceTable({
               </div>
 
               <div className="space-y-3">
-                {/* Campos de solo lectura — miniStats 1 columna */}
+                {/* Campos de solo lectura — miniStats */}
                 <div className="overflow-hidden rounded-xl border border-white/[0.07]">
                   <div className="px-3 py-2.5">
                     <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Producto</p>
@@ -1543,13 +1535,19 @@ function PriceTable({
                     <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Supermercado</p>
                     <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.supermarket}</p>
                   </div>
-                  <div className="border-t border-white/[0.07] px-3 py-2.5">
-                    <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Unidad</p>
-                    <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.unit}</p>
+                  <div className="flex border-t border-dashed border-white/[0.07]">
+                    <div className="flex-1 border-r border-white/[0.07] px-3 py-2.5">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Cantidad</p>
+                      <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.quantity}</p>
+                    </div>
+                    <div className="flex-1 px-3 py-2.5">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Unidad</p>
+                      <p className="text-base font-bold text-[#f4f6fb]">{detailPrice.unit}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Precio y Cantidad */}
+                {/* Precio y Fecha */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
                     <label
@@ -1574,43 +1572,20 @@ function PriceTable({
                   </div>
                   <div>
                     <label
-                      htmlFor="quick-quantity"
+                      htmlFor="quick-date"
                       className="mb-1 block text-xs font-medium text-[#8b93a9]"
                     >
-                      Cantidad
+                      Fecha
                     </label>
                     <input
-                      id="quick-quantity"
-                      type="text"
-                      inputMode="decimal"
-                      pattern="^\d+([.,]\d{1,2})?$"
-                      step="0.01"
-                      min="0.01"
-                      value={quickAddQuantity}
-                      onChange={(e) => setQuickAddQuantity(e.target.value)}
-                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] placeholder-[#8b93a9]/50 transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
-                      placeholder="Ej: 250"
+                      id="quick-date"
+                      type="date"
+                      value={quickAddDate}
+                      onChange={(e) => setQuickAddDate(e.target.value)}
+                      className="min-w-0 w-full max-w-full appearance-none box-border rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
                       required
                     />
                   </div>
-                </div>
-
-                {/* Fecha */}
-                <div>
-                  <label
-                    htmlFor="quick-date"
-                    className="mb-1 block text-xs font-medium text-[#8b93a9]"
-                  >
-                    Fecha
-                  </label>
-                  <input
-                    id="quick-date"
-                    type="date"
-                    value={quickAddDate}
-                    onChange={(e) => setQuickAddDate(e.target.value)}
-                    className="min-w-0 w-full max-w-full appearance-none box-border rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] transition-all focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90"
-                    required
-                  />
                 </div>
 
                 {/* Código de barras (solo si no existe uno previo) */}
