@@ -265,7 +265,7 @@ export default function PriceForm({
                 onChange={handleProductNameChange}
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm font-bold text-[#f4f6fb] placeholder-[#5a6379] placeholder:font-semibold py-1.5 min-h-[44px]"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-base font-bold text-[#f4f6fb] placeholder-[#5a6379] placeholder:font-semibold py-1.5 min-h-[44px]"
                 placeholder="Nombre del producto"
                 required
                 autoComplete="off"
@@ -297,7 +297,7 @@ export default function PriceForm({
                 onChange={handleBrandChange}
                 onFocus={() => setShowSuggestionsBrand(true)}
                 onBlur={() => setTimeout(() => setShowSuggestionsBrand(false), 200)}
-                className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm font-medium text-[#8b93a9] placeholder-[#5a6379] py-1.5 min-h-[44px]"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-base font-medium text-[#8b93a9] placeholder-[#5a6379] py-1.5 min-h-[44px]"
                 placeholder="Marca"
                 autoComplete="off"
               />
@@ -351,7 +351,7 @@ export default function PriceForm({
                 min="0.01"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-center text-sm font-bold text-[#f4f6fb] placeholder-[#5a6379] placeholder:font-semibold"
+                className="w-full bg-transparent border-none outline-none text-center text-base font-bold text-[#f4f6fb] placeholder-[#5a6379] placeholder:font-semibold"
                 placeholder="0"
                 required
               />
@@ -362,7 +362,7 @@ export default function PriceForm({
                 id="unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value as Unit)}
-                className="w-full bg-transparent border-none outline-none text-center text-sm font-bold text-[#f4f6fb] appearance-none cursor-pointer"
+                className="w-full bg-transparent border-none outline-none text-center text-base font-bold text-[#f4f6fb] appearance-none cursor-pointer"
                 required
               >
                 {AVAILABLE_UNITS.map((u) => (
@@ -379,7 +379,7 @@ export default function PriceForm({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-center text-sm font-bold text-[#f4f6fb] appearance-none cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
+                className="w-full bg-transparent border-none outline-none text-center text-base font-bold text-[#f4f6fb] appearance-none cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
                 required
               />
             </div>
@@ -396,7 +396,7 @@ export default function PriceForm({
                 onChange={handleSupermarketChange}
                 onFocus={() => setShowSuggestionsSupermarket(true)}
                 onBlur={() => setTimeout(() => setShowSuggestionsSupermarket(false), 200)}
-                className="w-full bg-transparent border-none outline-none text-sm font-semibold text-[#f4f6fb] placeholder-[#5a6379] py-2 min-h-[44px]"
+                className="w-full bg-transparent border-none outline-none text-base font-semibold text-[#f4f6fb] placeholder-[#5a6379] py-2 min-h-[44px]"
                 placeholder="Supermercado"
                 required
                 autoComplete="off"
@@ -427,7 +427,7 @@ export default function PriceForm({
               inputMode="numeric"
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
-              className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm font-semibold text-[#f4f6fb] placeholder-[#5a6379] py-2 min-h-[44px]"
+              className="flex-1 min-w-0 bg-transparent border-none outline-none text-base font-semibold text-[#f4f6fb] placeholder-[#5a6379] py-2 min-h-[44px]"
               placeholder="Código de barras"
               autoComplete="off"
             />
@@ -456,7 +456,7 @@ export default function PriceForm({
                 setOfferType(v);
                 if (v === "custom") setShowCustomOfferModal(true);
               }}
-              className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-[#e3b567] appearance-none cursor-pointer"
+              className="flex-1 bg-transparent border-none outline-none text-base font-bold text-[#e3b567] appearance-none cursor-pointer"
             >
               {OFFER_OPTIONS.map((opt) => (
                 <option key={opt.value || "none"} value={opt.value} className="bg-[#141c30] text-[#f4f6fb]">
@@ -582,7 +582,7 @@ export default function PriceForm({
                       type="text"
                       value={customOfferName}
                       onChange={(e) => setCustomOfferName(e.target.value)}
-                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
+                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] placeholder-[#8b93a9]/50 focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50"
                       placeholder="Ej: 3x2 en yogures"
                     />
                   </div>
@@ -595,7 +595,7 @@ export default function PriceForm({
                       value={customOfferDescription}
                       onChange={(e) => setCustomOfferDescription(e.target.value)}
                       rows={3}
-                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-sm text-[#f4f6fb] placeholder-[#8b93a9]/50 focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 resize-none"
+                      className="w-full rounded-xl border border-white/[0.07] bg-[#111a2c] px-3.5 py-2.5 text-base text-[#f4f6fb] placeholder-[#8b93a9]/50 focus:border-[#4da2ff] focus:outline-none focus:ring-1 focus:ring-[#4da2ff]/50 resize-none"
                       placeholder="Ej: Lleva 3 y paga 2 en línea de yogures naturales"
                     />
                   </div>

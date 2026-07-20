@@ -259,6 +259,7 @@ No hay scripts de linting, formateo, typecheck ni testing configurados.
 - **Animaciones**: Framer Motion para modales (scaleY), tarjetas, transiciones de lista. CSS animations en `global.css` para transiciones de vista.
 - **Notificaciones**: librería Sileo para toasts (success, error, warning). Configurada con tema oscuro.
 - **Touch targets**: mínimo 44x44px para accesibilidad móvil (`min-h-[44px] min-w-[44px]`).
+- **Inputs 16px mínimo**: el `font-size` de todos los `<input>`, `<select>` y `<textarea>` nunca debe ser menor de 16px (`text-base` en Tailwind). En iOS/Safari, si el font-size es < 16px, el navegador aplica zoom automático al hacer focus, rompiendo la experiencia móvil.
 - **TypeScript**: estricto. Path alias `@/*` -> `src/*`.
 - **Módulos ES**: `"type": "module"` en `package.json`.
 
