@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { motion } from "framer-motion";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 interface BarcodeScannerProps {
   onDetected: (barcode: string) => void;
@@ -13,6 +14,8 @@ export default function BarcodeScanner({
   const scannerRef = useRef<any>(null);
   const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useScrollLock(true);
 
   const stopScanner = useCallback(async () => {
     if (focusTimerRef.current) {

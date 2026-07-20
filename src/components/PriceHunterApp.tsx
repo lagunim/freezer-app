@@ -28,6 +28,7 @@ import type { ProductInput } from "@/lib/products";
 import { lookupByBarcode } from "@/lib/openProducts";
 import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useScrollLock } from "@/lib/useScrollLock";
 import { sileo } from "sileo";
 
 interface DuplicateCandidate {
@@ -64,6 +65,8 @@ export default function PriceHunterApp({
   const [duplicateCandidate, setDuplicateCandidate] =
     useState<DuplicateCandidate | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useScrollLock(!!duplicateCandidate);
 
   useEffect(() => {
     const load = async () => {

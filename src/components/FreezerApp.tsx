@@ -13,6 +13,7 @@ import {
 } from "@/lib/products";
 import { AnimatePresence, motion } from "framer-motion";
 import { sileo } from "sileo";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 export interface FreezerAppProps {
   user: User;
@@ -29,6 +30,8 @@ export default function FreezerApp({
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useScrollLock(isFormOpen);
   const [selectedCategories, setSelectedCategories] = useState<
     ProductCategory[]
   >([]);

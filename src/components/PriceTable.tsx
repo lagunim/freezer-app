@@ -10,6 +10,7 @@ import { fetchNutritionByBarcode } from "@/lib/openProducts";
 import { motion, AnimatePresence } from "framer-motion";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { normalizeStr, formatDate, formatPrice, toDateInputValue } from "@/lib/utils";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 function hasOffer(price: PriceEntry): boolean {
   return !!price.offer_type;
@@ -125,6 +126,8 @@ function PriceTable({
   const [quickAddBarcode, setQuickAddBarcode] = useState("");
   const [isQuickAddScannerOpen, setIsQuickAddScannerOpen] = useState(false);
   const [quickAddError, setQuickAddError] = useState<string | null>(null);
+
+  useScrollLock(detailPrice !== null || isQuickAddOpen);
 
   // Sincronizar detailPrice cuando se actualiza un precio en el array prices
   useEffect(() => {

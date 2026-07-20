@@ -4,6 +4,7 @@ import ProductForm from "@/components/ProductForm";
 import SwipeableProductCard from "@/components/SwipeableProductCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatDate } from "@/lib/utils";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 export interface ProductListProps {
   products: Product[];
@@ -77,6 +78,8 @@ function ProductList({
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null);
   const [isDeleteMultipleModalOpen, setIsDeleteMultipleModalOpen] =
     useState(false);
+
+  useScrollLock(productToDelete !== null || editingProductId !== null || isDeleteMultipleModalOpen);
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);

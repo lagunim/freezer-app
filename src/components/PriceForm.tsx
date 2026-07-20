@@ -3,6 +3,7 @@ import type { PriceEntry, PriceInput, Unit, OfferType } from "@/lib/priceHunter"
 import { normalizeStr, toDateInputValue } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import BarcodeScanner from "@/components/BarcodeScanner";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 /** Datos pre-rellenados desde el escáner de código de barras */
 export interface PrefillData {
@@ -52,6 +53,8 @@ export default function PriceForm({
 }: PriceFormProps) {
   const isEdit = mode === "edit";
   const source = initialPrice ?? prefillData;
+
+  useScrollLock(true);
 
   const [productName, setProductName] = useState(
     initialPrice?.product_name ?? prefillData?.product_name ?? "",
