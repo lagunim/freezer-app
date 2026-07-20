@@ -615,11 +615,12 @@ function PriceTable({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, type: "spring" }}
-              className="mx-4 w-full max-w-md  rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              className="mx-4 w-full max-w-md rounded-[22px] border border-white/[0.07] bg-[#141c30] p-3.5 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-slate-100">
+              {/* Header */}
+              <div className="mb-1 flex items-center justify-between px-0.5 pb-2.5">
+                <h3 className="text-md font-bold tracking-tight text-[#f4f6fb]">
                   {nutritionBarCode
                     ? "Información nutricional"
                     : "Detalles del precio"}
@@ -628,29 +629,20 @@ function PriceTable({
                   {!nutritionBarCode && detailPrice.bar_code && (
                     <button
                       onClick={() => handleOpenNutrition(detailPrice.bar_code!)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 transition-all hover:border-amber-500/50 hover:bg-amber-500/20 hover:text-amber-200"
+                      className="flex h-8 items-center justify-center gap-1.5 rounded-full bg-[rgba(227,181,103,0.10)] border border-[rgba(227,181,103,0.3)] px-3 text-sm transition-all hover:bg-[rgba(227,181,103,0.20)] hover:border-[rgba(227,181,103,0.5)]"
                       aria-label="Ver información nutricional"
                     >
-                      <span className="text-lg">🥗</span>
+                      <span className="text-sm leading-none">🥗</span>
+                      <span className="text-xs font-semibold text-[#e3b567] leading-none">Nutrición</span>
                     </button>
                   )}
                   <button
                     onClick={nutritionBarCode ? handleCloseNutrition : handleCloseDetail}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+                    className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-white/[0.06] text-[#8b93a9] transition-colors hover:bg-white/10 hover:text-[#f4f6fb]"
                     aria-label={nutritionBarCode ? "Volver a detalles" : "Cerrar"}
                   >
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
@@ -662,8 +654,8 @@ function PriceTable({
                   {loadingNutrition && (
                     <div className="flex items-center justify-center py-12">
                       <div className="flex flex-col items-center gap-3">
-                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
-                        <p className="text-sm text-slate-400">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#2a3352] border-t-[#4da2ff]"></div>
+                        <p className="text-sm text-[#8b93a9]">
                           Cargando información nutricional...
                         </p>
                       </div>
@@ -672,14 +664,14 @@ function PriceTable({
 
                   {!loadingNutrition && !nutritionData && (
                     <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-700/20 to-slate-800/40">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-700/20 to-[#141c30]/40">
                         <span className="text-4xl">🥗</span>
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-lg font-semibold text-slate-100">
+                        <h3 className="text-lg font-semibold text-[#f4f6fb]">
                           Sin datos nutricionales
                         </h3>
-                        <p className="max-w-md text-sm text-slate-400">
+                        <p className="max-w-md text-sm text-[#8b93a9]">
                           No se encontraron datos nutricionales para este
                           producto. Es posible que no esté registrado en Open
                           Food Facts.
@@ -690,7 +682,7 @@ function PriceTable({
 
                   {!loadingNutrition && nutritionData && (
                     <>
-                      <p className="mb-4 text-sm font-medium text-slate-300">
+                      <p className="mb-4 text-sm font-medium text-[#8b93a9]">
                         Por 100g de producto
                       </p>
                       <div className="space-y-2">
@@ -746,15 +738,15 @@ function PriceTable({
                         ].map((item) => (
                           <div
                             key={item.label}
-                            className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/20 px-4 py-3"
+                            className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-[#141c30] px-4 py-2.5"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="text-xl">{item.icon}</span>
-                              <span className="text-sm text-slate-300">
+                              <span className="text-base">{item.icon}</span>
+                              <span className="text-sm text-[#8b93a9]">
                                 {item.label}
                               </span>
                             </div>
-                            <span className="text-sm font-medium text-slate-100">
+                            <span className="text-sm font-semibold text-[#f4f6fb]">
                               {item.value !== null
                                 ? `${item.value} ${item.unit}`
                                 : "—"}
@@ -767,299 +759,148 @@ function PriceTable({
                 </div>
               )}
 
-              {/* Contenido normal del detalle */}
+              {/* Contenido normal del detalle — Estilo ticket */}
               {!nutritionBarCode && (
-              <div className="space-y-4">
-                {/* Producto - Tarjeta clicable mejorada */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewProductHistory(
-                      detailPrice.product_name,
-                      detailPrice.user_id,
-                      detailPrice,
-                    );
-                  }}
-                  className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl">📦</span>
-                        <p className="text-xs font-medium text-slate-400">
-                          Producto
-                        </p>
-                      </div>
-                      <p className="text-base font-semibold text-slate-100 group-hover:text-sky-400 transition-colors">
+                <div className="rounded-[22px] border border-white/[0.07] bg-[#141c30] p-3.5">
+
+                  {/* ticket-head + ticket-brand: Producto + Marca */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewProductHistory(
+                        detailPrice.product_name,
+                        detailPrice.user_id,
+                        detailPrice,
+                      );
+                    }}
+                    className="w-full text-left cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2.5 mb-0.5">
+                      <span className="flex items-center text-lg leading-none">📦</span>
+                      <span className="flex-1 min-w-0 flex items-center text-2xl font-bold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors leading-none">
                         {detailPrice.product_name}
-                      </p>
-                      <p className="text-xs text-sky-400/60 group-hover:text-sky-400 mt-1 transition-colors">
-                        Ver historial completo →
-                      </p>
+                      </span>
+                      <span className="flex items-center text-[#8b93a9] text-sm opacity-70 group-hover:opacity-100 transition-opacity leading-none">›</span>
                     </div>
-                    <div className="flex-shrink-0 mt-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500/10 text-sky-400 transition-all group-hover:bg-sky-500/20 group-hover:scale-110">
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Marca */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">🏷️</span>
-                    <p className="text-xs font-medium text-slate-400">
-                      Marca
+                    <p className="ml-[34px] text-xs text-[#8b93a9] group-hover:text-[#4da2ff] transition-colors">
+                      {detailPrice.brand && detailPrice.brand.trim() !== ""
+                        ? detailPrice.brand
+                        : "—"} · Ver historial completo →
                     </p>
-                  </div>
-                  <p className="text-base font-semibold text-slate-100">
-                    {detailPrice.brand && detailPrice.brand.trim() !== ""
-                      ? detailPrice.brand
-                      : "—"}
-                  </p>
-                </div>
+                  </button>
 
-                {/* Precio calculado */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">💰</span>
-                    <p className="text-xs font-medium text-slate-400">
+                  {/* priceband: Precio normalizado centrado */}
+                  <div className="my-3 rounded-xl bg-[#4da2ff]/[0.08] py-3 text-center">
+                    <p className="text-xs uppercase tracking-[0.06em] text-[#8b93a9]">
                       Precio normalizado
                     </p>
-                  </div>
-                  <p className="text-2xl font-bold text-sky-400">
-                    {formatPrice(
-                      calculateNormalizedPrice(
-                        detailPrice.total_price,
-                        detailPrice.quantity,
-                        detailPrice.unit,
-                      ),
-                    )}
-                    <span className="text-base font-normal text-slate-400 ml-1">
-                      /{detailPrice.unit}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Precio pagado */}
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl">💸</span>
-                      <p className="text-xs font-medium text-slate-400">
-                        Precio pagado
-                      </p>
-                    </div>
-                    <p className="text-base font-semibold text-slate-100">
-                      {formatPrice(detailPrice.total_price)}
-                    </p>
-                  </div>
-
-                  {/* Cantidad */}
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl">🔢</span>
-                      <p className="text-xs font-medium text-slate-400">
-                        Cantidad
-                      </p>
-                    </div>
-                    <p className="text-base font-semibold text-slate-100">
-                      {detailPrice.quantity} {getQuantityUnitLabel(detailPrice.unit)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Supermercado - Tarjeta clicable mejorada */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewSupermarketHistory(
-                      detailPrice.supermarket,
-                      detailPrice,
-                    );
-                  }}
-                  className="w-full text-left rounded-lg border border-slate-700 bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-4 transition-all hover:border-sky-500/50 hover:bg-gradient-to-r hover:from-sky-900/20 hover:to-slate-800/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] group cursor-pointer"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl">🏪</span>
-                        <p className="text-xs font-medium text-slate-400">
-                          Supermercado
-                        </p>
-                      </div>
-                      <p className="text-base font-semibold text-slate-100 group-hover:text-sky-400 transition-colors">
-                        {detailPrice.supermarket}
-                      </p>
-                      <p className="text-xs text-sky-400/60 group-hover:text-sky-400 mt-1 transition-colors">
-                        Ver todos los productos →
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0 mt-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-500/10 text-sky-400 transition-all group-hover:bg-sky-500/20 group-hover:scale-110">
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          strokeWidth="2.5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Fecha */}
-                <div className="rounded-lg border border-slate-700 bg-slate-800/20 p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">📅</span>
-                    <p className="text-xs font-medium text-slate-400">
-                      Fecha de compra
-                    </p>
-                  </div>
-                  <p className="text-base font-semibold text-slate-100">
-                    {formatDate(detailPrice.date)}
-                  </p>
-                </div>
-
-                {/* Oferta (solo si tiene) */}
-                {hasOffer(detailPrice) && (
-                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl text-amber-400/90" aria-hidden>
-                        🏷
-                      </span>
-                      <p className="text-xs font-medium text-amber-300/90">
-                        Oferta
-                      </p>
-                    </div>
-                    <p className="text-base font-semibold text-amber-100/95">
-                      {getOfferLabel(detailPrice)}
-                    </p>
-                    {detailPrice.offer_type === "custom" &&
-                      detailPrice.offer_description?.trim() && (
-                        <p className="mt-2 text-sm text-slate-300">
-                          {detailPrice.offer_description}
-                        </p>
+                    <p className="mt-0.5 text-2xl font-extrabold text-[#4da2ff] tracking-tight">
+                      {formatPrice(
+                        calculateNormalizedPrice(
+                          detailPrice.total_price,
+                          detailPrice.quantity,
+                          detailPrice.unit,
+                        ),
                       )}
+                      <span className="text-xs font-medium text-[#8b93a9] ml-0.5">
+                        /{detailPrice.unit}
+                      </span>
+                    </p>
                   </div>
-                )}
-              </div>
+
+                  {/* miniStats: PAGADO · CANTIDAD · FECHA */}
+                  <div className="mb-2.5 flex overflow-hidden rounded-xl border border-white/[0.07]">
+                    <div className="flex-1 py-2 text-center border-r border-white/[0.07]">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Pagado</p>
+                      <p className="text-sm font-bold text-[#f4f6fb]">{formatPrice(detailPrice.total_price)}</p>
+                    </div>
+                    <div className="flex-1 py-2 text-center border-r border-white/[0.07]">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Cantidad</p>
+                      <p className="text-sm font-bold text-[#f4f6fb]">{detailPrice.quantity} {getQuantityUnitLabel(detailPrice.unit)}</p>
+                    </div>
+                    <div className="flex-1 py-2 text-center">
+                      <p className="text-[0.65rem] uppercase text-[#8b93a9] mb-0.5">Fecha</p>
+                      <p className="text-sm font-bold text-[#f4f6fb]">{formatDate(detailPrice.date)}</p>
+                    </div>
+                  </div>
+
+                  {/* thinrow: Supermercado (borde dashed superior) */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewSupermarketHistory(
+                        detailPrice.supermarket,
+                        detailPrice,
+                      );
+                    }}
+                    className="w-full flex items-center gap-2.5 border-t border-dashed border-white/[0.07] pt-2.5 text-left cursor-pointer group"
+                  >
+                    <span className="flex items-center text-base leading-none">🏬</span>
+                    <span className="flex-1 min-w-0 flex items-center text-md font-semibold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors truncate leading-none">
+                      {detailPrice.supermarket}
+                    </span>
+                    <span className="text-[#8b93a9] text-sm leading-none opacity-70 group-hover:opacity-100 transition-opacity">›</span>
+                  </button>
+
+                  {/* chip-amber: Oferta */}
+                  {hasOffer(detailPrice) && (
+                    <div className="mt-1 flex items-center gap-2 rounded-full bg-[rgba(227,181,103,0.10)] border border-[rgba(227,181,103,0.3)] px-3.5 py-2">
+                      <span className="text-sm">🏷️</span>
+                      <span className="text-xs font-bold text-[#e3b567]">
+                        {getOfferLabel(detailPrice)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Añadir nuevo precio y acciones */}
               {!nutritionBarCode && (
-                <>
+                <div className="mt-3 space-y-2.5">
                   {onQuickAdd && (
                     <button
                       onClick={openQuickAdd}
-                      className="mt-6 w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 4v16m8-8H4"
-                        />
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                       </svg>
                       Añadir nuevo precio
                     </button>
                   )}
 
-                  {/* Acciones */}
-                  <div className="mt-3 flex gap-2 sm:gap-3">
+                  {/* Acciones compactas */}
+                  <div className="flex gap-1.5">
                     <button
                       onClick={handleCloseDetail}
-                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg border border-slate-700 bg-slate-800 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-slate-100 transition-all hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-white/[0.06] py-2.5 text-xs font-bold text-[#8b93a9] transition-colors hover:bg-white/[0.10] hover:text-[#f4f6fb] focus:outline-none focus:ring-2 focus:ring-white/20"
                     >
-                      <svg
-                        className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.5"
-                        aria-hidden
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
+                      <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       <span>Cancelar</span>
                     </button>
                     <button
                       onClick={() => handleEditClick(detailPrice)}
-                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg bg-sky-600 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-[#4da2ff] py-2.5 text-xs font-bold text-[#06121f] transition-colors hover:bg-[#3b8fe6] focus:outline-none focus:ring-2 focus:ring-[#4da2ff]"
                     >
-                      <svg
-                        className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.5"
-                        aria-hidden
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M17 16v3a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 15l10-10a2.121 2.121 0 013 3L12 18l-4 1 1-4z"
-                        />
+                      <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16v3a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h3" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 15l10-10a2.121 2.121 0 013 3L12 18l-4 1 1-4z" />
                       </svg>
                       <span>Editar</span>
                     </button>
                     <button
                       onClick={() => handleDeleteClick(detailPrice.id)}
-                      className="flex-1 flex items-center justify-center gap-1 sm:gap-2 rounded-lg bg-red-600 px-2 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium text-white transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-[rgba(239,71,71,0.14)] py-2.5 text-xs font-bold text-[#ef4747] transition-colors hover:bg-[rgba(239,71,71,0.25)] focus:outline-none focus:ring-2 focus:ring-[#ef4747]/50"
                     >
-                      <svg
-                        className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2.5"
-                        aria-hidden
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
+                      <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                       <span>Eliminar</span>
                     </button>
                   </div>
-                </>
+                </div>
               )}
             </motion.div>
           </motion.div>
