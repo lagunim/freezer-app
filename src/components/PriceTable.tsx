@@ -1261,9 +1261,9 @@ function PriceTable({
                 !historyError &&
                 filteredHistoryPrices.length > 0 && (
                   <>
-                    <div className="overflow-x-auto">
+                    <div className="max-h-[264px] overflow-y-auto overflow-x-auto rounded-xl border border-slate-700">
                       <table className="w-full border-collapse">
-                        <thead>
+                        <thead className="sticky top-0 z-10 bg-slate-900">
                           <tr className="border-b border-slate-700">
                             {historyView.type === "supermarket" && (
                               <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
@@ -1358,34 +1358,30 @@ function PriceTable({
                     </div>
 
                     {/* Información adicional */}
-                    <div className="mt-6 rounded-lg border border-slate-700 bg-slate-800/20 p-4">
-                      <p className="text-sm text-slate-400">
-                        <span className="font-medium text-slate-300">
-                          {historyTablePrices.length}
-                        </span>{" "}
-                        {historyTablePrices.length === 1
-                          ? "registro encontrado"
-                          : "registros encontrados"}
-                        {historyView.type === "product" &&
-                          timeFilter !== "all" && (
-                            <span className="ml-2 text-slate-500">
-                              (de {historyPrices.length}{" "}
-                              {historyPrices.length === 1 ? "total" : "totales"}
-                              )
-                            </span>
-                          )}
-                        {historyView.type === "supermarket" &&
-                          supermarketHistorySearchTerm.trim() !== "" && (
-                            <span className="ml-2 text-slate-500">
-                              (de {filteredHistoryPrices.length}{" "}
-                              {filteredHistoryPrices.length === 1
-                                ? "total"
-                                : "totales"}
-                              )
-                            </span>
-                          )}
-                      </p>
-                    </div>
+                    <p className="mt-3 text-xs text-slate-500">
+                      <span className="font-medium text-slate-400">
+                        {historyTablePrices.length}
+                      </span>{" "}
+                      {historyTablePrices.length === 1
+                        ? "registro encontrado"
+                        : "registros encontrados"}
+                      {historyView.type === "product" &&
+                        timeFilter !== "all" && (
+                          <span className="ml-1.5">
+                            (de {historyPrices.length}{" "}
+                            {historyPrices.length === 1 ? "total" : "totales"})
+                          </span>
+                        )}
+                      {historyView.type === "supermarket" &&
+                        supermarketHistorySearchTerm.trim() !== "" && (
+                          <span className="ml-1.5">
+                            (de {filteredHistoryPrices.length}{" "}
+                            {filteredHistoryPrices.length === 1
+                              ? "total"
+                              : "totales"})
+                          </span>
+                        )}
+                    </p>
                   </>
                 )}
 
@@ -1439,6 +1435,19 @@ function PriceTable({
                     </div>
                   </div>
                 )}
+
+              {/* Botón Atrás fijo abajo */}
+              <div className="sticky bottom-0 bg-slate-900 pt-4 pb-2">
+                <button
+                  onClick={handleBackToDetails}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-white/[0.06] py-2.5 text-xs font-bold text-[#8b93a9] transition-colors hover:bg-white/[0.10] hover:text-[#f4f6fb] focus:outline-none focus:ring-2 focus:ring-white/20"
+                >
+                  <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Atrás</span>
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
