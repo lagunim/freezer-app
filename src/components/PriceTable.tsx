@@ -983,7 +983,7 @@ function PriceTable({
                     </svg>
                     <span className="text-slate-100 font-medium">
                       {historyView.type === "product"
-                        ? "Historial de Producto"
+                        ? "Historial de producto"
                         : "Historial de Supermercado"}
                     </span>
                   </div>
@@ -1013,7 +1013,7 @@ function PriceTable({
               <div className="mb-4">
                 <div className="flex items-center gap-3">
                   <h3 className="min-w-0 flex-1 truncate text-2xl font-semibold text-slate-100">
-                    {historyView.type === "product" ? "📦 " : "🏪 "}
+                    {historyView.type === "supermarket" && "🏪 "}
                     {historyView.value}
                   </h3>
                 </div>
