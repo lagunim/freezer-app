@@ -791,13 +791,12 @@ function PriceTable({
                     className="w-full text-left cursor-pointer group"
                   >
                     <div className="flex items-center gap-2.5 mb-0.5">
-                      <span className="flex items-center text-lg leading-none">📦</span>
-                      <span className="flex-1 min-w-0 flex items-center text-2xl font-bold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors leading-none">
+                      <span className="flex-1 min-w-0 flex items-center justify-center text-center text-2xl font-bold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors leading-none">
                         {detailPrice.product_name}
                       </span>
                       <span className="flex items-center text-[#8b93a9] text-sm opacity-70 group-hover:opacity-100 transition-opacity leading-none">›</span>
                     </div>
-                    <p className="ml-[34px] text-xs text-[#8b93a9] group-hover:text-[#4da2ff] transition-colors">
+                    <p className="text-center text-xs text-[#8b93a9] group-hover:text-[#4da2ff] transition-colors">
                       {detailPrice.brand && detailPrice.brand.trim() !== ""
                         ? detailPrice.brand
                         : "—"}
@@ -850,8 +849,7 @@ function PriceTable({
                     }}
                     className="w-full flex items-center gap-2.5 border-t border-dashed border-white/[0.07] py-2.5 text-left cursor-pointer group"
                   >
-                    <span className="flex items-center text-base leading-none">🏬</span>
-                    <span className="flex-1 min-w-0 flex items-center text-md font-semibold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors truncate leading-none">
+                    <span className="flex-1 min-w-0 flex items-center justify-center text-center text-md font-semibold text-[#f4f6fb] group-hover:text-[#4da2ff] transition-colors truncate leading-none">
                       {detailPrice.supermarket}
                     </span>
                     <span className="text-[#8b93a9] text-sm leading-none opacity-70 group-hover:opacity-100 transition-opacity">›</span>
@@ -859,8 +857,7 @@ function PriceTable({
 
                   {/* chip-amber: Oferta */}
                   {hasOffer(detailPrice) && (
-                    <div className="mt-1 flex items-center gap-2 rounded-full bg-[rgba(227,181,103,0.10)] border border-[rgba(227,181,103,0.3)] px-3.5 py-2">
-                      <span className="text-sm">🏷️</span>
+                    <div className="mt-1 flex items-center rounded-full bg-[rgba(227,181,103,0.10)] border border-[rgba(227,181,103,0.3)] px-3.5 py-2">
                       <span className="text-xs font-bold text-[#e3b567]">
                         {getOfferLabel(detailPrice)}
                       </span>
