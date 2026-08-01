@@ -290,9 +290,6 @@ export default function PriceForm({
           <div className="rounded-[22px] border border-white/[0.07] bg-[#141c30] p-3 space-y-2">
             {/* Row 1: Producto */}
             <div className="relative flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-sm">
-                📦
-              </div>
               <input
                 id="product-name"
                 type="text"
@@ -306,7 +303,7 @@ export default function PriceForm({
                 autoComplete="off"
               />
               {showSuggestions && filteredSuggestions.length > 0 && (
-                <div className="absolute z-10 top-full left-11 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-white/[0.07] bg-[#111a2c] shadow-lg">
+                <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-white/[0.07] bg-[#111a2c] shadow-lg">
                   {filteredSuggestions.map((suggestion, index) => (
                     <button
                       key={index}
@@ -322,9 +319,6 @@ export default function PriceForm({
             </div>
             {/* Row 2: Marca */}
             <div className="relative flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-sm">
-                🏷️
-              </div>
               <input
                 id="brand"
                 type="text"
@@ -337,7 +331,7 @@ export default function PriceForm({
                 autoComplete="off"
               />
               {showSuggestionsBrand && filteredBrandSuggestions.length > 0 && (
-                <div className="absolute z-10 top-full left-11 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-white/[0.07] bg-[#111a2c] shadow-lg">
+                <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-white/[0.07] bg-[#111a2c] shadow-lg">
                   {filteredBrandSuggestions.map((suggestion, index) => (
                     <button
                       key={index}
@@ -421,8 +415,7 @@ export default function PriceForm({
           </div>
 
           {/* thinrow: Supermercado */}
-          <div className="flex items-center gap-2.5 border-t border-dashed border-white/[0.07] pt-2.5">
-            <span className="flex items-center text-sm leading-none mt-2">🏬</span>
+          <div className="flex items-center border-t border-dashed border-white/[0.07] pt-2.5">
             <div className="relative flex-1 min-w-0">
               <input
                 id="supermarket"
@@ -455,7 +448,6 @@ export default function PriceForm({
 
           {/* thinrow: Código de barras */}
           <div className="flex items-center gap-2.5 border-t border-dashed border-white/[0.07] pt-2.5">
-            <span className="flex items-center text-sm leading-none mt-2">📋</span>
             <input
               id="barcode"
               type="text"
@@ -482,7 +474,6 @@ export default function PriceForm({
 
           {/* thinrow oferta: Oferta */}
           <div className="flex items-center gap-2.5 rounded-[10px] bg-[rgba(227,181,103,0.12)] border border-[rgba(227,181,103,0.3)] px-3 py-2">
-            <span className="flex items-center text-sm leading-none">🏷️</span>
             <select
               id="offer"
               value={offerType}
