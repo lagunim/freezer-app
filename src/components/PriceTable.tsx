@@ -55,6 +55,8 @@ export interface PriceTableProps {
   searchTerm?: string;
   onQuickAdd?: (input: PriceInput) => Promise<void>;
   savingQuickAdd?: boolean;
+  userId?: string;
+  historyRequest?: { productName: string; nonce: number } | null;
 }
 
 export default memo(PriceTable);
@@ -94,6 +96,8 @@ function PriceTable({
   searchTerm = "",
   onQuickAdd,
   savingQuickAdd = false,
+  userId,
+  historyRequest,
 }: PriceTableProps) {
   const [priceToDelete, setPriceToDelete] = useState<string | null>(null);
   const [detailPrice, setDetailPrice] = useState<PriceEntry | null>(null);
@@ -238,6 +242,14 @@ function PriceTable({
     setHistoryError(null);
     setSupermarketHistorySearchTerm("");
   };
+
+  // Abrir el historial de producto desde fuera (p. ej. escáner de código de barras)
+  useEffect(() => {
+    if (historyRequest && userId) {
+      void handleViewProductHistory(historyRequest.productName, userId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyRequest?.nonce]);
 
   const handleBackToDetails = () => {
     if (priceBeforeHistory) setDetailPrice(priceBeforeHistory);

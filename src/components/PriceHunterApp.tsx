@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import PriceForm from "@/components/PriceForm";
-import type { PrefillData } from "@/components/PriceForm";
 import PriceTable from "@/components/PriceTable";
 import SearchInput from "@/components/SearchInput";
 import BarcodeScanner from "@/components/BarcodeScanner";
@@ -25,7 +24,6 @@ import {
 import type { ProductPrice } from "@/lib/productPrices";
 import { createProduct, updateProduct, fetchProducts } from "@/lib/products";
 import type { ProductInput } from "@/lib/products";
-import { lookupByBarcode } from "@/lib/openProducts";
 import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollLock } from "@/lib/useScrollLock";
@@ -60,8 +58,10 @@ export default function PriceHunterApp({
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [prefillData, setPrefillData] = useState<PrefillData | null>(null);
-  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [historyRequest, setHistoryRequest] = useState<{
+    productName: string;
+    nonce: number;
+  } | null>(null);
   const [duplicateCandidate, setDuplicateCandidate] =
     useState<DuplicateCandidate | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
@@ -111,60 +111,32 @@ export default function PriceHunterApp({
 
   const openForm = () => {
     setEditingPrice(null);
-    setPrefillData(null);
-    setIsFormOpen(true);
-  };
-
-  const openFormWithPrefill = (data: PrefillData) => {
-    setEditingPrice(null);
-    setPrefillData(data);
     setIsFormOpen(true);
   };
 
   const closeForm = () => {
     setIsFormOpen(false);
     setEditingPrice(null);
-    setPrefillData(null);
-    setScannedBarcode(null);
   };
 
-  const handleBarcodeDetected = async (barcode: string) => {
+  const handleHistoryBarcodeDetected = async (barcode: string) => {
     setIsScannerOpen(false);
-    setScannedBarcode(barcode);
     try {
       const found = await fetchProductPriceByBarcode(barcode);
       if (found) {
-        openFormWithPrefill({
-          product_name: found.product_name,
-          brand: found.brand ?? undefined,
-          quantity: found.quantity,
-          unit: found.unit,
-          bar_code: found.bar_code ?? undefined,
-          product_prices_id: found.id,
-        });
-        return;
-      }
-
-      const offResult = await lookupByBarcode(barcode);
-      if (offResult.found) {
-        openFormWithPrefill({
-          product_name: offResult.product_name,
-          brand: offResult.brand,
-          quantity: offResult.quantity,
-          unit: offResult.unit,
-          bar_code: barcode,
+        setHistoryRequest({
+          productName: found.product_name,
+          nonce: Date.now(),
         });
       } else {
         sileo.info({
-          title: "Código no registrado",
-          description: "Introduce el precio manualmente.",
+          title: "Producto no encontrado",
+          description: "No hay historial de precios para este código de barras.",
         });
-        openForm();
       }
     } catch (err) {
       console.error("Error al buscar código de barras:", err);
       sileo.error({ title: "Error al buscar el código de barras." });
-      openForm();
     }
   };
 
@@ -204,7 +176,7 @@ export default function PriceHunterApp({
 
         if (existing) {
           const existingBC = existing.bar_code?.trim() || null;
-          const newBC = input.bar_code?.trim() || scannedBarcode?.trim() || null;
+          const newBC = input.bar_code?.trim() || null;
 
           let barcodeAutoUpdated = false;
           if (existingBC !== newBC) {
@@ -244,7 +216,7 @@ export default function PriceHunterApp({
           brand: input.brand,
           quantity: input.quantity,
           unit: input.unit,
-          bar_code: scannedBarcode ?? undefined,
+          bar_code: input.bar_code?.trim() || undefined,
         });
         productPricesId = newPP.id;
       }
@@ -334,7 +306,7 @@ export default function PriceHunterApp({
           brand: newInput.brand,
           quantity: newInput.quantity,
           unit: newInput.unit,
-          bar_code: newInput.bar_code || scannedBarcode || undefined,
+          bar_code: newInput.bar_code?.trim() || undefined,
         });
         productPricesId = newPP.id;
       }
@@ -508,6 +480,8 @@ export default function PriceHunterApp({
           searchTerm={searchTerm}
           onQuickAdd={handleQuickAdd}
           savingQuickAdd={savingPrice}
+          userId={user.id}
+          historyRequest={historyRequest}
         />
       </div>
 
@@ -610,10 +584,9 @@ export default function PriceHunterApp({
       <AnimatePresence>
         {isFormOpen && (
           <PriceForm
-            key={editingPrice?.id ?? prefillData?.product_prices_id ?? "create"}
+            key={editingPrice?.id ?? "create"}
             mode={editingPrice ? "edit" : "create"}
             initialPrice={editingPrice}
-            prefillData={prefillData}
             loading={savingPrice}
             productSuggestions={productSuggestions}
             brandSuggestions={brandSuggestions}
@@ -726,7 +699,7 @@ export default function PriceHunterApp({
       <AnimatePresence>
         {isScannerOpen && (
           <BarcodeScanner
-            onDetected={handleBarcodeDetected}
+            onDetected={handleHistoryBarcodeDetected}
             onClose={() => setIsScannerOpen(false)}
           />
         )}

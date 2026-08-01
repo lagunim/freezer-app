@@ -3,22 +3,14 @@ import type { PriceEntry, PriceInput, Unit, OfferType } from "@/lib/priceHunter"
 import { normalizeStr, toDateInputValue } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import BarcodeScanner from "@/components/BarcodeScanner";
+import { fetchProductPriceByBarcode } from "@/lib/productPrices";
+import { lookupByBarcode } from "@/lib/openProducts";
+import { sileo } from "sileo";
 import { useScrollLock } from "@/lib/useScrollLock";
-
-/** Datos pre-rellenados desde el escáner de código de barras */
-export interface PrefillData {
-  product_name?: string;
-  brand?: string;
-  quantity?: number;
-  unit?: Unit;
-  bar_code?: string;
-  product_prices_id?: string;
-}
 
 interface PriceFormProps {
   mode: "create" | "edit";
   initialPrice?: PriceEntry | null;
-  prefillData?: PrefillData | null;
   loading?: boolean;
   productSuggestions?: string[];
   brandSuggestions?: string[];
@@ -50,7 +42,6 @@ const OFFER_OPTIONS: { value: "" | OfferType; label: string }[] = [
 export default function PriceForm({
   mode,
   initialPrice,
-  prefillData = null,
   loading = false,
   productSuggestions = [],
   brandSuggestions = [],
@@ -59,29 +50,20 @@ export default function PriceForm({
   onCancel,
 }: PriceFormProps) {
   const isEdit = mode === "edit";
-  const source = initialPrice ?? prefillData;
 
   useScrollLock(true);
 
   const [productName, setProductName] = useState(
-    initialPrice?.product_name ?? prefillData?.product_name ?? "",
+    initialPrice?.product_name ?? "",
   );
-  const [brand, setBrand] = useState(
-    initialPrice?.brand ?? prefillData?.brand ?? "",
-  );
+  const [brand, setBrand] = useState(initialPrice?.brand ?? "");
   const [totalPrice, setTotalPrice] = useState(
     initialPrice?.total_price != null ? String(initialPrice.total_price) : "",
   );
   const [quantity, setQuantity] = useState(
-    initialPrice?.quantity != null
-      ? String(initialPrice.quantity)
-      : prefillData?.quantity != null
-        ? String(prefillData.quantity)
-        : "",
+    initialPrice?.quantity != null ? String(initialPrice.quantity) : "",
   );
-  const [unit, setUnit] = useState<Unit>(
-    initialPrice?.unit ?? prefillData?.unit ?? "Kg",
-  );
+  const [unit, setUnit] = useState<Unit>(initialPrice?.unit ?? "Kg");
   const [supermarket, setSupermarket] = useState(
     initialPrice?.supermarket ?? "",
   );
@@ -102,8 +84,9 @@ export default function PriceForm({
   const [showSuggestionsSupermarket, setShowSuggestionsSupermarket] =
     useState(false);
   const [addToDespensa, setAddToDespensa] = useState(false);
-  const [barcode, setBarcode] = useState(
-    initialPrice?.bar_code ?? prefillData?.bar_code ?? "",
+  const [barcode, setBarcode] = useState(initialPrice?.bar_code ?? "");
+  const [productPricesId, setProductPricesId] = useState<string | undefined>(
+    initialPrice?.product_prices_id,
   );
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
@@ -194,7 +177,7 @@ export default function PriceForm({
     }
 
     const input: PriceInput = {
-      product_prices_id: initialPrice?.product_prices_id ?? prefillData?.product_prices_id,
+      product_prices_id: initialPrice?.product_prices_id ?? productPricesId,
       product_name: trimmedProductName,
       brand: brand.trim(),
       total_price: totalPriceNumber,
@@ -224,6 +207,48 @@ export default function PriceForm({
       const message =
         error instanceof Error ? error.message : "Error desconocido";
       setLocalError(message);
+    }
+  };
+
+  const handleBarcodeScan = async (code: string) => {
+    setIsScannerOpen(false);
+    setBarcode(code);
+    try {
+      const found = await fetchProductPriceByBarcode(code);
+      if (found) {
+        setProductName(found.product_name);
+        setBrand(found.brand ?? "");
+        setQuantity(String(found.quantity));
+        setUnit(found.unit);
+        setProductPricesId(found.id);
+        sileo.success({
+          title: "Producto encontrado",
+          description: "Datos del producto rellenados automáticamente.",
+        });
+        return;
+      }
+
+      const offResult = await lookupByBarcode(code);
+      if (offResult.found) {
+        setProductName(offResult.product_name ?? "");
+        setBrand(offResult.brand ?? "");
+        if (offResult.quantity != null) {
+          setQuantity(String(offResult.quantity));
+        }
+        setUnit(offResult.unit ?? "Unidad");
+        sileo.success({
+          title: "Datos rellenados",
+          description: "Información obtenida del producto escaneado.",
+        });
+      } else {
+        sileo.info({
+          title: "Código no registrado",
+          description: "Introduce los datos del producto manualmente.",
+        });
+      }
+    } catch (err) {
+      console.error("Error al buscar código de barras:", err);
+      sileo.error({ title: "Error al buscar el código de barras." });
     }
   };
 
@@ -629,10 +654,7 @@ export default function PriceForm({
       <AnimatePresence>
         {isScannerOpen && (
           <BarcodeScanner
-            onDetected={(code) => {
-              setBarcode(code);
-              setIsScannerOpen(false);
-            }}
+            onDetected={handleBarcodeScan}
             onClose={() => setIsScannerOpen(false)}
           />
         )}
