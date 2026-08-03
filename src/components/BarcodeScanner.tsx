@@ -1,6 +1,10 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { useScrollLock } from "@/lib/useScrollLock";
+import type {
+  Html5QrcodeCameraScanConfig,
+  Html5QrcodeSupportedFormats as SupportedFormatsType,
+} from "html5-qrcode";
 
 interface BarcodeScannerProps {
   onDetected: (barcode: string) => void;
@@ -41,33 +45,51 @@ export default function BarcodeScanner({
 
     const startScanner = async () => {
       try {
-        const { Html5Qrcode } = await import("html5-qrcode");
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } =
+          await import("html5-qrcode");
 
         if (cancelled) return;
 
         const scanner = new Html5Qrcode("barcode-reader");
         scannerRef.current = scanner;
 
+        const scanConfig: Html5QrcodeCameraScanConfig & {
+          formatsToSupport?: SupportedFormatsType[];
+          experimentalFeatures?: { useBarCodeDetectorIfSupported?: boolean };
+        } = {
+          fps: 15,
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.CODE_93,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.CODABAR,
+          ],
+          disableFlip: true,
+          qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            return {
+              width: Math.floor(minEdge * 0.8),
+              height: Math.floor(minEdge * 0.4),
+            };
+          },
+          videoConstraints: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "environment",
+          },
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
+        };
+
         await scanner.start(
           { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-              return {
-                width: Math.floor(minEdge * 0.8),
-                height: Math.floor(minEdge * 0.4),
-              };
-            },
-            videoConstraints: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              facingMode: "environment",
-            },
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true,
-            },
-          },
+          scanConfig,
           (decodedText: string) => {
             if (cancelled) return;
             stopScanner();
