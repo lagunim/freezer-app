@@ -1,6 +1,5 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useLayoutEffect } from "react";
 import type { ReactNode } from "react";
-import { AnimatePresence, motion, useMotionValue, animate } from "framer-motion";
 
 interface SwipeableProductCardProps {
   /** Contenido principal de la tarjeta */
@@ -23,15 +22,23 @@ interface SwipeableProductCardProps {
   isInCart: boolean;
 }
 
-const SWIPE_THRESHOLD = 60; // Píxeles mínimos para activar swipe (reducido para móvil)
-const VELOCITY_THRESHOLD = 0.2; // Velocidad mínima (px/ms) para swipe rápido (más sensible)
-const MAX_SWIPE_LEFT = 156; // Ancho máximo de deslizamiento izquierda (2 botones de ~78px)
-const MAX_SWIPE_RIGHT = 80; // Ancho máximo de deslizamiento derecha (1 botón)
-const ACTIONS_WIDTH_LEFT = 156; // Ancho del panel de acciones izquierda
-const ACTIONS_WIDTH_RIGHT = 80; // Ancho del panel de acciones derecha
-const DEAD_ZONE = 5; // Zona muerta para ignorar movimientos pequeños (reducido)
+const CART_WIDTH = 80;
+const ACTIONS_WIDTH = 156;
+const REST_LEFT = CART_WIDTH;
+const OPEN_PX = 12;
+const SCROLL_END_DEBOUNCE_MS = 80;
 
-const SNAP_SPRING = { type: "spring" as const, stiffness: 320, damping: 28, mass: 0.6 };
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function snapBehavior(): ScrollBehavior {
+  return prefersReducedMotion() ? "auto" : "smooth";
+}
+
+function isAwayFromRest(scrollLeft: number): boolean {
+  return Math.abs(scrollLeft - REST_LEFT) > OPEN_PX;
+}
 
 export default function SwipeableProductCard({
   children,
@@ -44,329 +51,227 @@ export default function SwipeableProductCard({
   onAddToCart,
   isInCart,
 }: SwipeableProductCardProps) {
-  const x = useMotionValue(0);
-  const [translateX, setTranslateX] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
-    null,
-  );
-  const [isSwiping, setIsSwiping] = useState(false);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const touchStartTime = useRef(0);
-  const currentX = useRef(0);
-  const isDragging = useRef(false);
-  const isHorizontalSwipe = useRef<boolean | null>(null);
-
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const didScrollRef = useRef(false);
+  const wasOpenRef = useRef(false);
+  const isProgrammaticRef = useRef(false);
+  const readyRef = useRef(false);
+  const scrollEndTimerRef = useRef<number>(0);
+  const onOpenRef = useRef(onOpen);
+  const onCloseRef = useRef(onClose);
+  const openSwipeIdRef = useRef(openSwipeId);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  const snapTo = (targetX: number) => {
-    // Mantener el estado en sync con el valor final
-    setTranslateX(targetX);
-    animate(x, targetX, SNAP_SPRING);
+  onOpenRef.current = onOpen;
+  onCloseRef.current = onClose;
+  openSwipeIdRef.current = openSwipeId;
+
+  const pinToRest = (el: HTMLDivElement) => {
+    el.scrollLeft = REST_LEFT;
   };
 
-  // Cerrar si otra tarjeta se abre
-  useEffect(() => {
-    if (openSwipeId !== null && openSwipeId !== productId && isOpen) {
-      closeSwipe();
-    }
-  }, [openSwipeId, productId, isOpen]);
+  const scrollToRest = (smooth: boolean) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    isProgrammaticRef.current = true;
+    el.scrollTo({
+      left: REST_LEFT,
+      behavior: smooth ? snapBehavior() : "auto",
+    });
+  };
 
-  const closeSwipe = () => {
-    snapTo(0);
+  const syncOpenFromScroll = () => {
+    const el = scrollerRef.current;
+    if (!el || !readyRef.current) return;
+
+    const open = isAwayFromRest(el.scrollLeft);
+    if (open === wasOpenRef.current) return;
+
+    wasOpenRef.current = open;
+    setIsOpen(open);
+
+    if (open) {
+      onOpenRef.current(productId);
+      return;
+    }
+
+    if (openSwipeIdRef.current === productId) {
+      onCloseRef.current();
+    }
+  };
+
+  const closeSwipe = (smooth = true) => {
+    if (!isAwayFromRest(scrollerRef.current?.scrollLeft ?? REST_LEFT)) {
+      wasOpenRef.current = false;
+      setIsOpen(false);
+      if (openSwipeIdRef.current === productId) {
+        onCloseRef.current();
+      }
+      return;
+    }
+    scrollToRest(smooth);
+    wasOpenRef.current = false;
     setIsOpen(false);
-    setSwipeDirection(null);
-    onClose();
+    if (openSwipeIdRef.current === productId) {
+      onCloseRef.current();
+    }
   };
 
-  const openSwipeLeft = () => {
-    snapTo(-MAX_SWIPE_LEFT);
-    setIsOpen(true);
-    setSwipeDirection("left");
-    onOpen(productId);
-  };
+  useLayoutEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
 
-  const openSwipeRight = () => {
-    snapTo(MAX_SWIPE_RIGHT);
-    setIsOpen(true);
-    setSwipeDirection("right");
-    onOpen(productId);
-  };
+    pinToRest(el);
+    let innerId = 0;
+    const outerId = requestAnimationFrame(() => {
+      pinToRest(el);
+      innerId = requestAnimationFrame(() => {
+        pinToRest(el);
+        readyRef.current = true;
+        setIsReady(true);
+      });
+    });
 
-  const handleTouchStart = (e: TouchEvent) => {
-    const touch = e.touches[0];
-    if (!touch) return;
-    touchStartX.current = touch.clientX;
-    touchStartY.current = touch.clientY;
-    touchStartTime.current = Date.now();
-    currentX.current = translateX;
-    isDragging.current = false;
-    isHorizontalSwipe.current = null;
-  };
+    return () => {
+      cancelAnimationFrame(outerId);
+      cancelAnimationFrame(innerId);
+    };
+  }, []);
 
-  const handleTouchMove = (e: TouchEvent) => {
-    const touch = e.touches[0];
-    if (!touch) return;
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
 
-    const deltaX = touch.clientX - touchStartX.current;
-    const deltaY = touch.clientY - touchStartY.current;
+    const onPointerDown = () => {
+      didScrollRef.current = false;
+    };
 
-    // Determinar dirección del gesto solo la primera vez
-    if (isHorizontalSwipe.current === null) {
-      const absDeltaX = Math.abs(deltaX);
-      const absDeltaY = Math.abs(deltaY);
+    const onScroll = () => {
+      if (!readyRef.current) return;
+      if (!isProgrammaticRef.current) {
+        didScrollRef.current = true;
+      }
 
-      // Si el movimiento es menor que la zona muerta, no hacer nada
-      if (absDeltaX < DEAD_ZONE && absDeltaY < DEAD_ZONE) {
+      window.clearTimeout(scrollEndTimerRef.current);
+      scrollEndTimerRef.current = window.setTimeout(() => {
+        isProgrammaticRef.current = false;
+        syncOpenFromScroll();
+      }, SCROLL_END_DEBOUNCE_MS);
+    };
+
+    const onScrollEnd = () => {
+      if (!readyRef.current) return;
+      window.clearTimeout(scrollEndTimerRef.current);
+      isProgrammaticRef.current = false;
+      syncOpenFromScroll();
+    };
+
+    el.addEventListener("pointerdown", onPointerDown, { passive: true });
+    el.addEventListener("scroll", onScroll, { passive: true });
+    el.addEventListener("scrollend", onScrollEnd);
+
+    return () => {
+      window.clearTimeout(scrollEndTimerRef.current);
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("scrollend", onScrollEnd);
+    };
+  }, [productId]);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || !isReady) return;
+
+    const restorePosition = () => {
+      if (wasOpenRef.current) {
+        if (el.scrollLeft > REST_LEFT) {
+          el.scrollLeft = REST_LEFT + ACTIONS_WIDTH;
+        } else {
+          el.scrollLeft = 0;
+        }
         return;
       }
+      pinToRest(el);
+    };
 
-      // Determinar si es swipe horizontal o scroll vertical
-      // Más permisivo: solo requiere que el movimiento horizontal sea mayor
-      isHorizontalSwipe.current = absDeltaX > absDeltaY;
+    const ro = new ResizeObserver(restorePosition);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isReady]);
 
-      // Si es scroll vertical, no interceptar
-      if (!isHorizontalSwipe.current) {
-        return;
-      }
-
-      // Marcar que hemos iniciado el drag
-      isDragging.current = true;
+  useEffect(() => {
+    if (!isReady) return;
+    if (openSwipeId !== productId && wasOpenRef.current) {
+      scrollToRest(true);
+      wasOpenRef.current = false;
+      setIsOpen(false);
     }
+  }, [openSwipeId, productId, isReady]);
 
-    // Si ya determinamos que es scroll vertical, no hacer nada
-    if (!isHorizontalSwipe.current) {
-      return;
-    }
+  useEffect(() => {
+    if (!isOpen) return;
 
-    // Prevenir el scroll solo si estamos haciendo swipe horizontal
-    e.preventDefault();
+    const handlePointerOutside = (e: Event) => {
+      const target = e.target as Node | null;
+      if (!target || !containerRef.current) return;
+      if (containerRef.current.contains(target)) return;
+      if (target instanceof Element && target.closest("[role='dialog']")) return;
+      closeSwipe(true);
+    };
 
-    isDragging.current = true;
-    setIsSwiping(true);
+    document.addEventListener("mousedown", handlePointerOutside);
+    document.addEventListener("touchstart", handlePointerOutside, {
+      passive: true,
+    });
 
-    // Calcular nueva posición
-    let newX = currentX.current + deltaX;
-
-    // Aplicar límites con resistencia
-    if (newX > 0) {
-      // Permitir swipe hacia la derecha con límite
-      if (newX > MAX_SWIPE_RIGHT) {
-        // Resistencia al exceder el máximo derecha
-        const excess = newX - MAX_SWIPE_RIGHT;
-        newX = MAX_SWIPE_RIGHT + excess * 0.3;
-      }
-    } else {
-      // Swipe hacia la izquierda
-      if (newX < -MAX_SWIPE_LEFT) {
-        // Resistencia al exceder el máximo izquierda
-        const excess = Math.abs(newX + MAX_SWIPE_LEFT);
-        newX = -MAX_SWIPE_LEFT - excess * 0.3;
-      }
-    }
-
-    // Actualizar directamente el motion value sin animación para movimiento instantáneo durante el arrastre
-    x.jump(newX);
-    setTranslateX(newX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!isDragging.current) {
-      return;
-    }
-
-    const deltaX = currentX.current - translateX;
-    const deltaTime = Date.now() - touchStartTime.current;
-    const velocity = Math.abs(deltaX) / deltaTime;
-
-    // Determinar dirección y si abrir o cerrar
-    if (translateX < 0) {
-      // Swipe hacia la izquierda
-      const shouldOpenLeft =
-        translateX < -SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-
-      if (shouldOpenLeft) {
-        openSwipeLeft();
-      } else {
-        closeSwipe();
-      }
-    } else if (translateX > 0) {
-      // Swipe hacia la derecha
-      const shouldOpenRight =
-        translateX > SWIPE_THRESHOLD || velocity > VELOCITY_THRESHOLD;
-
-      if (shouldOpenRight) {
-        openSwipeRight();
-      } else {
-        closeSwipe();
-      }
-    } else {
-      closeSwipe();
-    }
-
-    setIsSwiping(false);
-    isDragging.current = false;
-    isHorizontalSwipe.current = null;
-  };
+    return () => {
+      document.removeEventListener("mousedown", handlePointerOutside);
+      document.removeEventListener("touchstart", handlePointerOutside);
+    };
+  }, [isOpen, productId]);
 
   const handleActionClick = (action: "edit" | "delete" | "cart") => {
+    if (didScrollRef.current) return;
     if (action === "edit") {
       onEdit();
     } else if (action === "delete") {
       onDelete();
-    } else if (action === "cart") {
+    } else {
       onAddToCart();
     }
-    closeSwipe();
+    closeSwipe(true);
   };
 
   const handleContentClick = (e: React.MouseEvent) => {
-    // Si está abierta, un tap/click la devuelve al centro.
-    // No se usa ningún estilo de botón; solo una acción rápida de cierre.
-    if (isOpen && !isSwiping) {
-      e.stopPropagation();
-      closeSwipe();
-    }
+    if (didScrollRef.current) return;
+    const el = scrollerRef.current;
+    if (!el || !isAwayFromRest(el.scrollLeft)) return;
+    e.stopPropagation();
+    closeSwipe(true);
   };
 
-  // Registrar event listeners con passive: false para permitir preventDefault
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content) return;
-
-    content.addEventListener("touchstart", handleTouchStart, { passive: true });
-    content.addEventListener("touchmove", handleTouchMove, { passive: false });
-    content.addEventListener("touchend", handleTouchEnd, { passive: true });
-    content.addEventListener("touchcancel", handleTouchEnd, { passive: true });
-
-    return () => {
-      content.removeEventListener("touchstart", handleTouchStart);
-      content.removeEventListener("touchmove", handleTouchMove);
-      content.removeEventListener("touchend", handleTouchEnd);
-      content.removeEventListener("touchcancel", handleTouchEnd);
-    };
-  }, [translateX]);
-
-  // Cerrar al hacer clic fuera
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (
-        isOpen &&
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        closeSwipe();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [isOpen]);
+  const actionBtnClass =
+    "relative flex min-h-[44px] min-w-[44px] flex-1 flex-col items-center justify-center rounded-2xl border text-white";
 
   return (
-    <AnimatePresence>
-      <motion.div
-        ref={containerRef}
-        className="relative overflow-hidden rounded-3xl"
-        initial={{ opacity: 0, y: 50, scale: 0.5 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 50, scale: 0.5 }}
-        transition={{ duration: 0.5, type: "spring", ease: "easeInOut" }}
-      >
-        {/* Capa de acciones izquierda (fondo fijo) */}
-        <div
-          className="absolute right-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
-          style={{ width: `${ACTIONS_WIDTH_LEFT}px` }}
-        >
-          {/* Botón Editar */}
-          <button
-            type="button"
-            onClick={() => handleActionClick("edit")}
-            className="relative flex-1 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700 hover:from-sky-400 hover:via-blue-500 hover:to-blue-600 active:from-sky-600 active:via-blue-700 active:to-blue-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-sky-400/40 shadow-[0_0_15px_rgba(56,189,248,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(56,189,248,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
-            aria-label="Editar producto"
-            style={{
-              boxShadow:
-                "0 0 15px rgba(56, 189, 248, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)",
-            }}
-          >
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-            <svg
-              className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
-            <span className="text-xs font-bold relative z-10 drop-shadow-md">
-              Editar
-            </span>
-          </button>
-
-          {/* Botón Borrar */}
-          <button
-            type="button"
-            onClick={() => handleActionClick("delete")}
-            className="relative flex-1 bg-gradient-to-br from-red-500 via-red-600 to-red-700 hover:from-red-400 hover:via-red-500 hover:to-red-600 active:from-red-600 active:via-red-700 active:to-red-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
-            aria-label="Borrar producto"
-            style={{
-              boxShadow:
-                "0 0 15px rgba(239, 68, 68, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)",
-            }}
-          >
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
-            <svg
-              className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
-            <span className="text-xs font-bold relative z-10 drop-shadow-md">
-              Borrar
-            </span>
-          </button>
-        </div>
-
-        {/* Capa de acciones derecha (fondo fijo) */}
-        <div
-          className="absolute left-0 top-0 bottom-0 flex items-stretch gap-1 p-1"
-          style={{ width: `${ACTIONS_WIDTH_RIGHT}px` }}
-        >
-          {/* Botón Añadir/Quitar de Cesta */}
+    <div
+      ref={containerRef}
+      className="w-full min-w-0 overflow-hidden rounded-3xl"
+      style={{ opacity: isReady ? 1 : 0 }}
+    >
+      <div ref={scrollerRef} className="product-swipe-scroller">
+        <div className="product-swipe-panel-cart flex items-stretch gap-1 p-1">
           <button
             type="button"
             onClick={() => handleActionClick("cart")}
-            className="relative flex-1 bg-gradient-to-br from-emerald-500 via-green-600 to-green-700 hover:from-emerald-400 hover:via-green-500 hover:to-green-600 active:from-emerald-600 active:via-green-700 active:to-green-800 transition-all duration-300 flex flex-col items-center justify-center text-white backdrop-blur-sm rounded-2xl border border-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.4),inset_0_1px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6),inset_0_1px_2px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+            className={`${actionBtnClass} border-emerald-400/40 bg-gradient-to-br from-emerald-500 via-green-600 to-green-700`}
             aria-label={isInCart ? "Quitar de la cesta" : "Añadir a la cesta"}
-            style={{
-              boxShadow:
-                "0 0 15px rgba(16, 185, 129, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2)",
-            }}
           >
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20 pointer-events-none" />
+            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20" />
             <svg
-              className="w-6 h-6 mb-0.5 relative z-10 drop-shadow-lg"
+              className="relative z-10 mb-0.5 h-6 w-6 drop-shadow-lg"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -387,26 +292,70 @@ export default function SwipeableProductCard({
                 />
               )}
             </svg>
-            <span className="text-xs font-bold relative z-10 drop-shadow-md">
+            <span className="relative z-10 text-xs font-bold drop-shadow-md">
               {isInCart ? "Quitar" : "Cesta"}
             </span>
           </button>
         </div>
 
-        {/* Capa de contenido deslizable */}
-        <motion.div
-          ref={contentRef}
-          className={`relative ${isSwiping ? "select-none" : ""}`}
-          style={{
-            x,
-            WebkitTapHighlightColor: "transparent",
-            touchAction: "pan-y",
-          }}
+        <div
+          className="product-swipe-panel-content"
           onClick={handleContentClick}
         >
           {children}
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+
+        <div className="product-swipe-panel-actions flex items-stretch gap-1 p-1">
+          <button
+            type="button"
+            onClick={() => handleActionClick("edit")}
+            className={`${actionBtnClass} border-sky-400/40 bg-gradient-to-br from-sky-500 via-blue-600 to-blue-700`}
+            aria-label="Editar producto"
+          >
+            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20" />
+            <svg
+              className="relative z-10 mb-0.5 h-6 w-6 drop-shadow-lg"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            <span className="relative z-10 text-xs font-bold drop-shadow-md">
+              Editar
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleActionClick("delete")}
+            className={`${actionBtnClass} border-red-400/40 bg-gradient-to-br from-red-500 via-red-600 to-red-700`}
+            aria-label="Borrar producto"
+          >
+            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/10 to-white/20" />
+            <svg
+              className="relative z-10 mb-0.5 h-6 w-6 drop-shadow-lg"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            <span className="relative z-10 text-xs font-bold drop-shadow-md">
+              Borrar
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

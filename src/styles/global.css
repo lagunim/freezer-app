@@ -153,6 +153,48 @@
   }
 }
 
+/* Carril de swipe nativo (PWA Safari iOS) */
+.product-swipe-scroller {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-snap-stop: normal;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  scrollbar-width: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.product-swipe-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.product-swipe-panel-cart {
+  flex: 0 0 80px;
+  width: 80px;
+  scroll-snap-align: start;
+}
+
+.product-swipe-panel-content {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.product-swipe-panel-actions {
+  flex: 0 0 156px;
+  width: 156px;
+  scroll-snap-align: end;
+}
+
 /* Clases de utilidad para swipe con rebote */
 @layer utilities {
   .animate-chevron-pulse {

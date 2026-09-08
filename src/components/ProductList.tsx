@@ -213,13 +213,7 @@ function ProductList({
                     onAddToCart={() => onToggleShoppingCart(product)}
                     isInCart={product.in_shopping_list}
                   >
-                    <div
-                      className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-sm"
-                      style={{
-                        contentVisibility: "auto",
-                        containIntrinsicSize: "160px",
-                      }}
-                    >
+                    <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-sm">
                       {/* Contenido de la tarjeta */}
                       <div className="relative z-10 flex items-center gap-2">
                         {/* Icono de categoría */}
@@ -248,10 +242,7 @@ function ProductList({
                         </button>
 
                         {/* Información del producto */}
-                        <motion.div
-                          layoutId={`product-${product.id}`}
-                          className="flex-1 min-w-0"
-                        >
+                        <div className="flex-1 min-w-0">
                           {/* Nombre */}
                           <h3 className="mb-1 text-sm font-medium text-white line-clamp-2">
                             {product.name}
@@ -276,7 +267,7 @@ function ProductList({
                               {formatDate(product.added_at)}
                             </span>
                           </div>
-                        </motion.div>
+                        </div>
                       </div>
                     </div>
                   </SwipeableProductCard>
