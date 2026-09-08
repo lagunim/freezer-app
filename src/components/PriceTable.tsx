@@ -1206,6 +1206,8 @@ function PriceTable({
                         filteredHistoryPrices[minPriceIndex];
                       const maxPriceEntry =
                         filteredHistoryPrices[maxPriceIndex];
+                      const minBrand = minPriceEntry.brand?.trim() ?? "";
+                      const maxBrand = maxPriceEntry.brand?.trim() ?? "";
                       return (
                         <>
                           <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-800/35 backdrop-blur-sm">
@@ -1241,6 +1243,7 @@ function PriceTable({
                               </span>{" "}
                               <span className="text-slate-300">
                                 {minPriceEntry.supermarket}
+                                {minBrand ? ` ${minBrand}` : ""}
                               </span>{" "}
                               <span className="text-slate-500">
                                 · {formatDate(minPriceEntry.date)}
@@ -1252,6 +1255,7 @@ function PriceTable({
                               </span>{" "}
                               <span className="text-slate-300">
                                 {maxPriceEntry.supermarket}
+                                {maxBrand ? ` ${maxBrand}` : ""}
                               </span>{" "}
                               <span className="text-slate-500">
                                 · {formatDate(maxPriceEntry.date)}
@@ -1283,6 +1287,9 @@ function PriceTable({
                                 Supermercado
                               </th>
                             )}
+                            <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
+                              Marca
+                            </th>
                             <th className="px-2 py-2 text-left text-sm font-semibold text-slate-300">
                               Precio
                             </th>
@@ -1347,6 +1354,9 @@ function PriceTable({
                                     </span>
                                   </td>
                                 )}
+                                <td className="px-2 py-3 text-sm text-slate-300">
+                                  {price.brand?.trim() ? price.brand.trim() : "—"}
+                                </td>
                                 <td
                                   className={`px-2 py-3 text-sm font-medium whitespace-nowrap ${hasOffer(price)
                                     ? "text-amber-300/90"
