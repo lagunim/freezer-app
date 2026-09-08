@@ -7,6 +7,7 @@ import { fetchProductPriceByBarcode } from "@/lib/productPrices";
 import { lookupByBarcode } from "@/lib/openProducts";
 import { sileo } from "sileo";
 import { useScrollLock } from "@/lib/useScrollLock";
+import Portal from "@/components/Portal";
 
 interface PriceFormProps {
   mode: "create" | "edit";
@@ -253,6 +254,7 @@ export default function PriceForm({
   };
 
   return (
+    <Portal>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -651,5 +653,6 @@ export default function PriceForm({
         )}
       </AnimatePresence>
     </motion.div>
+    </Portal>
   );
 }

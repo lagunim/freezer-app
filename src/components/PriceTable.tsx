@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { normalizeStr, formatDate, formatPrice, toDateInputValue } from "@/lib/utils";
 import { useScrollLock } from "@/lib/useScrollLock";
+import Portal from "@/components/Portal";
 
 function hasOffer(price: PriceEntry): boolean {
   return !!price.offer_type;
@@ -487,10 +488,25 @@ function PriceTable({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-700 border-t-sky-500"></div>
-          <p className="text-sm text-slate-400">Cargando precios...</p>
+      <div
+        className="min-h-[28rem] space-y-3 p-1"
+        aria-busy="true"
+        aria-label="Cargando precios"
+      >
+        <div className="h-10 animate-pulse rounded-lg bg-slate-800" />
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="h-14 animate-pulse rounded-lg bg-slate-800/80"
+            aria-hidden
+          />
+        ))}
+        <div className="flex items-center justify-center gap-2 pt-2 text-[11px] text-slate-500">
+          <span
+            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-sky-500"
+            aria-hidden
+          />
+          Cargando precios…
         </div>
       </div>
     );
@@ -615,6 +631,7 @@ function PriceTable({
       {/* Modal de detalle */}
       <AnimatePresence>
         {detailPrice && (
+          <Portal>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -916,12 +933,14 @@ function PriceTable({
               )}
             </motion.div>
           </motion.div>
+          </Portal>
         )}
       </AnimatePresence>
 
       {/* Modal de historial */}
       <AnimatePresence>
         {historyView && (
+          <Portal>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -1468,11 +1487,13 @@ function PriceTable({
               </div>
             </motion.div>
           </motion.div>
+          </Portal>
         )}
       </AnimatePresence>
 
       {/* Modal de confirmación de eliminación */}
       {priceToDelete && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           onClick={handleCancelDelete}
@@ -1515,10 +1536,12 @@ function PriceTable({
             </div>
           </div>
         </div>
+        </Portal>
       )}
       {/* Modal de añadir precio rápido */}
       <AnimatePresence>
         {isQuickAddOpen && detailPrice && (
+          <Portal>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -1817,6 +1840,7 @@ function PriceTable({
               </AnimatePresence>
             </motion.div>
           </motion.div>
+          </Portal>
         )}
       </AnimatePresence>
 

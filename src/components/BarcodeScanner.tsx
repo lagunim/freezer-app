@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { useScrollLock } from "@/lib/useScrollLock";
+import Portal from "@/components/Portal";
 import type {
   Html5QrcodeCameraScanConfig,
   Html5QrcodeSupportedFormats as SupportedFormatsType,
@@ -148,6 +149,7 @@ export default function BarcodeScanner({
   };
 
   return (
+    <Portal>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -221,5 +223,6 @@ export default function BarcodeScanner({
         )}
       </div>
     </motion.div>
+    </Portal>
   );
 }

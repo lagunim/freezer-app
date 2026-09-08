@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type TransitionEvent } from "react";
 import { useAuth } from "@/lib/useAuth";
-import FreezerApp from "@/components/FreezerApp";
-import PriceHunterApp from "@/components/PriceHunterApp";
+import FreezerApp, { type FreezerAppHandle } from "@/components/FreezerApp";
+import PriceHunterApp, {
+  type PriceHunterAppHandle,
+} from "@/components/PriceHunterApp";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
 import FriezaIcon from "@/public/Frieza-icon.png";
-import FloatingMenu from "@/components/FloatingMenu";
+import AppChrome from "@/components/AppChrome";
 import { Toaster, sileo } from "sileo";
 
 export type AppView = "freezer" | "price-hunter";
@@ -20,14 +22,21 @@ function getInitialView(): AppView {
   return "price-hunter";
 }
 
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 type AuthView = "login" | "register";
 
 export default function AppShell() {
   const { auth, handleLogout } = useAuth();
   const [view, setView] = useState<AppView>(getInitialView);
+  const [isSliding, setIsSliding] = useState(false);
   const [authView, setAuthView] = useState<AuthView>("login");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const freezerRef = useRef<FreezerAppHandle>(null);
+  const priceHunterRef = useRef<PriceHunterAppHandle>(null);
 
   useEffect(() => {
     const target = view === "freezer" ? "/#freezer" : "/#price-hunter";
@@ -38,12 +47,10 @@ export default function AppShell() {
     }
   }, [view]);
 
-  // Clear auth error when user successfully logs in
   useEffect(() => {
     if (auth.user) setError(null);
   }, [auth.user]);
 
-  // Auto-dismiss success/error messages after 5 seconds
   useEffect(() => {
     if (!message && !error) return;
     const t = setTimeout(() => {
@@ -53,8 +60,25 @@ export default function AppShell() {
     return () => clearTimeout(t);
   }, [message, error]);
 
-  const onSwitchToPriceHunter = () => setView("price-hunter");
-  const onSwitchToFreezer = () => setView("freezer");
+  const switchView = (next: AppView) => {
+    if (next === view) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) active.blur();
+    window.scrollTo(0, 0);
+    if (!prefersReducedMotion()) setIsSliding(true);
+    setView(next);
+  };
+
+  const handleTrackTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.propertyName !== "transform") return;
+    setIsSliding(false);
+  };
+
+  useEffect(() => {
+    if (!isSliding) return;
+    const t = window.setTimeout(() => setIsSliding(false), 500);
+    return () => window.clearTimeout(t);
+  }, [isSliding]);
 
   const handleAuthError = (msg: string) => {
     sileo.error({ title: msg });
@@ -75,131 +99,112 @@ export default function AppShell() {
     await handleLogout();
   };
 
-  // --- Floating menu (always available) ---
-  const floatingMenuItems = [
-    view === "freezer"
-      ? {
-          id: "price-hunter",
-          label: "Price Hunter",
-          icon: "🔍" as const,
-          onClick: onSwitchToPriceHunter,
-          roundOnly: true,
-        }
-      : {
-          id: "freezer-app",
-          label: "Freezer App",
-          icon: "❄️" as const,
-          onClick: onSwitchToFreezer,
-          roundOnly: true,
-        },
-  ];
+  const focusActiveSearch = () => {
+    if (view === "freezer") freezerRef.current?.focusSearch();
+    else priceHunterRef.current?.focusSearch();
+  };
 
-  // --- Loading state ---
+  const openActiveCreate = () => {
+    if (view === "freezer") freezerRef.current?.openCreateForm();
+    else priceHunterRef.current?.openCreateForm();
+  };
+
   if (auth.loading) {
     return (
-      <>
-        <section>
-          <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-20 px-4 rounded-2xl shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Freezer App</span>
-                </h1>
-                <p className="text-xs text-slate-400 sm:text-sm">
-                  Cargando sesión de Supabase…
-                </p>
-              </div>
+      <section>
+        <header className="flex items-center justify-center p-2 mb-2 sm:mb-3 md:mb-4">
+          <img
+            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+            alt="Freezer App"
+            className="h-20 px-4 rounded-2xl shadow-sm"
+          />
+          <div className="w-64">
+            <div className="space-y-1 text-center">
+              <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                <span>Freezer App</span>
+              </h1>
+              <p className="text-xs text-slate-400 sm:text-sm">
+                Cargando sesión de Supabase…
+              </p>
             </div>
-          </header>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
-            <p>Un momento…</p>
           </div>
-        </section>
-        <FloatingMenu items={floatingMenuItems} />
-      </>
+        </header>
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
+          <p>Un momento…</p>
+        </div>
+      </section>
     );
   }
 
-  // --- Not authenticated: show login/register ---
   if (!auth.session || !auth.user) {
     return (
-      <>
-        <section className="flex min-h-screen flex-col items-center justify-center p-4">
-          <header className="mb-8 flex items-center justify-center">
-            <img
-              src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt="Freezer App"
-              className="h-20 rounded-2xl px-4 shadow-sm"
-            />
-            <div className="w-64">
-              <div className="space-y-1 text-center">
-                <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>Freezer App</span>
-                </h1>
-                <p className="text-left text-xs text-slate-400 sm:text-sm">
-                  Identifícate para gestionar tu congelador.
-                </p>
-              </div>
+      <section className="flex min-h-screen flex-col items-center justify-center p-4">
+        <header className="mb-8 flex items-center justify-center">
+          <img
+            src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
+            alt="Freezer App"
+            className="h-20 rounded-2xl px-4 shadow-sm"
+          />
+          <div className="w-64">
+            <div className="space-y-1 text-center">
+              <h1 className="gap-3 text-left text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+                <span>Freezer App</span>
+              </h1>
+              <p className="text-left text-xs text-slate-400 sm:text-sm">
+                Identifícate para gestionar tu congelador.
+              </p>
             </div>
-          </header>
-
-          <div className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50">
-            <div className="mb-4 flex rounded-lg bg-slate-800/80 p-0.5 text-xs font-medium text-slate-300">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthView("login");
-                  setError(null);
-                  setMessage(null);
-                }}
-                className={`flex-1 rounded-md px-2 py-1 transition ${
-                  authView === "login"
-                    ? "bg-slate-950 text-slate-50"
-                    : "text-slate-400 hover:text-slate-100"
-                }`}
-              >
-                Iniciar sesión
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthView("register");
-                  setError(null);
-                  setMessage(null);
-                }}
-                className={`flex-1 rounded-md px-2 py-1 transition ${
-                  authView === "register"
-                    ? "bg-slate-950 text-slate-50"
-                    : "text-slate-400 hover:text-slate-100"
-                }`}
-              >
-                Crear cuenta
-              </button>
-            </div>
-
-            {authView === "login" ? (
-              <LoginForm onAuthError={handleAuthError} />
-            ) : (
-              <RegisterForm
-                onAuthError={handleAuthError}
-                onRegistered={handleRegistered}
-              />
-            )}
           </div>
-        </section>
-        <FloatingMenu items={floatingMenuItems} />
-      </>
+        </header>
+
+        <div className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/50">
+          <div className="mb-4 flex rounded-lg bg-slate-800/80 p-0.5 text-xs font-medium text-slate-300">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthView("login");
+                setError(null);
+                setMessage(null);
+              }}
+              className={`flex-1 rounded-md px-2 py-1 transition ${
+                authView === "login"
+                  ? "bg-slate-950 text-slate-50"
+                  : "text-slate-400 hover:text-slate-100"
+              }`}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthView("register");
+                setError(null);
+                setMessage(null);
+              }}
+              className={`flex-1 rounded-md px-2 py-1 transition ${
+                authView === "register"
+                  ? "bg-slate-950 text-slate-50"
+                  : "text-slate-400 hover:text-slate-100"
+              }`}
+            >
+              Crear cuenta
+            </button>
+          </div>
+
+          {authView === "login" ? (
+            <LoginForm onAuthError={handleAuthError} />
+          ) : (
+            <RegisterForm
+              onAuthError={handleAuthError}
+              onRegistered={handleRegistered}
+            />
+          )}
+        </div>
+      </section>
     );
   }
 
-  // --- Authenticated: show app with header ---
-  const appName = view === "freezer" ? "Freezer App" : "Price Hunter";
-  const appAlt = view === "freezer" ? "Freezer App" : "Price Hunter";
+  const freezerActive = view === "freezer";
 
   return (
     <>
@@ -208,13 +213,26 @@ export default function AppShell() {
           <div className="flex items-center">
             <img
               src={FriezaIcon.src ?? (FriezaIcon as unknown as string)}
-              alt={appAlt}
+              alt={freezerActive ? "Freezer App" : "Price Hunter"}
               className="h-20 px-4 rounded-2xl shadow-sm"
             />
             <div className="w-64">
               <div className="space-y-1 text-center">
-                <h1 className="text-left gap-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                  <span>{appName}</span>
+                <h1 className="relative min-h-[1.75rem] text-left text-2xl font-semibold tracking-tight text-slate-50 sm:min-h-[2.25rem] sm:text-3xl">
+                  <span
+                    className={`inline-block transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                      freezerActive ? "opacity-100" : "pointer-events-none absolute left-0 top-0 opacity-0"
+                    }`}
+                  >
+                    Freezer App
+                  </span>
+                  <span
+                    className={`inline-block transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                      freezerActive ? "pointer-events-none absolute left-0 top-0 opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    Price Hunter
+                  </span>
                 </h1>
                 <p className="text-xs text-left text-slate-400 sm:text-sm">
                   {auth.user.email ?? "usuario sin email"}
@@ -244,15 +262,38 @@ export default function AppShell() {
           </button>
         </header>
 
-        {/* View content */}
-        {view === "freezer" ? (
-          <FreezerApp user={auth.user} onSwitchToPriceHunter={onSwitchToPriceHunter} />
-        ) : (
-          <PriceHunterApp user={auth.user} onSwitchToFreezer={onSwitchToFreezer} />
-        )}
+        <div className="app-view-viewport">
+          <div
+            className={`app-view-track${view === "price-hunter" ? " is-price-hunter" : ""}${isSliding ? " is-sliding" : ""}`}
+            onTransitionEnd={handleTrackTransitionEnd}
+          >
+            <div
+              className={`app-view-panel${!freezerActive && !isSliding ? " is-idle-hidden" : ""}`}
+              aria-hidden={!freezerActive}
+              inert={!freezerActive}
+            >
+              <FreezerApp user={auth.user} ref={freezerRef} />
+            </div>
+            <div
+              className={`app-view-panel${freezerActive && !isSliding ? " is-idle-hidden" : ""}`}
+              aria-hidden={freezerActive}
+              inert={freezerActive}
+            >
+              <PriceHunterApp user={auth.user} ref={priceHunterRef} />
+            </div>
+          </div>
+        </div>
       </section>
 
-      <FloatingMenu items={floatingMenuItems} />
+      <AppChrome
+        view={view}
+        onSwitch={() =>
+          switchView(freezerActive ? "price-hunter" : "freezer")
+        }
+        onSearch={focusActiveSearch}
+        onAdd={openActiveCreate}
+        onScan={() => priceHunterRef.current?.openScanner()}
+      />
       <Toaster
         position="top-center"
         options={{

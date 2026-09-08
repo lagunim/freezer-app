@@ -6,6 +6,7 @@ import SwipeableProductCard from "@/components/SwipeableProductCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatDate } from "@/lib/utils";
 import { useScrollLock } from "@/lib/useScrollLock";
+import Portal from "@/components/Portal";
 
 export interface ProductListProps {
   products: Product[];
@@ -514,6 +515,7 @@ function ProductList({
 
       {/* Modal de confirmación de eliminación de un producto (estilo Price Hunter) */}
       {productToDelete && (
+        <Portal>
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           onClick={handleCancelDelete}
@@ -556,10 +558,12 @@ function ProductList({
             </div>
           </div>
         </div>
+        </Portal>
       )}
 
       {/* Modal de confirmación de borrado múltiple */}
       {isDeleteMultipleModalOpen && (
+        <Portal>
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
           role="dialog"
@@ -643,6 +647,7 @@ function ProductList({
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   );

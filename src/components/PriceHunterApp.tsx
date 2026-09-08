@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import type { User } from "@supabase/supabase-js";
 import PriceForm from "@/components/PriceForm";
 import PriceTable from "@/components/PriceTable";
@@ -28,6 +28,7 @@ import { normalizeStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useScrollLock } from "@/lib/useScrollLock";
 import { sileo } from "sileo";
+import Portal from "@/components/Portal";
 
 interface DuplicateCandidate {
   existing: ProductPrice;
@@ -36,17 +37,23 @@ interface DuplicateCandidate {
   barcodeAutoUpdated?: boolean;
 }
 
+export type PriceHunterAppHandle = {
+  focusSearch: () => void;
+  openCreateForm: () => void;
+  openScanner: () => void;
+};
+
 export interface PriceHunterAppProps {
   user: User;
-  onSwitchToFreezer?: () => void;
+  ref?: Ref<PriceHunterAppHandle>;
 }
 
 export default function PriceHunterApp({
   user,
-  onSwitchToFreezer,
+  ref,
 }: PriceHunterAppProps) {
   const [prices, setPrices] = useState<PriceEntry[]>([]);
-  const [pricesLoading, setPricesLoading] = useState(false);
+  const [pricesLoading, setPricesLoading] = useState(true);
   const [pricesError, setPricesError] = useState<string | null>(null);
   const [savingPrice, setSavingPrice] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -65,6 +72,23 @@ export default function PriceHunterApp({
   const [duplicateCandidate, setDuplicateCandidate] =
     useState<DuplicateCandidate | null>(null);
   const priceSearchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    focusSearch: () => {
+      const input = priceSearchInputRef.current;
+      if (!input) return;
+      input.focus();
+      input.select();
+      window.requestAnimationFrame(() => {
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    },
+    openCreateForm: () => {
+      setEditingPrice(null);
+      setIsFormOpen(true);
+    },
+    openScanner: () => setIsScannerOpen(true),
+  }));
 
   useScrollLock(!!duplicateCandidate);
 
@@ -107,11 +131,6 @@ export default function PriceHunterApp({
     setProductSuggestions(ppNames);
     setBrandSuggestions(ppBrands);
     setSupermarketSuggestions(supermarkets);
-  };
-
-  const openForm = () => {
-    setEditingPrice(null);
-    setIsFormOpen(true);
   };
 
   const closeForm = () => {
@@ -471,113 +490,20 @@ export default function PriceHunterApp({
       </div>
 
       {/* Main Content */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
-        <PriceTable
-          prices={filteredPrices}
-          loading={pricesLoading}
-          onEdit={handleEdit}
-          onDelete={handleDeletePrice}
-          searchTerm={searchTerm}
-          onQuickAdd={handleQuickAdd}
-          savingQuickAdd={savingPrice}
-          userId={user.id}
-          historyRequest={historyRequest}
-        />
-      </div>
-
-      {/* Scanner + Add Price FABs (inferior derecha, apilados) */}
-      <div
-        className="fixed right-6 z-20 flex flex-col items-end gap-3 sm:right-8"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          onClick={() => setIsScannerOpen(true)}
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-          aria-label="Escanear código de barras"
-          title="Escanear código de barras"
-        >
-          <svg
-            className="h-7 w-7 sm:h-8 sm:w-8"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
-            />
-          </svg>
-        </button>
-
-        <button
-          onClick={openForm}
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-sky-600 text-3xl font-light text-white shadow-[0_0_25px_rgba(56,189,248,0.4)] hover:bg-sky-700 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-          aria-label="Añadir precio"
-        >
-          +
-        </button>
-      </div>
-
-      {/* FAB Freezer App (inferior izquierda) */}
-      <div
-        className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={
-            onSwitchToFreezer
-              ? onSwitchToFreezer
-              : () => { window.location.href = "/"; }
-          }
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-          aria-label="Ir a Freezer App"
-          title="Freezer App"
-        >
-          ❄️
-        </button>
-      </div>
-
-      {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
-      <div
-        className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            const input = priceSearchInputRef.current;
-            if (!input) return;
-            input.focus();
-            input.select();
-            window.requestAnimationFrame(() => {
-              input.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-          }}
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
-          aria-label="Buscar precios"
-        >
-          <svg
-            className="h-6 w-6 sm:h-7 sm:w-7"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </button>
+      <div className="pb-20 sm:pb-24">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2 shadow-xl">
+          <PriceTable
+            prices={filteredPrices}
+            loading={pricesLoading}
+            onEdit={handleEdit}
+            onDelete={handleDeletePrice}
+            searchTerm={searchTerm}
+            onQuickAdd={handleQuickAdd}
+            savingQuickAdd={savingPrice}
+            userId={user.id}
+            historyRequest={historyRequest}
+          />
+        </div>
       </div>
 
       {/* Price Form Modal */}
@@ -600,6 +526,7 @@ export default function PriceHunterApp({
       {/* Duplicate Confirmation Modal */}
       <AnimatePresence>
         {duplicateCandidate && (
+          <Portal>
           <motion.div
             key="duplicate-overlay"
             initial={{ opacity: 0 }}
@@ -692,6 +619,7 @@ export default function PriceHunterApp({
               </div>
             </motion.div>
           </motion.div>
+          </Portal>
         )}
       </AnimatePresence>
 

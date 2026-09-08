@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import type { User } from "@supabase/supabase-js";
 import ProductForm from "@/components/ProductForm";
 import ProductList from "@/components/ProductList";
@@ -16,17 +16,19 @@ import { motion } from "framer-motion";
 import { sileo } from "sileo";
 import { useScrollLock } from "@/lib/useScrollLock";
 
+export type FreezerAppHandle = {
+  focusSearch: () => void;
+  openCreateForm: () => void;
+};
+
 export interface FreezerAppProps {
   user: User;
-  onSwitchToPriceHunter?: () => void;
+  ref?: Ref<FreezerAppHandle>;
 }
 
-export default function FreezerApp({
-  user,
-  onSwitchToPriceHunter,
-}: FreezerAppProps) {
+export default function FreezerApp({ user, ref }: FreezerAppProps) {
   const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -41,6 +43,22 @@ export default function FreezerApp({
     new Set(),
   );
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    focusSearch: () => {
+      const input = searchInputRef.current;
+      if (!input) return;
+      input.focus();
+      input.select();
+      window.requestAnimationFrame(() => {
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    },
+    openCreateForm: () => {
+      setProductsError(null);
+      setIsFormOpen(true);
+    },
+  }));
 
   // Load products when user is available
   useEffect(() => {
@@ -348,79 +366,6 @@ export default function FreezerApp({
           onClearSelection={handleClearSelection}
           onDeleteMultiple={handleDeleteMultiple}
         />
-      </div>
-
-      {/* Contenedor FAB Añadir (inferior derecha) */}
-      <div
-        className="fixed right-6 z-20 flex flex-col items-end gap-2 sm:right-8"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setProductsError(null);
-            setIsFormOpen(true);
-          }}
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-sky-600 text-2xl font-light text-slate-50 shadow-md hover:bg-sky-500 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 sm:text-3xl"
-          aria-label="Añadir nuevo producto"
-        >
-          +
-        </button>
-      </div>
-
-      {/* FAB Price Hunter (inferior izquierda) */}
-      <div
-        className="fixed left-6 z-20 flex flex-col items-start sm:left-8"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={
-            onSwitchToPriceHunter
-              ? onSwitchToPriceHunter
-              : () => { window.location.href = "/#price-hunter"; }
-          }
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-2xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16"
-          aria-label="Ir a Price Hunter"
-          title="Price Hunter"
-        >
-          🎯
-        </button>
-      </div>
-
-      {/* FAB búsqueda (inferior centro): enfoca la barra de búsqueda anclada */}
-      <div
-        className="fixed inset-x-0 z-20 flex justify-center pointer-events-none"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            const input = searchInputRef.current;
-            if (!input) return;
-            input.focus();
-            input.select();
-            window.requestAnimationFrame(() => {
-              input.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-          }}
-          className="flex h-14 w-14 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-700/40 backdrop-blur-xl text-slate-100 shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-colors duration-200 ease-out hover:bg-slate-700/60 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950 sm:h-16 sm:w-16 pointer-events-auto"
-          aria-label="Buscar productos"
-        >
-          <svg
-            className="h-6 w-6 sm:h-7 sm:w-7"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </button>
       </div>
 
       <ProductModal
