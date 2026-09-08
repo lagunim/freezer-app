@@ -371,7 +371,7 @@ export default function PriceForm({
 
           {/* miniStats: Cantidad + Unidad + Fecha */}
           <div className="flex overflow-hidden rounded-[14px] border border-white/[0.07]">
-            <div className="flex-1 px-2 py-2 text-center border-r border-white/[0.07]">
+            <div className="flex-1 min-w-0 px-2 py-2 text-center border-r border-white/[0.07]">
               <p className="text-[0.55rem] uppercase tracking-[0.04em] font-bold text-[#8b93a9] mb-1">Cantidad</p>
               <input
                 id="quantity"
@@ -387,7 +387,7 @@ export default function PriceForm({
                 required
               />
             </div>
-            <div className="flex-1 px-2 py-2 text-center border-r border-white/[0.07]">
+            <div className="flex-1 min-w-0 px-2 py-2 text-center border-r border-white/[0.07]">
               <p className="text-[0.55rem] uppercase tracking-[0.04em] font-bold text-[#8b93a9] mb-1">Unidad</p>
               <select
                 id="unit"
@@ -403,14 +403,14 @@ export default function PriceForm({
                 ))}
               </select>
             </div>
-            <div className="flex-1 px-2 py-2 text-center">
+            <div className="flex-1 min-w-0 px-2 py-2 text-center">
               <p className="text-[0.55rem] uppercase tracking-[0.04em] font-bold text-[#8b93a9] mb-1">Fecha</p>
               <input
                 id="date"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-center text-base font-bold text-[#f4f6fb] appearance-none cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
+                className="min-w-0 max-w-full w-full bg-transparent border-none outline-none text-center text-base font-bold text-[#f4f6fb] appearance-none cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
                 required
               />
             </div>

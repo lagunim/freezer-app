@@ -23,6 +23,20 @@
   }
 }
 
+/* Safari iOS: input[type=date] tiene un min-width intrínseco enorme */
+input[type="date"] {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-date-and-time-value {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* Slide Freezer <-> Price Hunter (GPU; no transformar ancestros de FABs fixed) */
 .app-view-viewport {
   overflow: hidden;

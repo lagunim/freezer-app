@@ -158,7 +158,7 @@ export default function ProductForm({
         </select>
       </div>
 
-      <div className="space-y-1">
+      <div className="min-w-0 overflow-hidden space-y-1">
         <label
           htmlFor="product-added-at"
           className="text-xs font-semibold text-slate-200"
@@ -171,7 +171,7 @@ export default function ProductForm({
           required
           value={addedAt}
           onChange={(e) => setAddedAt(e.target.value)}
-          className="w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
+          className="min-w-0 max-w-full w-full rounded-lg border border-white/20 bg-slate-800/40 backdrop-blur-xl px-3 py-2 text-base text-slate-100 placeholder:text-slate-500 shadow-[0_0_15px_rgba(147,197,253,0.1)] transition-all focus:border-sky-400/50 focus:outline-none"
         />
       </div>
 
