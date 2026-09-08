@@ -241,7 +241,7 @@ export default function SwipeableProductCard({
     } else {
       onAddToCart();
     }
-    closeSwipe(true);
+    closeSwipe(action === "edit" || action === "delete" ? false : true);
   };
 
   const handleContentClick = (e: React.MouseEvent) => {

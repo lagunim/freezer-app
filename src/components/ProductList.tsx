@@ -1,6 +1,7 @@
 import { useState, memo } from "react";
 import type { Product, ProductInput, ProductCategory } from "@/lib/products";
 import ProductForm from "@/components/ProductForm";
+import ProductModal from "@/components/ProductModal";
 import SwipeableProductCard from "@/components/SwipeableProductCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatDate } from "@/lib/utils";
@@ -189,6 +190,10 @@ function ProductList({
   const allSelectedInCart =
     selectedProductsArray.length > 0 &&
     selectedProductsArray.every((p) => p.in_shopping_list);
+  const editingProduct =
+    editingProductId != null
+      ? (products.find((p) => p.id === editingProductId) ?? null)
+      : null;
 
   return (
     <div className="min-w-0">
@@ -354,56 +359,28 @@ function ProductList({
                     </div>
                   </div>
                 </div>
-
-                {/* Modal de edición (misma animación CRT que Añadir producto) */}
-                <AnimatePresence>
-                  {isEditing && (
-                    <motion.div
-                      key={`edit-modal-${product.id}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
-                      role="dialog"
-                      aria-modal="true"
-                      aria-labelledby="modal-edit-product-title"
-                      onClick={closeEditModal}
-                    >
-                      <motion.div
-                        initial={{ scaleY: 0, originY: 0.5 }}
-                        animate={{ scaleY: 1, originY: 0.5 }}
-                        exit={{ scaleY: 0, originY: 0.5 }}
-                        transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
-                        className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <motion.div>
-                          <h3
-                            id="modal-edit-product-title"
-                            className="mb-3 text-base font-semibold text-slate-100"
-                          >
-                            Editar producto
-                          </h3>
-                          <ProductForm
-                            mode="edit"
-                            initialProduct={product}
-                            loading={savingProductId === product.id}
-                            onSubmit={(input) =>
-                              handleUpdateProduct(product, input)
-                            }
-                            onCancel={closeEditModal}
-                          />
-                        </motion.div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </AnimatePresence>
           );
         })}
       </div>
+
+      <ProductModal
+        open={editingProductId !== null && editingProduct != null}
+        title="Editar producto"
+        titleId="modal-edit-product-title"
+        onClose={closeEditModal}
+      >
+        {editingProduct ? (
+          <ProductForm
+            mode="edit"
+            initialProduct={editingProduct}
+            loading={savingProductId === editingProduct.id}
+            onSubmit={(input) => handleUpdateProduct(editingProduct, input)}
+            onCancel={closeEditModal}
+          />
+        ) : null}
+      </ProductModal>
 
       {/* Indicador de carga */}
       {loading && products.length > 0 && (

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import ProductForm from "@/components/ProductForm";
 import ProductList from "@/components/ProductList";
+import ProductModal from "@/components/ProductModal";
 import SearchInput from "@/components/SearchInput";
 import type { Product, ProductCategory } from "@/lib/products";
 import { normalizeStr } from "@/lib/utils";
@@ -11,7 +12,7 @@ import {
   fetchProducts,
   updateProduct,
 } from "@/lib/products";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { sileo } from "sileo";
 import { useScrollLock } from "@/lib/useScrollLock";
 
@@ -422,45 +423,20 @@ export default function FreezerApp({
         </button>
       </div>
 
-      {/* Modal para añadir nuevo producto */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 bg-black/60"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-new-product-title"
-            onClick={closeForm}
-          >
-            <motion.div
-              initial={{ scaleY: 0, originY: 0.5 }}
-              animate={{ scaleY: 1, originY: 0.5 }}
-              exit={{ scaleY: 0, originY: 0.5 }}
-              transition={{ duration: 0.8, type: "spring", ease: "easeIn" }}
-              className="w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2
-                id="modal-new-product-title"
-                className="mb-3 text-base font-semibold text-slate-100"
-              >
-                Añadir producto
-              </h2>
-              <ProductForm
-                mode="create"
-                initialProduct={null}
-                loading={savingProduct}
-                onSubmit={handleCreateProduct}
-                onCancel={closeForm}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ProductModal
+        open={isFormOpen}
+        title="Añadir producto"
+        titleId="modal-new-product-title"
+        onClose={closeForm}
+      >
+        <ProductForm
+          mode="create"
+          initialProduct={null}
+          loading={savingProduct}
+          onSubmit={handleCreateProduct}
+          onCancel={closeForm}
+        />
+      </ProductModal>
     </>
   );
 }
