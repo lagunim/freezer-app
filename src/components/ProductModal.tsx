@@ -48,7 +48,7 @@ export default function ProductModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative z-10 w-full max-w-sm rounded-t-2xl border border-b-0 border-slate-700 bg-slate-900 shadow-lg"
+            className="relative z-10 min-w-0 w-full max-w-sm rounded-t-2xl border border-b-0 border-slate-700 bg-slate-900 shadow-lg"
             initial={reduceMotion ? { opacity: 0 } : { y: "100%" }}
             animate={reduceMotion ? { opacity: 1 } : { y: 0 }}
             exit={
@@ -63,7 +63,7 @@ export default function ProductModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div
-              className="max-h-[85vh] overflow-y-auto p-3"
+              className="min-w-0 max-h-[85vh] overflow-y-auto overflow-x-hidden p-3"
               style={{
                 paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
               }}

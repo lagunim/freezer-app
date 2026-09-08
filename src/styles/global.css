@@ -29,12 +29,22 @@ input[type="date"] {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 input[type="date"]::-webkit-datetime-edit,
 input[type="date"]::-webkit-date-and-time-value {
   min-width: 0;
   max-width: 100%;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: inherit;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
 }
 
 /* Slide Freezer <-> Price Hunter (GPU; no transformar ancestros de FABs fixed) */
@@ -66,7 +76,7 @@ input[type="date"]::-webkit-date-and-time-value {
 
 @media (prefers-reduced-motion: no-preference) {
   .app-view-track {
-    transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform 680ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .app-view-track.is-sliding {

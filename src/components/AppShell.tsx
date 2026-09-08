@@ -76,7 +76,7 @@ export default function AppShell() {
 
   useEffect(() => {
     if (!isSliding) return;
-    const t = window.setTimeout(() => setIsSliding(false), 500);
+    const t = window.setTimeout(() => setIsSliding(false), 850);
     return () => window.clearTimeout(t);
   }, [isSliding]);
 
@@ -220,14 +220,14 @@ export default function AppShell() {
               <div className="space-y-1 text-center">
                 <h1 className="relative min-h-[1.75rem] text-left text-2xl font-semibold tracking-tight text-slate-50 sm:min-h-[2.25rem] sm:text-3xl">
                   <span
-                    className={`inline-block transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                    className={`inline-block transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
                       freezerActive ? "opacity-100" : "pointer-events-none absolute left-0 top-0 opacity-0"
                     }`}
                   >
                     Freezer App
                   </span>
                   <span
-                    className={`inline-block transition-opacity duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                    className={`inline-block transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
                       freezerActive ? "pointer-events-none absolute left-0 top-0 opacity-0" : "opacity-100"
                     }`}
                   >
