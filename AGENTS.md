@@ -2,11 +2,11 @@
 
 ## 1. Resumen
 
-App personal de hogar: inventario (Freezer) + historial/comparador de precios pagados (Price Hunter); auth compartida; navegación FAB.
+App personal de hogar (uso principal: PWA en Safari iOS): inventario (Freezer) + historial/comparador de precios (Price Hunter); auth compartida; navegación FAB.
 SPA cliente puro: Astro 5.17 SSG + React 19 (`client:load`) + TS strict 5.9 + Tailwind 3.4. Sin API routes ni SSR data fetching.
 BaaS Supabase (Postgres + Auth + RLS) vía `@supabase/supabase-js`. El anon key es público; la seguridad es RLS.
 Price Hunter compara € normalizado (€/kg, €/L, €/docena, €/ud); escáner EAN (`html5-qrcode`) + lookup OFF (Open Food/Beauty/Products Facts).
-Acrónimos: FAB = botón flotante; RLS = Row Level Security; OFF = Open Food Facts; SSG = static site generation.
+Acrónimos: PWA = Progressive Web App; FAB = botón flotante; RLS = Row Level Security; OFF = Open Food Facts; SSG = static site generation.
 
 ## 2. Estructura
 
@@ -34,8 +34,9 @@ Acrónimos: FAB = botón flotante; RLS = Row Level Security; OFF = Open Food Fac
 - Imports: alias `@/` hacia `src/`. Componentes: default export. Tipos y CRUD: named exports en `src/lib/*`.
 - Errores: `src/lib/*` lanza el error de Supabase; la UI captura y muestra Sileo (`sileo.success|error|warning`).
 - Idioma: UI, toasts y comentarios en español. Precios EUR (`formatPrice` en `src/lib/utils.ts`).
+- Target no negociable: PWA en Safari iOS. Toda implementación (UI, layout, APIs, cámara, gestos) debe funcionar ahí; no asumir Chrome/Android.
+- Safari/PWA: `env(safe-area-inset-*)` en FABs y bottom bars; touch ≥44px (`min-h-[44px] min-w-[44px]`); `<input|select|textarea>` con `text-base` (≥16px, anti-zoom iOS); prefijos `-webkit` si hace falta; cámara/`getUserMedia` + `html5-qrcode` compatibles con Safari ≥15.1.
 - Estilos: Tailwind utility-first, tema oscuro slate/sky. Motion (`motion`) para modales/listas; CSS en `global.css` para transiciones de vista.
-- Móvil: touch ≥44px (`min-h-[44px] min-w-[44px]`). `<input|select|textarea>` con `text-base` (≥16px) para no zoom iOS.
 - Utils: `normalizeStr`, `formatDate`, `toDateInputValue`, `formatPrice`. Búsqueda: `SearchInput`. Modales: `useScrollLock`.
 - Env (`.env` gitignored): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`. Prefijo `PUBLIC_` es intencional (Astro las expone al cliente).
 - Tablas vigentes (no copiar DDL; ver tipos + migrations):
