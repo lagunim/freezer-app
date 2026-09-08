@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 
-const IOS_EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
+const PANEL_TRANSITION = { duration: 0.3, ease: "easeInOut" as const };
+const REDUCED_TRANSITION = { duration: 0.01 };
 
 interface ProductModalProps {
   open: boolean;
@@ -20,16 +21,17 @@ export default function ProductModal({
   children,
 }: ProductModalProps) {
   const reduceMotion = useReducedMotion();
+  const transition = reduceMotion ? REDUCED_TRANSITION : PANEL_TRANSITION;
 
   const overlay = (
     <AnimatePresence>
       {open ? (
         <motion.div
           key="product-modal"
-          className="fixed inset-0 z-[100] flex items-end justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3"
           initial={false}
           exit={{ opacity: 1 }}
-          transition={{ duration: reduceMotion ? 0.01 : 0.38 }}
+          transition={transition}
         >
           <motion.button
             type="button"
@@ -38,28 +40,24 @@ export default function ProductModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{
-              duration: reduceMotion ? 0.01 : 0.2,
-              ease: "easeOut",
-            }}
+            transition={transition}
             onClick={onClose}
           />
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative z-10 min-w-0 w-full max-w-sm rounded-t-2xl border border-b-0 border-slate-700 bg-slate-900 shadow-lg"
-            initial={reduceMotion ? { opacity: 0 } : { y: "100%" }}
-            animate={reduceMotion ? { opacity: 1 } : { y: 0 }}
-            exit={
-              reduceMotion
-                ? { opacity: 0 }
-                : { y: "100%", transition: { duration: 0.28, ease: IOS_EASE } }
+            className="relative z-10 min-w-0 w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 shadow-lg"
+            initial={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }
             }
-            transition={{
-              duration: reduceMotion ? 0.01 : 0.38,
-              ease: IOS_EASE,
-            }}
+            animate={
+              reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }
+            }
+            exit={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }
+            }
+            transition={transition}
             onClick={(e) => e.stopPropagation()}
           >
             <div
